@@ -1,3 +1,4 @@
+/*
 Copyright (c) 2023, Oracle and/or its affiliates. **
 
 The Universal Permissive License (UPL), Version 1.0 **
@@ -16,3 +17,34 @@ included in all copies or substantial portions of the Software. **
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
 PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+*/
+import express from 'express';
+import flightSvcRouter from './src/routes/flight';
+
+
+// Init express
+// Create a new express application instance
+const app: express.Application = express();
+
+/************************************************************************************
+ *                              Set basic express settings
+ ***********************************************************************************/
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+
+// Add APIs
+app.use('/flightService/api', flightSvcRouter);
+
+
+// Start the server
+const port = Number(process.env.PORT || 8083);
+const server = app.listen(port, '0.0.0.0', () => {
+    //logger.info('Express server started on port: ' + port);
+    console.log('Flight service running at http://%s:%s', server.address(), port);
+});
+
+// Export express instance
+export default app;
