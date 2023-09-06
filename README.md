@@ -1,3 +1,5 @@
+# microtx-samples
+
 Oracle Transaction Manager for Microservices (MicroTx) enables enterprise users to adopt and increase use of microservices architecture for mission-critical applications by providing capabilities that make it easier to develop, deploy, and maintain data consistency in such applications. It manages transactions and provides consistency across polyglot microservices. It supports several distributed transaction protocols, such as XA, Eclipse MicroProfile Long Running Actions (Long Running Activity) and Try-Confirm/Cancel (TCC).
 
 Running sample applications is the fastest way for you to get familiar with MicroTx. Sample applications are microservices that demonstrate how you can integrate your applications with MicroTx while using different transaction protocols. The code of the sample applications includes the MicroTx libraries. You can use the sample applications as a reference while using the MicroTx libraries with your custom applications.
@@ -40,3 +42,17 @@ Install MicroTx in a Kubernetes cluster or Docker Swarm environment, and then ru
 
 See [Workflow to Install and Use MicroTx](https://docs.oracle.com/en/database/oracle/transaction-manager-for-microservices/22.3/tmmdg/oracle-transaction-manager-microservices.html#GUID-F6ED47D2-97FE-481E-A41E-C320A3611C0B).
 
+## Contributing
+
+This project welcomes contributions from the community. Before submitting a pull request, please [review our contribution guide](./CONTRIBUTING.md)
+
+## Security
+
+Please consult the [security guide](./SECURITY.md) for our responsible security vulnerability disclosure process
+
+## License
+
+Copyright (c) 2023 Oracle and/or its affiliates.
+
+Released under the Universal Permissive License v1.0 as shown at
+<https://oss.oracle.com/licenses/upl/>.
