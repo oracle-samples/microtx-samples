@@ -20,9 +20,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 package com.oracle.trm.lra.demo.model;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,7 +34,6 @@ public class Booking {
     private BookingStatus status;
     private String type;
     private Booking[] details;
-    private String encodedId;
 
     private static final Logger log = Logger.getLogger(Booking.class.getSimpleName());
 
@@ -62,11 +59,6 @@ public class Booking {
         this.name = name == null ? "" : name;
         this.type = type == null ? "" : type;
         this.status = status;
-        try {
-            this.encodedId = URLEncoder.encode(id, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            log.info(e.getLocalizedMessage());
-        }
         if(details !=null) {
             this.details = removeNullEnElements(details);
         }
@@ -115,16 +107,8 @@ public class Booking {
         this.details = details;
     }
 
-    public void setEncodedId(String encodedId) {
-        this.encodedId = encodedId;
-    }
-
     public void setStatus(BookingStatus status) {
         this.status = status;
-    }
-
-    public String getEncodedId() {
-        return this.encodedId;
     }
 
 

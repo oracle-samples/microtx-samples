@@ -27,9 +27,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -179,15 +177,6 @@ public class Booking {
         status = booking.getStatus();
 
         return true;
-    }
-
-    @JsonIgnore
-    public String getEncodedId() {
-        try {
-            return URLEncoder.encode(id, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            return id; // TODD do it in the constructor
-        }
     }
 
     public String toJson() throws JsonProcessingException {

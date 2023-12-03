@@ -36,7 +36,6 @@ public class Booking {
     private BookingStatus status;
     private String type;
     private Booking[] details;
-    private String encodedId;
 
     private static final Logger log = Logger.getLogger(Booking.class.getSimpleName());
 
@@ -62,11 +61,6 @@ public class Booking {
         this.name = name == null ? "" : name;
         this.type = type == null ? "" : type;
         this.status = status;
-        try {
-            this.encodedId = URLEncoder.encode(id, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            log.info(e.getLocalizedMessage());
-        }
         if(details !=null) {
             this.details = removeNullEnElements(details);
         }
@@ -115,16 +109,9 @@ public class Booking {
         this.details = details;
     }
 
-    public void setEncodedId(String encodedId) {
-        this.encodedId = encodedId;
-    }
 
     public void setStatus(BookingStatus status) {
         this.status = status;
-    }
-
-    public String getEncodedId() {
-        return this.encodedId;
     }
 
     public boolean merge(Booking booking) {

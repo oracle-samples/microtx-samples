@@ -1,5 +1,6 @@
 # About
-TMM LRA demo Trip-Client application.
+TMM LRA demo Trip-Client Java application. This application provides console user interface to reserve and confirm/cancel the fight and hotel booking.
+The application interacts with the trip-manager microservice to perform the bookings.
 
 ## Quick Start
 To run build:
@@ -21,5 +22,5 @@ If authentication or authorization is enabled in the kubernetes cluster, set the
 export ACCESS_TOKEN=<access_token>
 export REFRESH_TOKEN=<refresh_token>
 
-java -jar trip-client.jar
+java -jar target/trip-client.jar
 ```

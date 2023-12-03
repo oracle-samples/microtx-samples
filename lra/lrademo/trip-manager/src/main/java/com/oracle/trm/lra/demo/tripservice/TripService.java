@@ -114,7 +114,7 @@ public class TripService {
      * @param booking Associated booking details
      */
     private static void mergeAssociateBookingDetails(WebTarget target, Booking booking) {
-        Response response = target.path(booking.getEncodedId()).request().get(); // associated service must be listening on this path /bookingId
+        Response response = target.path(booking.getId()).request().get(); // associated service must be listening on this path /bookingId
         booking.merge(response.readEntity(Booking.class));
     }
 
