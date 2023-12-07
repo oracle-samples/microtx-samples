@@ -35,13 +35,11 @@ export class Booking {
     public status: BookingStatus = BookingStatus.PROVISIONAL; //default
     public type: string;
     public details: Booking [] = [];
-    public encodedId: string
 
     constructor(id : string, name : string, type : string) {
         this.id = id;
         this.name = name;
         this.type = type;
-        this.encodedId = encodeURIComponent(id);
     }
 }
 

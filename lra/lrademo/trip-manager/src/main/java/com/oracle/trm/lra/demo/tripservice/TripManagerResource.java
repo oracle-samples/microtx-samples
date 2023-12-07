@@ -56,6 +56,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -113,15 +115,16 @@ public class TripManagerResource {
         log.info("Started new LRA : " + lraId);
 
         Booking tripBooking = null;
+        String bookingId = new String(Base64.getEncoder().encode(lraId.getBytes(StandardCharsets.UTF_8)));
         try {
             Booking flightBooking = null;
-            Booking hotelBooking = bookHotel(hotelName, lraId);
+            Booking hotelBooking = bookHotel(hotelName, bookingId);
             // Book the flight only when hotel booking did not fail
             if (hotelBooking.getStatus() != Booking.BookingStatus.FAILED) {
-                flightBooking = bookFlight(flightNumber, lraId);
+                flightBooking = bookFlight(flightNumber, bookingId);
             }
             // Create trip booking that contains the hotel and flight bookings
-            tripBooking = new Booking(lraId, "Trip", "Trip", hotelBooking, flightBooking);
+            tripBooking = new Booking(bookingId, "Trip", "Trip", hotelBooking, flightBooking);
             service.saveProvisionalBooking(tripBooking);
             return Response.ok(tripBooking).header(ORACLE_TMM_TX_TOKEN, getOracleTmmTxToken(containerRequestContext)).build();
         } catch (BookingException ex) {
@@ -168,10 +171,11 @@ public class TripManagerResource {
     @Path("/after")
     @AfterLRA
     @Consumes(MediaType.TEXT_PLAIN)
-    public Response afterLRA(@HeaderParam(LRA_HTTP_ENDED_CONTEXT_HEADER) URI lraId, LRAStatus status) throws NotFoundException {
+    public Response afterLRA(@HeaderParam(LRA_HTTP_ENDED_CONTEXT_HEADER) String lraId, LRAStatus status) throws NotFoundException {
         log.info("After LRA Called : " + lraId);
         log.info("Final LRA Status : " + status);
-        Booking tripBooking = service.get(lraId.toString());
+        String bookingId = new String(Base64.getEncoder().encode(lraId.getBytes(StandardCharsets.UTF_8)));
+        Booking tripBooking = service.get(bookingId);
         if (tripBooking != null) {
             // Fetch the final status of hotel and flight booking
             service.mergeAssociateBookingDetails(tripBooking, getHotelTarget(), getFlightTarget());
@@ -179,6 +183,7 @@ public class TripManagerResource {
         // Clean up of resources held by this LRA
         return Response.ok().build();
     }
+
 
     /**
      * Calls the hotel service to book a room at the given hotel

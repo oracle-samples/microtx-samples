@@ -28,16 +28,12 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.invoke.MethodHandles;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -48,7 +44,7 @@ public class TripClient {
     private static String TRIP_SERVICE_BASE_URL;
     private static final String ORACLE_TMM_TX_TOKEN = "Oracle-Tmm-Tx-Token";
 
-    private static Logger logger = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+    private static final Logger logger = Logger.getLogger(TripClient.class.getName());
 
     public static void main(String[] args) throws Exception {
         String serviceHost = System.getProperty("trip.service.http.host", "localhost");
@@ -144,7 +140,7 @@ public class TripClient {
 
     private static void showAnimation(boolean confirm) throws IOException, InterruptedException {
         String anim = "|/-\\";
-        for (int x = 0; x < 100; x++) {
+        for (int x = 0; x < 200; x++) {
             // String data = "\r" + anim.charAt(x % anim.length()) + " " + x;
             String data = "\r" + anim.charAt(x % anim.length()) + " ";
             if (x == 15) {
@@ -182,7 +178,7 @@ public class TripClient {
     }
 
     private Booking getTrip(String bookingId, String accessToken, String refreshToken) throws Exception {
-        WebTarget webTarget = getTripTarget().path("/").path(URLEncoder.encode(bookingId, "UTF-8"));
+        WebTarget webTarget = getTripTarget().path("/").path(bookingId);
         Builder requestBuilder = webTarget.request();
         if(accessToken != null){
             requestBuilder.header("authorization", accessToken);
@@ -200,9 +196,10 @@ public class TripClient {
     }
 
     private Booking confirmTrip(String bookingId, String accessToken, String refreshToken, String oracleTransactionToken) throws Exception {
-        WebTarget webTarget = getTripTarget().path("/").path(URLEncoder.encode(bookingId, "UTF-8"));
+        WebTarget webTarget = getTripTarget().path("/").path(bookingId);
         Builder requestBuilder = webTarget.request();
-        requestBuilder.header("Long-Running-Action", bookingId);
+        String lraId = new String(Base64.getDecoder().decode(bookingId.getBytes(StandardCharsets.UTF_8)));
+        requestBuilder.header("Long-Running-Action", lraId);
 
         if(accessToken != null){
             requestBuilder.header("authorization", accessToken);
@@ -218,14 +215,14 @@ public class TripClient {
             response.close();
             return null;
         }
-
         return response.readEntity(Booking.class);
     }
 
     private Booking cancelTrip(String bookingId, String accessToken, String refreshToken, String oracleTransactionToken) throws Exception {
-        WebTarget webTarget = getTripTarget().path("/").path(URLEncoder.encode(bookingId, "UTF-8"));
+        WebTarget webTarget = getTripTarget().path("/").path(bookingId);
         Builder requestBuilder = webTarget.request();
-        requestBuilder.header("Long-Running-Action", bookingId);
+        String lraId = new String(Base64.getDecoder().decode(bookingId.getBytes(StandardCharsets.UTF_8)));
+        requestBuilder.header("Long-Running-Action", lraId);
         if(accessToken != null){
             requestBuilder.header("authorization", accessToken);
         }

@@ -1,6 +1,8 @@
 # About
-TMM LRA demo Hotel helidon application.
+TMM LRA demo , demonstration of a Java microservice for Hotel booking built on the Helidon framework.
 Default TRM LRA coordinator URL is "http://localhost:9000/api/v1/lra-coordinator"
+
+
 ## Quick Start
 To run build:
 
@@ -10,7 +12,7 @@ mvn clean package
 
 To run the application:
 ```
-java -jar hotel.jar
+java -jar target/hotel.jar
 ```
 To run the application with different TRM coordinator assign the URL to mp.lra.coordinator.url system variable:
 ```

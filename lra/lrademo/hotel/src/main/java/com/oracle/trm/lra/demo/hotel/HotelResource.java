@@ -43,6 +43,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.logging.Logger;
 
 import static org.eclipse.microprofile.lra.annotation.ws.rs.LRA.LRA_HTTP_CONTEXT_HEADER;
@@ -64,7 +66,8 @@ public class HotelResource {
     @Produces(MediaType.APPLICATION_JSON)
     @LRA(value = LRA.Type.MANDATORY, end = false)
     public Response bookRoom(@HeaderParam(LRA_HTTP_CONTEXT_HEADER) String lraId, @QueryParam("hotelName") @DefaultValue("Default") String hotelName) {
-        Booking booking = hotelService.book(lraId, hotelName);
+        String bookingId = new String(Base64.getEncoder().encode(lraId.getBytes(StandardCharsets.UTF_8)));
+        Booking booking = hotelService.book(bookingId, hotelName);
         log.info("Hotel Booking created: " + booking);
         return Response.ok(booking).build();
     }
@@ -76,7 +79,8 @@ public class HotelResource {
     public Response completeWork(@HeaderParam(LRA_HTTP_CONTEXT_HEADER) String lraId) throws NotFoundException {
         log.info("HotelServiceResource complete() called for LRA : " + lraId);
         // Business logic to complete the work related to this LRA
-        Booking booking = hotelService.get(lraId);
+        String bookingId = new String(Base64.getEncoder().encode(lraId.getBytes(StandardCharsets.UTF_8)));
+        Booking booking = hotelService.get(bookingId);
         if(booking == null){
             return Response.status(Response.Status.NOT_FOUND).entity("Hotel booking not found").build();
         }
@@ -95,7 +99,8 @@ public class HotelResource {
     public Response compensateWork(@HeaderParam(LRA_HTTP_CONTEXT_HEADER) String lraId) throws NotFoundException {
         log.info("HotelServiceResource compensate() called for LRA : " + lraId);
         // Business logic to compensate the work related to this LRA
-        Booking booking = hotelService.get(lraId);
+        String bookingId = new String(Base64.getEncoder().encode(lraId.getBytes(StandardCharsets.UTF_8)));
+        Booking booking = hotelService.get(bookingId);
         if(booking == null){
             return Response.status(Response.Status.NOT_FOUND).entity("Hotel booking not found").build();
         }
@@ -116,7 +121,8 @@ public class HotelResource {
         if (parentLRA != null) { // is the context nested
             // code which is sensitive to executing with a nested context goes here
         }
-        Booking.BookingStatus status = hotelService.get(lraId).getStatus();
+        String bookingId = new String(Base64.getEncoder().encode(lraId.getBytes(StandardCharsets.UTF_8)));
+        Booking.BookingStatus status = hotelService.get(bookingId).getStatus();
         // Business logic (provided by the business developer)
         if(status == Booking.BookingStatus.CONFIRMED) {
             return Response.ok(ParticipantStatus.Completed).build();

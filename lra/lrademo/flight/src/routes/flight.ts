@@ -20,6 +20,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 
 */
 import { Request, Response, Router } from 'express';
+import { Buffer } from 'buffer';
 import { getLRAId, LRA, LRAConfig, LRAType, ParticipantStatus } from "tmmlib-node/lra/lra";
 import { TrmConfig } from 'tmmlib-node/util/trmutils';
 import { Booking, BookingStatus, getConfirmedBookingsCount, setMaxConfirmedBooking } from "../booking";
@@ -66,7 +67,8 @@ flightSvcRouter.put('/complete', async (req, resp) => {
         return;
     }
     console.log(`FlightServiceResource complete() called for LRA : [${lraId}]`);
-    let booking: Booking = bookingMap.get(lraId) as Booking;
+    let bookingId = Buffer.from(lraId).toString('base64');
+    let booking: Booking = bookingMap.get(bookingId) as Booking;
     if (!booking) {
         return resp.status(404).send("Flight Booking not found");
     } 
@@ -86,7 +88,8 @@ flightSvcRouter.put('/compensate', async (req, resp) => {
         return;
     }
     console.log(`FlightServiceResource compensate() called for LRA : [${lraId}]`);
-    let booking: Booking = bookingMap.get(lraId) as Booking;
+    let bookingId = Buffer.from(lraId).toString('base64');
+    let booking: Booking = bookingMap.get(bookingId) as Booking;
     if (booking == null) {
         return resp.status(404).send("Flight Booking not found");
     } 
@@ -104,7 +107,8 @@ flightSvcRouter.get('/status', (req, resp) => {
         return resp.status(400).send("No LRA associated");
     }
     console.log(`FlightServiceResource status() called for LRA : [${lraId}]`);
-    let booking: Booking = bookingMap.get(lraId) as Booking;
+    let bookingId = Buffer.from(lraId).toString('base64');
+    let booking: Booking = bookingMap.get(bookingId) as Booking;
     if (booking == null) {
         return resp.status(404).send("Flight Booking not found");
     } 
@@ -161,9 +165,11 @@ function checkAndBookFlight(req: Request, resp: Response) {
     }
     let booking
     let flightNum = req.query.flightNumber?.toString();
+    let bookingId;
     if (flightNum) {
-        booking = new Booking(lraId, flightNum, "Flight");
-        bookingMap.set(lraId, booking);
+        bookingId = Buffer.from(lraId).toString('base64');
+        booking = new Booking(bookingId, flightNum, "Flight");
+        bookingMap.set(bookingId, booking);
         if (getConfirmedBookingsCount(bookingMap) >= MAX_CONFIRMED_BOOKING) {
             booking.status = BookingStatus.FAILED;
             console.log(`Flight Booking failed: ${JSON.stringify(booking)}`);
