@@ -21,6 +21,8 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
  
 package com.example.hotelsb;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import com.example.hotelsb.model.Booking;
@@ -32,13 +34,17 @@ import java.util.Map;
 
 @Service
 public class HotelService {
+
     private Map<String, Booking> bookings = new HashMap<>();
     public static int MAX_BOOKING = 3;
+
+    private static final Logger LOG = LoggerFactory.getLogger(HotelResource.class);
 
     public Booking book(String bookingId, String hotel) {
         Booking booking = new Booking(bookingId, hotel, "Hotel", null);
         if(bookings.size() >= MAX_BOOKING){
             booking.setStatus(Booking.BookingStatus.FAILED);
+            LOG.error("Cannot confirm Hotel booking as maximum allowed booking limit {} has been reached", MAX_BOOKING);
         }
         Booking earlierBooking = bookings.putIfAbsent(booking.getId(), booking);
         return earlierBooking == null ? booking : earlierBooking;

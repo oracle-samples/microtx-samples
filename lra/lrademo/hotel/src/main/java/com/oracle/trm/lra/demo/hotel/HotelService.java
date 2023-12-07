@@ -29,11 +29,14 @@ import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 @ApplicationScoped
 public class HotelService {
     private Map<String, Booking> bookings = new HashMap<>();
     public static int MAX_BOOKING = 3;
+
+    private static final Logger log = Logger.getLogger(HotelResource.class.getSimpleName());
 
     /**
      * Save the hotel booking in memory (HashMap)
@@ -45,6 +48,7 @@ public class HotelService {
         Booking booking = new Booking(bookingId, hotel, "Hotel", null);
         if(bookings.size() >= MAX_BOOKING){
             booking.setStatus(Booking.BookingStatus.FAILED);
+            log.severe(String.format("Cannot confirm Hotel booking as maximum allowed booking limit [%s] has been reached", MAX_BOOKING));
         }
         Booking earlierBooking = bookings.putIfAbsent(booking.getId(), booking);
         return earlierBooking == null ? booking : earlierBooking;

@@ -89,7 +89,8 @@ public class TripManagerResource {
 
             return ResponseEntity.ok().header(ORACLE_TMM_TX_TOKEN, oracleTmmTxToken).body(tripBooking);
         } catch (BookingException e) {
-            return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.internalServerError().header(ORACLE_TMM_TX_TOKEN, oracleTmmTxToken)
+                    .body(tripBooking);
         }
     }
 
