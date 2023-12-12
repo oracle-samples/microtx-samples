@@ -132,4 +132,15 @@ public class Booking {
     public enum BookingStatus {
         CONFIRMED, CANCELLED, PROVISIONAL, CONFIRMING, CANCEL_REQUESTED, FAILED;
     }
+
+    @Override
+    public String toString() {
+        return "Booking{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", status=" + status +
+                ", type='" + type + '\'' +
+                ", details=" + Arrays.toString(details) +
+                '}';
+    }
 }
