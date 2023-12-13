@@ -195,7 +195,7 @@ public class TripManagerResource {
 
     private Booking bookHotel(String name, String id) {
         log.info("Calling Hotel Service to book hotel with booking Id : " + id);
-        WebTarget webTarget = getHotelTarget().path("/").queryParam("hotelName", name);
+        WebTarget webTarget = getHotelTarget().queryParam("hotelName", name);
         Booking hotelBooking = webTarget.request().post(Entity.text("")).readEntity(Booking.class);
         log.info(String.format("Hotel booking %s with booking Id : %s", (hotelBooking.getStatus() == Booking.BookingStatus.FAILED ? "FAILED" : "SUCCESSFUL"), hotelBooking.getId()));
         return hotelBooking;
@@ -210,7 +210,7 @@ public class TripManagerResource {
      */
     private Booking bookFlight(String flightNumber, String id) {
         log.info("Calling Flight Service to book flight with booking Id : " + id);
-        WebTarget webTarget = getFlightTarget().path("/").queryParam("flightNumber", flightNumber);
+        WebTarget webTarget = getFlightTarget().queryParam("flightNumber", flightNumber);
         Booking flightBooking = webTarget.request().post(Entity.text("")).readEntity(Booking.class);
         log.info(String.format("Flight booking %s with booking Id : %s", (flightBooking.getStatus() == Booking.BookingStatus.FAILED ? "FAILED" : "SUCCESSFUL"), flightBooking.getId()));
         return flightBooking;
