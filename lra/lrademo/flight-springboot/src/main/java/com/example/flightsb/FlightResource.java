@@ -71,7 +71,7 @@ public class FlightResource {
 
     @RequestMapping(value = "/forget", method = RequestMethod.DELETE)
     @Forget
-    public ResponseEntity<?> forget(@RequestHeader(LRA_HTTP_CONTEXT_HEADER) String lraId, @RequestHeader(LRA_HTTP_PARENT_CONTEXT_HEADER) String parentLraID){
+    public ResponseEntity<?> forget(@RequestHeader(LRA_HTTP_CONTEXT_HEADER) String lraId, @RequestHeader(value = LRA_HTTP_PARENT_CONTEXT_HEADER, required = false) String parentLraID){
         LOG.info("Forget called");
         if(lraId == null){
             return new ResponseEntity<>("LRA header not present", HttpStatus.BAD_REQUEST);
@@ -86,7 +86,7 @@ public class FlightResource {
 
     @RequestMapping(value = "/status", method = RequestMethod.GET)
     @Status
-    public ResponseEntity<?> status(@RequestHeader(LRA_HTTP_CONTEXT_HEADER) String lraId, @RequestHeader(LRA_HTTP_PARENT_CONTEXT_HEADER) String parentLRA){
+    public ResponseEntity<?> status(@RequestHeader(LRA_HTTP_CONTEXT_HEADER) String lraId, @RequestHeader(value = LRA_HTTP_PARENT_CONTEXT_HEADER, required = false) String parentLRA){
         LOG.info("FlightServiceResource status() called for LRA : " + lraId);
         if (parentLRA != null) { // is the context nested
             // code which is sensitive to executing with a nested context goes here
