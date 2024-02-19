@@ -48,7 +48,7 @@ public class AccountsService implements IAccountsService {
      * The Database Connection injected by the TMM Library. Use this connection object to execute SQLs (DMLs) within the application code.
      */
     @Inject
-    @TrmSQLConnection(name = "departmentDataSource")
+    @TrmSQLConnection(name = "departmentXADataSource")
     private Connection connection;
 
     @Inject
@@ -71,11 +71,9 @@ public class AccountsService implements IAccountsService {
     public Account accountDetails(String accountId) throws SQLException {
         Account account = null;
         PreparedStatement statement = null;
-        XAConnection xaConnection = null;
         Connection connection = null;
         try {
-            xaConnection = config.getDatasource().getXAConnection();
-            connection = xaConnection.getConnection();
+            connection = config.getDatasource().getConnection();
             if (connection == null) {
                 return null;
             }
@@ -95,9 +93,6 @@ public class AccountsService implements IAccountsService {
             }
             if (connection != null) {
                 connection.close();
-            }
-            if (xaConnection != null) {
-                xaConnection.close();
             }
         }
         return account;

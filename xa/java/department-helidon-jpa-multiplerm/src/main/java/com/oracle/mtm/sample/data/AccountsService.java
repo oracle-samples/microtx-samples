@@ -39,11 +39,11 @@ import oracle.tmm.jta.common.TrmEntityManager;
 public class AccountsService implements IAccountsService {
 
     @Inject
-    @TrmEntityManager(name = "departmentDataSource")
+    @TrmEntityManager(name = "departmentXADataSource")
     private EntityManager trmEntityManager;
 
     @Inject
-    @TrmEntityManager(name = "creditDataSource")
+    @TrmEntityManager(name = "creditXADataSource")
     private EntityManager trmCdbEntityManager;
 
     @Inject

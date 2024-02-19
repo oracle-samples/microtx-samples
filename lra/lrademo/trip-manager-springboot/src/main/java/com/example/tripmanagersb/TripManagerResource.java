@@ -22,6 +22,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 package com.example.tripmanagersb;
 
 import com.example.tripmanagersb.model.Booking;
+import com.example.tripmanagersb.model.BookingResponse;
 import com.oracle.microtx.springboot.lra.annotation.AfterLRA;
 import com.oracle.microtx.springboot.lra.annotation.LRA;
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ import static com.oracle.microtx.springboot.lra.annotation.LRA.LRA_HTTP_CONTEXT_
 import static com.oracle.microtx.springboot.lra.annotation.LRA.LRA_HTTP_ENDED_CONTEXT_HEADER;
 
 @RestController
-@RequestMapping("/trip-service/api")
+@RequestMapping("/trip-service/api/sync")
 public class TripManagerResource {
     private static final String ORACLE_TMM_TX_TOKEN = "Oracle-Tmm-Tx-Token";
 
@@ -61,10 +62,10 @@ public class TripManagerResource {
      * RestTemplate must be autowired because then only the client Interceptor will be able to intercept
      * Interceptors are specific to the restTemplate
      */
-
     @Autowired
     @Qualifier("MicroTxLRA")
     RestTemplate restTemplate;
+
     private static final Logger LOG = LoggerFactory.getLogger(TripManagerResource.class);
 
     @RequestMapping(value = "/trip", method = RequestMethod.POST)
@@ -79,6 +80,7 @@ public class TripManagerResource {
         Booking tripBooking = null;
         String bookingId = new String(Base64.getEncoder().encode(lraId.getBytes(StandardCharsets.UTF_8)));
         try {
+            LOG.info("Calling LRA participants Hotel booking and Flight booking sequentially");
             Booking flightBooking = null;
             Booking hotelBooking = bookHotel(hotelName, bookingId);
             if (hotelBooking.getStatus() != Booking.BookingStatus.FAILED) {
@@ -104,16 +106,17 @@ public class TripManagerResource {
     public ResponseEntity<?> confirmTrip(@PathVariable String bookingId){
         LOG.info("Received Confirmation for trip booking with Id : " + bookingId);
         Booking tripBooking = service.get(bookingId);
-        if (tripBooking.getStatus() == Booking.BookingStatus.CANCEL_REQUESTED)
+        if (tripBooking.getStatus() == Booking.BookingStatus.CANCEL_REQUESTED) {
             throw new WebClientResponseException(HttpStatus.BAD_REQUEST.value(), "Cannot confirm a trip booking that needs to be cancelled", null, null, null);
-        return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.ok(new BookingResponse("Confirm booking requested"));
     }
 
     @RequestMapping(value = "/trip/{bookingId}", method = RequestMethod.DELETE)
     @LRA(value = LRA.Type.MANDATORY, end = true, cancelOn = HttpStatus.OK)
     public ResponseEntity<?> cancelTrip(@PathVariable String bookingId){
         LOG.info("Received Cancellation for trip booking with Id : " + bookingId);
-        return ResponseEntity.ok("Cancel booking requested");
+        return ResponseEntity.ok(new BookingResponse("Cancel booking requested"));
     }
 
     @RequestMapping(value = "/trip", method = RequestMethod.GET)

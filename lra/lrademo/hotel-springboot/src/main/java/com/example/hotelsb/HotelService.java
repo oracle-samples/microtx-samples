@@ -29,13 +29,12 @@ import com.example.hotelsb.model.Booking;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class HotelService {
-
-    private Map<String, Booking> bookings = new HashMap<>();
+    private Map<String, Booking> bookings = new ConcurrentHashMap<>();
     public static int MAX_BOOKING = 3;
 
     private static final Logger LOG = LoggerFactory.getLogger(HotelResource.class);

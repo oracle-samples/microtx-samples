@@ -30,4 +30,11 @@
             <!-- Configuring The Database Connection Details -->
         </properties>
     </persistence-unit>
+    <persistence-unit name="mydeptds" >
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <class>com.oracle.mtm.sample.entity.Account</class>
+        <properties>
+            <!-- Configuring The Database Connection Details -->
+        </properties>
+    </persistence-unit>
 </persistence>

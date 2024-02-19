@@ -27,13 +27,13 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 @ApplicationScoped
 public class HotelService {
-    private Map<String, Booking> bookings = new HashMap<>();
+    private Map<String, Booking> bookings = new ConcurrentHashMap<>();
     public static int MAX_BOOKING = 3;
 
     private static final Logger log = Logger.getLogger(HotelResource.class.getSimpleName());

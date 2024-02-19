@@ -23,6 +23,7 @@ package com.oracle.mtm.sample;
 import com.oracle.microtx.common.MicroTxConfig;
 
 import oracle.tmm.jta.common.TrmXAResourceType;
+import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 import oracle.ucp.jdbc.PoolXADataSource;
 import org.hibernate.jpa.HibernatePersistenceProvider;
@@ -61,23 +62,34 @@ public class XADataSourceConfig {
     @Value("${departmentDataSource.rmid}")
     private String departmentRmid;
 
-    @Value("${departmentDataSource.postgres.min-pool-size}")
+    @Value("${departmentDataSource.xaPostgres.min-pool-size}")
     private String minPoolSize;
 
-    @Value("${departmentDataSource.postgres.initial-pool-size:10}")
+    @Value("${departmentDataSource.xaPostgres.initial-pool-size:10}")
     private String initialPoolSize;
 
-    @Value("${departmentDataSource.postgres.max-pool-size}")
+    @Value("${departmentDataSource.xaPostgres.max-pool-size}")
     private String maxPoolSize;
 
-    @Value("${departmentDataSource.postgres.data-source-name}")
-    private String dataSourceName;
+    @Value("${departmentDataSource.xaPostgres.data-source-name}")
+    private String xaDataSourceName;
+
+    @Value("${departmentDataSource.xaPostgres.connection-pool-name}")
+    private String xaConnectionPoolName;
+
+    @Value("${departmentDataSource.xaPostgres.connection-factory-class-name:oracle.jdbc.xa.client.OracleXADataSource}")
+    private String xaConnectionFactoryClassName;
 
     @Value("${departmentDataSource.postgres.connection-pool-name}")
     private String connectionPoolName;
 
     @Value("${departmentDataSource.postgres.connection-factory-class-name:oracle.jdbc.xa.client.OracleXADataSource}")
     private String connectionFactoryClassName;
+
+    @Value("${departmentDataSource.postgres.data-source-name}")
+    private String dataSourceName;
+
+
 
     @Value("${creditDataSource.url}")
     private String creditUrl;
@@ -107,12 +119,12 @@ public class XADataSourceConfig {
 
     @Bean(name = "ucpXADataSource")
     @Primary
-    public DataSource getDataSource() {
+    public DataSource getXADataSource() {
         DataSource pds = null;
         try {
             Map<String, String> jdbcMetadata = getDataSourceMetadata(url);
             pds = PoolDataSourceFactory.getPoolXADataSource();
-            ((PoolXADataSource) pds).setConnectionFactoryClassName(connectionFactoryClassName);
+            ((PoolXADataSource) pds).setConnectionFactoryClassName(xaConnectionFactoryClassName);
             ((PoolXADataSource) pds).setURL(url);
             ((PoolXADataSource) pds).setUser(username);
             ((PoolXADataSource) pds).setPassword(password);
@@ -122,8 +134,8 @@ public class XADataSourceConfig {
             ((PoolXADataSource) pds).setMinPoolSize(Integer.valueOf(minPoolSize));
             ((PoolXADataSource) pds).setInitialPoolSize(Integer.valueOf(initialPoolSize));
             ((PoolXADataSource) pds).setMaxPoolSize(Integer.valueOf(maxPoolSize));
-            ((PoolXADataSource) pds).setDataSourceName(dataSourceName);
-            ((PoolXADataSource) pds).setConnectionPoolName(connectionPoolName);
+            ((PoolXADataSource) pds).setDataSourceName(xaDataSourceName);
+            ((PoolXADataSource) pds).setConnectionPoolName(xaConnectionPoolName);
 
             System.out.println("XADataSourceConfig: XADataSource created");
         } catch (SQLException ex) {
@@ -132,9 +144,34 @@ public class XADataSourceConfig {
         return pds;
     }
 
+    public DataSource getDataSource() {
+        DataSource pds = null;
+        try {
+            Map<String, String> jdbcMetadata = getDataSourceMetadata(url);
+            pds = PoolDataSourceFactory.getPoolDataSource();
+            ((PoolDataSource) pds).setConnectionFactoryClassName(connectionFactoryClassName);
+            ((PoolDataSource) pds).setURL(url);
+            ((PoolDataSource) pds).setUser(username);
+            ((PoolDataSource) pds).setPassword(password);
+            ((PoolDataSource) pds).setServerName(jdbcMetadata.get("serverName"));
+            ((PoolDataSource) pds).setPortNumber(Integer.valueOf(jdbcMetadata.get("port")));
+            ((PoolDataSource) pds).setDatabaseName(jdbcMetadata.get("databaseName"));
+            ((PoolDataSource) pds).setMinPoolSize(Integer.valueOf(minPoolSize));
+            ((PoolDataSource) pds).setInitialPoolSize(Integer.valueOf(initialPoolSize));
+            ((PoolDataSource) pds).setMaxPoolSize(Integer.valueOf(maxPoolSize));
+            ((PoolDataSource) pds).setDataSourceName(dataSourceName);
+            ((PoolDataSource) pds).setConnectionPoolName(connectionPoolName);
+
+            System.out.println(" DataSource Config: Fetch DataSource created");
+        } catch (SQLException ex) {
+            System.err.println("Error connecting to the database: " + ex.getMessage());
+        }
+        return pds;
+    }
+
     @Bean(name = "creditUcpXADataSource")
     @Primary
-    public DataSource getCreditDataSource() {
+    public DataSource getCreditXADataSource() {
         DataSource pds = null;
         try {
             pds = PoolDataSourceFactory.getPoolXADataSource();
@@ -158,10 +195,10 @@ public class XADataSourceConfig {
     }
 
     @Bean(name = "entityManagerFactory")
-    public EntityManagerFactory createEntityManagerFactory() throws SQLException {
+    public EntityManagerFactory createXAEntityManagerFactory() throws SQLException {
         LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
 
-        entityManagerFactoryBean.setDataSource(getDataSource());
+        entityManagerFactoryBean.setDataSource(getXADataSource());
         entityManagerFactoryBean.setPackagesToScan(new String[] { "com.oracle.mtm.sample.entity" });
         entityManagerFactoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
@@ -178,15 +215,15 @@ public class XADataSourceConfig {
         entityManagerFactoryBean.afterPropertiesSet();
         EntityManagerFactory emf = (EntityManagerFactory) entityManagerFactoryBean.getObject();
         System.out.println("entityManagerFactory = " + emf);
-        MicroTxConfig.initEntityManagerFactory(emf,"departmentDataSource",departmentRmid, TrmXAResourceType.PostgreSQL); // Initialize TMM Library
+        MicroTxConfig.initEntityManagerFactory(emf,xaDataSourceName,departmentRmid, TrmXAResourceType.PostgreSQL); // Initialize TMM Library
         return emf;
     }
 
     @Bean(name = "creditEntityManagerFactory")
-    public EntityManagerFactory createCreditEntityManagerFactory() throws SQLException {
+    public EntityManagerFactory createCreditXAEntityManagerFactory() throws SQLException {
         LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
 
-        entityManagerFactoryBean.setDataSource(getCreditDataSource());
+        entityManagerFactoryBean.setDataSource(getCreditXADataSource());
         entityManagerFactoryBean.setPackagesToScan(new String[] { "com.oracle.mtm.sample.entity" });
         entityManagerFactoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
@@ -203,9 +240,35 @@ public class XADataSourceConfig {
         entityManagerFactoryBean.afterPropertiesSet();
         EntityManagerFactory emf = (EntityManagerFactory) entityManagerFactoryBean.getObject();
         System.out.println("entityManagerFactory = " + emf);
-        MicroTxConfig.initEntityManagerFactory(emf,"creditDataSource",creditRmid); // Initialize TMM Library
+        MicroTxConfig.initEntityManagerFactory(emf,creditDataSourceName,creditRmid); // Initialize TMM Library
         return emf;
     }
+
+    @Bean(name = "localEntityManagerFactory")
+    public EntityManagerFactory createEntityManagerFactory() throws SQLException {
+        LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
+
+        entityManagerFactoryBean.setDataSource(getDataSource());
+        entityManagerFactoryBean.setPackagesToScan(new String[] { "com.oracle.mtm.sample.entity" });
+        entityManagerFactoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+
+        entityManagerFactoryBean.setPersistenceProviderClass(HibernatePersistenceProvider.class);
+        entityManagerFactoryBean.setPersistenceUnitName("mydeptds");
+        Properties properties = new Properties();
+        properties.setProperty( "jakarta.persistence.transactionType", "RESOURCE_LOCAL"); // change this to resource_local
+        properties.put("hibernate.show_sql", "true");
+        properties.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+        properties.put("hibernate.format_sql", "true");
+        properties.put("hbm2ddl.auto", "validate");
+
+        entityManagerFactoryBean.setJpaProperties(properties);
+        entityManagerFactoryBean.afterPropertiesSet();
+        EntityManagerFactory emf = (EntityManagerFactory) entityManagerFactoryBean.getObject();
+        System.out.println("entityManagerFactory = " + emf);
+        return emf;
+    }
+
+
 
     private Map<String, String> getDataSourceMetadata(String jdbcURL) {
         try {

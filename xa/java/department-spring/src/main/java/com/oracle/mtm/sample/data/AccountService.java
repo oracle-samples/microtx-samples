@@ -32,6 +32,7 @@ import org.springframework.stereotype.Component;
 import com.oracle.mtm.sample.entity.Account;
 import org.springframework.web.context.annotation.RequestScope;
 
+import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 
 /**
@@ -61,10 +62,12 @@ public class AccountService implements IAccountService {
     @Override
     public Account accountDetails(String accountId) throws SQLException {
         Account account = null;
+        XAConnection xaConnection= null;
         Connection connection = null;
         PreparedStatement statement = null;
         try {
-            connection = dataSource.getXAConnection().getConnection();
+            xaConnection = dataSource.getXAConnection();
+            connection = xaConnection.getConnection();
             if (connection == null) {
                 return null;
             }
@@ -85,6 +88,9 @@ public class AccountService implements IAccountService {
             }
             if(connection != null){
                 connection.close();
+            }
+            if(xaConnection != null){
+                xaConnection.close();
             }
         }
         return account;

@@ -23,6 +23,7 @@ package com.oracle.mtm.sample;
 
 import oracle.tmm.common.TrmConfig;
 import oracle.tmm.jta.common.TrmXAResourceType;
+import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 import oracle.ucp.jdbc.PoolXADataSource;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -47,9 +48,13 @@ import java.util.Map;
 @ApplicationScoped
 public class Configuration {
 
-    private PoolXADataSource dataSource;
+    private PoolXADataSource xaDataSource;
+
+    private PoolDataSource dataSource;
 
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    private EntityManagerFactory xaEntityManagerFactory;
 
     private EntityManagerFactory entityManagerFactory;
 
@@ -66,38 +71,61 @@ public class Configuration {
     String password;
 
     private void init(@Observes @Initialized(ApplicationScoped.class) Object event) {
+
         initialiseDataSource();
         createEntityManagerFactory();
+
+        initialiseXaDataSource();
+        createXAEntityManagerFactory();
     }
 
     /**
      * Initializes the datasource into the TMM library that manages the lifecycle of the XA transaction
      *
      */
+    private void initialiseXaDataSource() {
+        try {
+            Map<String, String> jdbcMetadata = getDataSourceMetadata(url);
+            this.xaDataSource = PoolDataSourceFactory.getPoolXADataSource();
+            this.xaDataSource.setURL(url);
+            this.xaDataSource.setUser(user);
+            this.xaDataSource.setPassword(password);
+            this.xaDataSource.setDatabaseName(jdbcMetadata.get("databaseName"));
+            this.xaDataSource.setServerName(jdbcMetadata.get("serverName"));
+            this.xaDataSource.setPortNumber(Integer.valueOf(jdbcMetadata.get("port")));
+            this.xaDataSource.setConnectionFactoryClassName("org.postgresql.xa.PGXADataSource");
+            this.xaDataSource.setMaxPoolSize(15);
+        } catch (SQLException e) {
+            logger.error("Failed to initialise database");
+        }
+    }
+
     private void initialiseDataSource() {
         try {
             Map<String, String> jdbcMetadata = getDataSourceMetadata(url);
-            this.dataSource = PoolDataSourceFactory.getPoolXADataSource();
+            this.dataSource = PoolDataSourceFactory.getPoolDataSource();
             this.dataSource.setURL(url);
             this.dataSource.setUser(user);
             this.dataSource.setPassword(password);
             this.dataSource.setDatabaseName(jdbcMetadata.get("databaseName"));
             this.dataSource.setServerName(jdbcMetadata.get("serverName"));
             this.dataSource.setPortNumber(Integer.valueOf(jdbcMetadata.get("port")));
-            this.dataSource.setConnectionFactoryClassName("org.postgresql.xa.PGXADataSource");
+            this.dataSource.setConnectionFactoryClassName("org.postgresql.Driver");
             this.dataSource.setMaxPoolSize(15);
         } catch (SQLException e) {
             logger.error("Failed to initialise database");
         }
     }
-
-    public PoolXADataSource getDatasource() {
+    public PoolXADataSource getXaDatasource() {
+        return xaDataSource;
+    }
+    public PoolDataSource getDatasource() {
         return dataSource;
     }
 
-    public void createEntityManagerFactory() {
+    public void createXAEntityManagerFactory() {
         Map<String, Object> props = new HashMap<String, Object>();
-        props.put("hibernate.connection.datasource", getDatasource());
+        props.put("hibernate.connection.datasource", getXaDatasource());
         props.put("hibernate.hbm2ddl.auto", "none");
         props.put("hibernate.format_sql", "true");
         props.put("hibernate.connection.provider_class", "oracle.tmm.jta.jpa.hibernate.HibernateXADataSourceConnectionProvider");
@@ -106,8 +134,22 @@ public class Configuration {
         props.put("jakarta.persistence.jdbc.user", user);
         props.put("jakarta.persistence.jdbc.password", password);
 
-        this.entityManagerFactory = Persistence.createEntityManagerFactory("mydeptxads", props);
-        TrmConfig.initEntityManagerFactory(this.entityManagerFactory, TrmXAResourceType.PostgreSQL); // Initialize TMM Library
+        this.xaEntityManagerFactory = Persistence.createEntityManagerFactory("mydeptxads", props);
+        TrmConfig.initEntityManagerFactory(this.xaEntityManagerFactory, TrmXAResourceType.PostgreSQL); // Initialize TMM Library
+    }
+
+    public void createEntityManagerFactory() {
+        Map<String, Object> props = new HashMap<String, Object>();
+        props.put("hibernate.connection.datasource", getDatasource());
+        props.put("hibernate.hbm2ddl.auto", "none");
+        props.put("hibernate.format_sql", "true");
+
+        props.put("jakarta.persistence.transactionType", "RESOURCE_LOCAL");
+        props.put("jakarta.persistence.jdbc.url", url);
+        props.put("jakarta.persistence.jdbc.user", user);
+        props.put("jakarta.persistence.jdbc.password", password);
+
+        this.entityManagerFactory = Persistence.createEntityManagerFactory("mydeptds", props);
     }
 
     public EntityManagerFactory getEntityManagerFactory() {

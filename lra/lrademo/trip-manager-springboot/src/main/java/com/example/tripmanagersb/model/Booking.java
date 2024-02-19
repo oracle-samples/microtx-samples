@@ -120,7 +120,9 @@ public class Booking {
         if(booking.getDetails() != null) {
             for (Booking childBooking : booking.getDetails()) {
                 Booking curBooking = Arrays.stream(this.details).filter(a -> a.id.equals(childBooking.id)).findFirst().orElse(null);
-                if (curBooking != null) curBooking.merge(childBooking);
+                if (curBooking != null) {
+                    curBooking.merge(childBooking);
+                }
             }
         }
         return true;

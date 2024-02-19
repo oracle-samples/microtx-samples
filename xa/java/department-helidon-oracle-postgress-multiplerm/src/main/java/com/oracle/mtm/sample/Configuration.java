@@ -22,7 +22,7 @@ package com.oracle.mtm.sample;
 
 import oracle.tmm.common.TrmConfig;
 import oracle.tmm.jta.common.DataSourceInfo;
-import oracle.tmm.jta.common.TrmXAResourceType;
+import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 import oracle.ucp.jdbc.PoolXADataSource;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -44,8 +44,9 @@ import java.util.Map;
 @ApplicationScoped
 public class Configuration {
 
-    private PoolXADataSource dataSource;
+    private PoolXADataSource xaDataSource;
 
+    private PoolDataSource dataSource;
     private PGXADataSource creditdataSource;
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -83,24 +84,40 @@ public class Configuration {
 
     private void init(@Observes @Initialized(ApplicationScoped.class) Object event) {
         initialiseDataSource();
+        initialiseXaDataSources();
     }
 
+    /**
+     * Initialize the datasource for non xa operations
+     */
+    private void initialiseDataSource(){
+        try {
+            this.dataSource = PoolDataSourceFactory.getPoolDataSource();
+            this.dataSource.setURL(url);
+            this.dataSource.setUser(user);
+            this.dataSource.setPassword(password);
+            this.dataSource.setConnectionFactoryClassName("oracle.jdbc.pool.OracleDataSource");
+            this.dataSource.setMaxPoolSize(15);
+        } catch (SQLException e) {
+            logger.error("Failed to initialise " + rmid + " database");
+        }
+    }
     /**
      * Initializes the datasource into the TMM library that manages the lifecycle of the XA transaction
      *
      */
-    private void initialiseDataSource() {
+    private void initialiseXaDataSources() {
         try {
             DataSourceInfo departmentDataSourceInfo = new DataSourceInfo(rmid);
             departmentDataSourceInfo.setDataSourceName("departmentDataSource");
-            this.dataSource = PoolDataSourceFactory.getPoolXADataSource();
-            this.dataSource.setURL(url);
-            this.dataSource.setUser(user);
-            this.dataSource.setPassword(password);
-            this.dataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
-            this.dataSource.setMaxPoolSize(15);
+            this.xaDataSource = PoolDataSourceFactory.getPoolXADataSource();
+            this.xaDataSource.setURL(url);
+            this.xaDataSource.setUser(user);
+            this.xaDataSource.setPassword(password);
+            this.xaDataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
+            this.xaDataSource.setMaxPoolSize(15);
 
-            TrmConfig.initXaDataSource(this.dataSource, departmentDataSourceInfo);
+            TrmConfig.initXaDataSource(this.xaDataSource, departmentDataSourceInfo);
         } catch (SQLException e) {
             logger.error("Failed to initialise " + rmid + " database");
         }
@@ -123,7 +140,7 @@ public class Configuration {
         }
     }
 
-    public PoolXADataSource getDatasource() {
+    public PoolDataSource getDatasource() {
         return dataSource;
     }
 

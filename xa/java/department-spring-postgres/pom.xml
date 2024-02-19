@@ -31,7 +31,7 @@
 	</parent>
 	<groupId>com.oracle.mtm.sample</groupId>
 	<artifactId>department-spring-postgres</artifactId>
-	<version>23.4.1</version>
+	<version>23.4.2</version>
 	<name>department-spring-postgres</name>
 	<description>Demo springboot project for Microservice Transaction Management participant application</description>
 	<properties>
@@ -58,7 +58,7 @@
 		<dependency>
 			<groupId>com.oracle.microtx</groupId>
 			<artifactId>microtx-spring-boot-starter</artifactId>
-			<version>23.4.1</version>
+			<version>23.4.2</version>
 		</dependency>
 
 		<dependency>
