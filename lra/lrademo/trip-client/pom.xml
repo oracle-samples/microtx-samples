@@ -34,7 +34,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>trip-client</artifactId>
-    <version>24.2.1</version>
+    <version>23.4.2</version>
     <name>trip-client</name>
     <description>TMM LRA Demo Trip Client</description>
 
@@ -71,7 +71,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>2.13.4.2</version>
+                <version>2.13.1</version>
             </dependency>
         </dependencies>
 

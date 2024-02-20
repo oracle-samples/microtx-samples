@@ -31,6 +31,7 @@ WORKDIR /usr/src/app
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available (npm@5+)
 COPY package*.json ./
+COPY tmmlib-node-23.4.2.tgz ./
 
 RUN npm install
 RUN npm rebuild

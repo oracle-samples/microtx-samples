@@ -26,17 +26,17 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.3</version>
+        <version>3.1.2</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.example</groupId>
     <artifactId>teller-spring-promotion-jpa</artifactId>
-    <version>24.2.1</version>
+    <version>23.4.2</version>
     <name>teller-spring-promotion-jpa</name>
     <description>teller-spring-promotion</description>
     <properties>
         <java.version>17</java.version>
-        <spring.version>3.2.3</spring.version>
+        <spring.version>3.1.2</spring.version>
     </properties>
     <dependencies>
         <dependency>
@@ -47,23 +47,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hibernate.orm</groupId>
-                    <artifactId>hibernate-core</artifactId>
-                </exclusion>
-            </exclusions>
             <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>6.2.9.Final</version>
         </dependency>
         <dependency>
             <groupId>com.oracle.microtx</groupId>
             <artifactId>microtx-spring-boot-starter-hibernate</artifactId>
-            <version>24.2.1</version>
+            <version>23.4.2</version>
         </dependency>
         <dependency>
             <groupId>io.swagger.core.v3</groupId>

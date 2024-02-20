@@ -45,14 +45,22 @@ public class AccountsService implements IAccountsService {
     @TrmEntityManager
     private Provider<EntityManager> trmEntityManager;
 
+    @Inject
+    private EntityManager localEntityManager;
 
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public Account findByAccountId(String accountId) {
-            Query query = trmEntityManager.get().createNativeQuery("SELECT * FROM accounts where account_id= :account_id", Account.class);
+        try {
+            Query query = localEntityManager.createNativeQuery("SELECT * FROM accounts where account_id= :account_id", Account.class);
             query.setParameter("account_id", accountId);
             Account account = (Account) query.getSingleResult();
             return account;
+        } finally {
+            if (localEntityManager != null && localEntityManager.isOpen()) {
+                localEntityManager.close();
+            }
+        }
     }
 
 
