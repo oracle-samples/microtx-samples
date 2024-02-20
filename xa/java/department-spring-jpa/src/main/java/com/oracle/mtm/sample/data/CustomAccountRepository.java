@@ -23,14 +23,17 @@ package com.oracle.mtm.sample.data;
 import jakarta.persistence.*;
 
 import com.oracle.mtm.sample.entity.Account;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 
 
 @Repository
 public class CustomAccountRepository {
-    @PersistenceContext(unitName="mydeptxads")
-    private EntityManager entityManager;
+    @Autowired
+    @Qualifier("localEntityManagerFactory")
+    EntityManager entityManager;
 
     public Account findByAccountId(String accountId) {
         Query query = entityManager.createNativeQuery("SELECT * FROM accounts where account_id= :account_id", Account.class);

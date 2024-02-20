@@ -21,6 +21,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 package com.oracle.mtm.sample;
 
 import oracle.tmm.common.TrmConfig;
+import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 import oracle.ucp.jdbc.PoolXADataSource;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -42,8 +43,10 @@ import java.util.Map;
 @ApplicationScoped
 public class Configuration {
 
-    private PoolXADataSource dataSource;
-    private PoolXADataSource cdbDataSource;
+    private PoolXADataSource xaDataSource;
+    private PoolXADataSource creditXADataSource;
+
+    private PoolDataSource dataSource;
 
     @Inject
     @ConfigProperty(name = "departmentDataSource.url")
@@ -74,11 +77,15 @@ public class Configuration {
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private void init(@Observes @Initialized(ApplicationScoped.class) Object event) {
-        // init ds1
-        initializeDataSource();
-        createEntityManagerFactory();
 
-        // init ds2
+        //init ds0
+        initializeDataSource();
+
+        // init xaDs1
+        initializeXaDataSource();
+        createXAEntityManagerFactory();
+
+        // init xaDs2
         initialiseCdbDataSource();
         createCdbEntityManagerFactory();
     }
@@ -87,13 +94,26 @@ public class Configuration {
      * Initializes the datasource into the TMM library that manages the lifecycle of the XA transaction
      *
      */
+    private void initializeXaDataSource() {
+        try {
+            this.xaDataSource = PoolDataSourceFactory.getPoolXADataSource();
+            this.xaDataSource.setURL(url);
+            this.xaDataSource.setUser(user);
+            this.xaDataSource.setPassword(password);
+            this.xaDataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
+            this.xaDataSource.setMaxPoolSize(15);
+            this.xaDataSource.setDataSourceName("departmentXADataSource");
+        } catch (SQLException e) {
+            logger.error("Failed to initialise database");
+        }
+    }
     private void initializeDataSource() {
         try {
-            this.dataSource = PoolDataSourceFactory.getPoolXADataSource();
+            this.dataSource = PoolDataSourceFactory.getPoolDataSource();
             this.dataSource.setURL(url);
             this.dataSource.setUser(user);
             this.dataSource.setPassword(password);
-            this.dataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
+            this.dataSource.setConnectionFactoryClassName("oracle.jdbc.pool.OracleDataSource");
             this.dataSource.setMaxPoolSize(15);
             this.dataSource.setDataSourceName("departmentDataSource");
         } catch (SQLException e) {
@@ -101,32 +121,37 @@ public class Configuration {
         }
     }
 
+
     private void initialiseCdbDataSource() {
         try {
-            this.cdbDataSource = PoolDataSourceFactory.getPoolXADataSource();
-            this.cdbDataSource.setURL(cdbUrl);
-            this.cdbDataSource.setUser(cdbUser);
-            this.cdbDataSource.setPassword(cdbPassword);
-            this.cdbDataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
-            this.cdbDataSource.setMaxPoolSize(15);
-            this.cdbDataSource.setDataSourceName("creditDataSource");
+            this.creditXADataSource = PoolDataSourceFactory.getPoolXADataSource();
+            this.creditXADataSource.setURL(cdbUrl);
+            this.creditXADataSource.setUser(cdbUser);
+            this.creditXADataSource.setPassword(cdbPassword);
+            this.creditXADataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
+            this.creditXADataSource.setMaxPoolSize(15);
+            this.creditXADataSource.setDataSourceName("creditXADataSource");
         } catch (SQLException e) {
             logger.error("Failed to initialise cdb database");
         }
     }
 
-    public PoolXADataSource getDatasource() {
+    public PoolXADataSource getXaDatasource() {
+        return xaDataSource;
+    }
+
+    public PoolDataSource getDatasource() {
         return dataSource;
     }
 
     public PoolXADataSource getCdbDatasource() {
-        return cdbDataSource;
+        return creditXADataSource;
     }
 
-    public void createEntityManagerFactory(){
+    public void createXAEntityManagerFactory(){
         Map<String, Object> props = new HashMap<String, Object>();
 
-        props.put("jakarta.persistence.nonJtaDataSource", getDatasource());
+        props.put("jakarta.persistence.nonJtaDataSource", getXaDatasource());
         props.put( "jakarta.persistence.transactionType", "RESOURCE_LOCAL");
         props.put("jakarta.persistence.jdbc.driver", "oracle.jdbc.OracleDriver");
         props.put("jakarta.persistence.jdbc.url", url);
@@ -140,7 +165,7 @@ public class Configuration {
         props.put(PersistenceUnitProperties.SESSION_EVENT_LISTENER_CLASS, "oracle.tmm.jta.jpa.eclipselink.EclipseLinkXASessionEventAdaptor");
 
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("mydeptxads", props);
-        TrmConfig.initEntityManagerFactory(emf, "departmentDataSource", rmid1); // Initialize TMM Library
+        TrmConfig.initEntityManagerFactory(emf, "departmentXADataSource", rmid1); // Initialize TMM Library
     }
 
     public void createCdbEntityManagerFactory(){
@@ -160,7 +185,7 @@ public class Configuration {
         props.put(PersistenceUnitProperties.SESSION_EVENT_LISTENER_CLASS, "oracle.tmm.jta.jpa.eclipselink.EclipseLinkXASessionEventAdaptor");
 
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("cdbdeptxads", props);
-        TrmConfig.initEntityManagerFactory(emf, "creditDataSource", rmid2); // Initialize TMM Library
+        TrmConfig.initEntityManagerFactory(emf, "creditXADataSource", rmid2); // Initialize TMM Library
     }
 
     public Logger getLogger() {

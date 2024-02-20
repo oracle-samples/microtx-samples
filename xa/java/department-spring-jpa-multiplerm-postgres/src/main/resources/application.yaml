@@ -46,7 +46,7 @@ departmentDataSource:
   rmid: "SPRING-JPA-MULTIPLERM-POSTGRES"
   # Properties for using Universal Connection Pool (UCP)
   # Note: These properties require JDBC version 21.0.0.0
-  postgres:
+  xaPostgres:
     driver-class-name: org.postgresql.Driver
     type: oracle.ucp.jdbc.PoolXADataSource
     connection-factory-class-name: org.postgresql.xa.PGXADataSource
@@ -54,7 +54,13 @@ departmentDataSource:
     initial-pool-size: 15
     min-pool-size: 10
     max-pool-size: 30
-    data-source-name: departmentDataSource
+    data-source-name: departmentXADataSource
+  postgres:
+    driver-class-name: org.postgresql.Driver
+    type: oracle.ucp.jdbc.PoolDataSource
+    connection-factory-class-name: org.postgresql.Driver
+    connection-pool-name: connectionPoolName3
+    data-source-name: departmentFetchDataSource
 
 creditDataSource:
   url: "jdbc:oracle:thin:@tcps://<host>:<port>/<service_name>?wallet_location=Database_Wallet"
@@ -72,6 +78,6 @@ creditDataSource:
     initial-pool-size: 15
     min-pool-size: 10
     max-pool-size: 30
-    data-source-name: creditDataSource
+    data-source-name: creditXADataSource
 
 #spring.jpa.open-in-view: false

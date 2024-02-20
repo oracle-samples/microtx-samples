@@ -35,4 +35,10 @@
             <!-- Configuring The Database Connection Details -->
         </properties>
     </persistence-unit>
+    <persistence-unit name="mydeptds" >
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <properties>
+            <!-- Configuring The Database Connection Details -->
+        </properties>
+    </persistence-unit>
 </persistence>

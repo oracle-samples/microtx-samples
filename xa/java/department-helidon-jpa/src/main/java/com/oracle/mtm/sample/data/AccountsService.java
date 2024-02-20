@@ -20,21 +20,20 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 package com.oracle.mtm.sample.data;
 
-import java.lang.invoke.MethodHandles;
-import java.sql.SQLException;
-import java.util.logging.Level;
+import com.oracle.mtm.sample.entity.Account;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-
-import com.oracle.mtm.sample.Configuration;
-import com.oracle.mtm.sample.entity.Account;
 
 import oracle.tmm.jta.common.TrmEntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.invoke.MethodHandles;
+import java.sql.SQLException;
 
 /**
  * Service that connects to the accounts database and provides methods to interact with the accounts
@@ -48,9 +47,6 @@ public class AccountsService implements IAccountsService {
 
     @Inject
     private EntityManager localEntityManager;
-
-    @Inject
-    private Configuration config;
 
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

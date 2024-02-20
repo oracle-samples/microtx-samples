@@ -30,6 +30,7 @@ WORKDIR /hotel-sb-app
 
 COPY pom.xml .
 
+
 # Do the Maven build!
 # Incremental docker builds will resume here when you change sources
 ADD src src

@@ -106,7 +106,7 @@ public class AccountsResource {
         }
         try {
             if(this.accountService.deposit(accountId, amount)) {
-                LOG.error(amount + " deposited to account: " + accountId);
+                LOG.info(amount + " deposited to account: " + accountId);
                 return ResponseEntity.ok("Amount deposited to the account");
             }
         } catch (SQLException e) {

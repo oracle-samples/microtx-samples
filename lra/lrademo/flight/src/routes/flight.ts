@@ -29,6 +29,9 @@ import { bookingMap, MAX_CONFIRMED_BOOKING  } from '../booking';
 // Init Router
 const flightSvcRouter = Router();
 
+const bodyParser = require('body-parser');
+flightSvcRouter.use(bodyParser.text())
+
 // Transaction coordinator configuration initialization 
 TrmConfig.init('./tmm.properties');
 

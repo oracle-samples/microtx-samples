@@ -21,6 +21,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 package com.oracle.mtm.sample;
 
 import oracle.tmm.common.TrmConfig;
+import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 import oracle.ucp.jdbc.PoolXADataSource;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -43,12 +44,16 @@ import java.util.Map;
 @ApplicationScoped
 public class Configuration {
 
-    private PoolXADataSource dataSource;
-    private PoolXADataSource cdbDataSource;
+    private PoolDataSource dataSource;
+    private PoolXADataSource xaDataSource;
+    private PoolXADataSource creditXADataSource;
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    private EntityManagerFactory xaEntityManagerFactory;
 
     private EntityManagerFactory entityManagerFactory;
     private EntityManagerFactory cdbEntityManagerFactory;
+
 
     @Inject
     @ConfigProperty(name = "departmentDataSource.url")
@@ -77,9 +82,16 @@ public class Configuration {
     String rmid2;
 
     private void init(@Observes @Initialized(ApplicationScoped.class) Object event) {
-        // init ds1
+
+        //init fetch ds0
         initialiseDataSource();
         createEntityManagerFactory();
+
+
+
+        // init ds1
+        initialiseXaDataSource();
+        createXaEntityManagerFactory();
 
         // init ds2
         initialiseCdbDataSource();
@@ -90,47 +102,67 @@ public class Configuration {
      * Initializes the datasource into the TMM library that manages the lifecycle of the XA transaction
      *
      */
+    private void initialiseXaDataSource() {
+        try {
+            this.xaDataSource = PoolDataSourceFactory.getPoolXADataSource();
+            this.xaDataSource.setURL(url);
+            this.xaDataSource.setUser(user);
+            this.xaDataSource.setPassword(password);
+            this.xaDataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
+            this.xaDataSource.setMaxPoolSize(15);
+            this.xaDataSource.setDataSourceName("departmentXADataSource");
+        } catch (SQLException e) {
+            logger.error("Failed to initialise database");
+        }
+    }
+
     private void initialiseDataSource() {
         try {
-            this.dataSource = PoolDataSourceFactory.getPoolXADataSource();
+            this.dataSource = PoolDataSourceFactory.getPoolDataSource();
             this.dataSource.setURL(url);
             this.dataSource.setUser(user);
             this.dataSource.setPassword(password);
-            this.dataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
-            this.dataSource.setMaxPoolSize(15);
+            this.dataSource.setConnectionFactoryClassName("oracle.jdbc.pool.OracleDataSource");
+            this.dataSource.setInitialPoolSize(10);
+            this.dataSource.setMinPoolSize(5);
+            this.dataSource.setMaxPoolSize(10);
             this.dataSource.setDataSourceName("departmentDataSource");
         } catch (SQLException e) {
             logger.error("Failed to initialise database");
         }
     }
 
+
+
     private void initialiseCdbDataSource() {
         try {
-            this.cdbDataSource = PoolDataSourceFactory.getPoolXADataSource();
-            this.cdbDataSource.setURL(cdbUrl);
-            this.cdbDataSource.setUser(cdbUser);
-            this.cdbDataSource.setPassword(cdbPassword);
-            this.cdbDataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
-            this.cdbDataSource.setMaxPoolSize(15);
-            this.cdbDataSource.setDataSourceName("creditDataSource");
+            this.creditXADataSource = PoolDataSourceFactory.getPoolXADataSource();
+            this.creditXADataSource.setURL(cdbUrl);
+            this.creditXADataSource.setUser(cdbUser);
+            this.creditXADataSource.setPassword(cdbPassword);
+            this.creditXADataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
+            this.creditXADataSource.setMaxPoolSize(15);
+            this.creditXADataSource.setDataSourceName("creditXADataSource");
         } catch (SQLException e) {
             logger.error("Failed to initialise cdb database");
         }
     }
 
-    public PoolXADataSource getDatasource() {
-        return dataSource;
+    public PoolXADataSource getXaDatasource() {
+        return xaDataSource;
     }
 
-    public PoolXADataSource getCdbDatasource() {
-        return cdbDataSource;
+    public PoolDataSource getDataSource(){ return  dataSource;}
+
+    public PoolXADataSource getCdbXADatasource() {
+        return creditXADataSource;
     }
 
 
-    public void createEntityManagerFactory(){
+    public void createXaEntityManagerFactory(){
         Map<String, Object> props = new HashMap<String, Object>();
 
-        props.put("hibernate.connection.datasource", getDatasource());
+        props.put("hibernate.connection.datasource", getXaDatasource());
         props.put("hibernate.show_sql", "true");
         props.put("hibernate.dialect", "org.hibernate.dialect.Oracle12cDialect");
         props.put("hibernate.hbm2ddl.auto", "none");
@@ -142,15 +174,15 @@ public class Configuration {
         props.put("jakarta.persistence.jdbc.user", user);
         props.put("jakarta.persistence.jdbc.password", password);
 
-        this.entityManagerFactory = Persistence.createEntityManagerFactory("mydeptxads", props);
+        this.xaEntityManagerFactory = Persistence.createEntityManagerFactory("mydeptxads", props);
 
-        TrmConfig.initEntityManagerFactory(this.entityManagerFactory, "departmentDataSource", rmid1); // Initialize TMM Library
+        TrmConfig.initEntityManagerFactory(this.xaEntityManagerFactory, "departmentXADataSource", rmid1); // Initialize TMM Library
     }
 
     public void createCdbEntityManagerFactory(){
         Map<String, Object> props = new HashMap<String, Object>();
 
-        props.put("hibernate.connection.datasource", getCdbDatasource());
+        props.put("hibernate.connection.datasource", getCdbXADatasource());
         props.put("hibernate.show_sql", "true");
         props.put("hibernate.dialect", "org.hibernate.dialect.Oracle12cDialect");
         props.put("hibernate.hbm2ddl.auto", "none");
@@ -164,16 +196,44 @@ public class Configuration {
 
         this.cdbEntityManagerFactory = Persistence.createEntityManagerFactory("cdbdeptxads", props);
 
-        TrmConfig.initEntityManagerFactory(this.cdbEntityManagerFactory, "creditDataSource", rmid2); // Initialize TMM Library
+        TrmConfig.initEntityManagerFactory(this.cdbEntityManagerFactory, "creditXADataSource", rmid2); // Initialize TMM Library
+    }
+
+    public EntityManagerFactory getXaEntityManagerFactory() {
+        return this.xaEntityManagerFactory;
+    }
+
+    public EntityManagerFactory getCdbEntityManagerFactory() {
+        return this.cdbEntityManagerFactory;
+    }
+
+
+    public void createEntityManagerFactory(){
+        Map<String, Object> props = new HashMap<String, Object>();
+
+        props.put("hibernate.connection.datasource", getDataSource());
+        props.put("hibernate.show_sql", "true");
+        props.put("hibernate.dialect", "org.hibernate.dialect.Oracle12cDialect");
+        props.put("hibernate.hbm2ddl.auto", "none");
+        props.put("hibernate.format_sql", "true");
+        props.put("jakarta.persistence.transactionType", "RESOURCE_LOCAL");
+        props.put("jakarta.persistence.jdbc.driver", "oracle.jdbc.OracleDriver");
+        props.put("jakarta.persistence.jdbc.url", url);
+        props.put("jakarta.persistence.jdbc.user", user);
+        props.put("jakarta.persistence.jdbc.password", password);
+
+        props.put("hibernate.ucp.oracle.url", url);
+        props.put("hibernate.ucp.username", user);
+        props.put("hibernate.ucp.password", password);
+
+        this.entityManagerFactory = Persistence.createEntityManagerFactory("mydeptds", props);
     }
 
     public EntityManagerFactory getEntityManagerFactory() {
         return this.entityManagerFactory;
     }
 
-    public EntityManagerFactory getCdbEntityManagerFactory() {
-        return this.cdbEntityManagerFactory;
-    }
+
 
     /**
      * EntityManager bean for non-distributed database operations.

@@ -1,48 +1,36 @@
-# About the Teller Microservice
+## Introduction
 
-When you run the Bank Transfer application, the Teller microservice initiates the transactions so it is called a transaction initiator service. The user interacts with this microservice to transfer money between Departments One and Two. When a new request is created, the helper method that is exposed in the MicroTx library runs the `begin()` method for XA transaction to start the XA transaction at the Teller microservice. This microservice also contains the business logic to issue the XA commit and roll back calls. This is a Helidon microservice.
+The generation of the executable jar file can be performed by issuing the following command
 
-The Teller service only initiates the transaction and does not participate in it, so it does not require a resource manager.
-
-# Build the Teller Application Code on Local Machine
-
-1. Compile the application code to generate an executable JAR file, and then run the JAR file.
-
-    ```
-    cd samples/xa/java/teller
     mvn clean package
-    ```
-    
-    This creates an executable JAR file, `teller.jar`, within the `target` folder.
 
-2. Run the JAR file that was created.
+This will create an executable jar file **teller.jar** within the _target_ maven folder. This can be started by
+executing the following command
 
-    ```
+    export ORACLE_TMM_TCS_URL=<URL_OF_MTM_TRANSACTION_COORDINATOR>
     java -jar -DdepartmentOneEndpoint=<department_one_url> -DdepartmentTwoEndpoint=<department_two_url> target/teller.jar
-    ```
 
-Next: Run the Bank Transfer application in the local environment. See [the readme of the Bank Transfer application](../../readme.md#run-the-bank-transfer-application-to-transfer-an-amount).
+## Configuration
 
-## Build Docker Image of the Teller Application
+The Application.yaml file contains the endpoints of the two microservices that participate in the XA transaction 
+coordinated by the Microservice Transaction Management.
 
-*  Run the following commands to build the Docker image for the Teller application in a Kubernetes cluster.
+## Resources
 
-    **Sample command**
+/transfers endpoint is used to transfer a certain amount from one account to another across microservices.
+This endpoint will be the XA transaction initiator.
 
-    ```
-    cd samples/xa/java/teller
-    docker image build -t teller:1.0 .
-    ```
-    The Docker images that you have created are available in your local Docker container registry. Note down the names of the images as you will provide this information later.
+Open API specification can be found at the endpoint /openapi
 
-*   Run the following commands to build the Docker image for the Teller application in the Docker Swarm environment.
-    
-    **Sample command**
-    ```
-    cd samples/xa/java/teller
-    docker image build -t $REGISTRY_LOCATION/teller:1.0 .
-    ```
+## Docker
+Add the required information in application.yaml under src/main/resources folder
 
-    Where, `REGISTRY_LOCATION` is an environment variable that points to the location of the Docker registry.
 
-Next: Push the Docker image of the microservices, that you have built, to a remote repository. In the `values.yaml` file, provide details of all the sample application images that you have uploaded to the docker container. See  [the readme of the Bank Transfer application.](../../readme_xa.md).
+Build the docker image.
+```
+- $ docker build -t <image_name>:<tag> .
+```
+Run the docker image.
+```
+- $ docker run -p 8080:8080 -d <image_name>:<tag>
+```

@@ -21,6 +21,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 package com.oracle.mtm.sample;
 
 import oracle.tmm.common.TrmConfig;
+import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 import oracle.ucp.jdbc.PoolXADataSource;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -44,7 +45,9 @@ import java.util.Map;
 @ApplicationScoped
 public class Configuration {
 
-    private PoolXADataSource dataSource;
+    private PoolXADataSource xaDataSource;
+
+    private PoolDataSource dataSource;
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Inject
@@ -57,9 +60,13 @@ public class Configuration {
     @ConfigProperty(name = "departmentDataSource.password")
     String password;
 
+    private EntityManagerFactory xaEntityManagerFactory;
+
     private EntityManagerFactory entityManagerFactory;
 
     private void init(@Observes @Initialized(ApplicationScoped.class) Object event) {
+        initializeXaDataSource();
+        createXaEntityManagerFactory();
         initializeDataSource();
         createEntityManagerFactory();
     }
@@ -68,22 +75,46 @@ public class Configuration {
      * Initializes the datasource into the TMM library that manages the lifecycle of the XA transaction
      *
      */
-    private void initializeDataSource() {
+    private void initializeXaDataSource() {
         try {
-            this.dataSource = PoolDataSourceFactory.getPoolXADataSource();
-            this.dataSource.setURL(url);
-            this.dataSource.setUser(user);
-            this.dataSource.setPassword(password);
-            this.dataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
-            this.dataSource.setMaxPoolSize(15);
+            this.xaDataSource = PoolDataSourceFactory.getPoolXADataSource();
+            this.xaDataSource.setURL(url);
+            this.xaDataSource.setUser(user);
+            this.xaDataSource.setPassword(password);
+            this.xaDataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
+            this.xaDataSource.setMaxPoolSize(15);
         } catch (SQLException e) {
             logger.error("Failed to initialise database");
         }
     }
 
-    public PoolXADataSource getDatasource() {
-        return dataSource;
+    public EntityManagerFactory createXaEntityManagerFactory(){
+        Map<String, Object> props = new HashMap<String, Object>();
+
+        props.put("jakarta.persistence.nonJtaDataSource", getXaDatasource());
+        props.put( "jakarta.persistence.transactionType", "RESOURCE_LOCAL");
+        props.put("jakarta.persistence.jdbc.driver", "oracle.jdbc.OracleDriver");
+        props.put("jakarta.persistence.jdbc.url", url);
+        props.put("jakarta.persistence.jdbc.user", user);
+        props.put("jakarta.persistence.jdbc.password", password);
+
+        props.put(PersistenceUnitProperties.CACHE_SHARED_DEFAULT, "false");
+        props.put(PersistenceUnitProperties.TARGET_DATABASE, "Oracle");
+        props.put(PersistenceUnitProperties.WEAVING, "false");
+        props.put(PersistenceUnitProperties.JDBC_CONNECTOR, "oracle.tmm.jta.jpa.eclipselink.EclipseLinkXADataSourceConnector");
+        props.put(PersistenceUnitProperties.SESSION_EVENT_LISTENER_CLASS, "oracle.tmm.jta.jpa.eclipselink.EclipseLinkXASessionEventAdaptor");
+
+        xaEntityManagerFactory = Persistence.createEntityManagerFactory("mydeptxads", props);
+
+        TrmConfig.initEntityManagerFactory(xaEntityManagerFactory); // Initialize TMM Library
+        return xaEntityManagerFactory;
     }
+
+    public PoolXADataSource getXaDatasource() {
+        return xaDataSource;
+    }
+
+
 
     public EntityManagerFactory createEntityManagerFactory(){
         Map<String, Object> props = new HashMap<String, Object>();
@@ -98,14 +129,29 @@ public class Configuration {
         props.put(PersistenceUnitProperties.CACHE_SHARED_DEFAULT, "false");
         props.put(PersistenceUnitProperties.TARGET_DATABASE, "Oracle");
         props.put(PersistenceUnitProperties.WEAVING, "false");
-        props.put(PersistenceUnitProperties.JDBC_CONNECTOR, "oracle.tmm.jta.jpa.eclipselink.EclipseLinkXADataSourceConnector");
-        props.put(PersistenceUnitProperties.SESSION_EVENT_LISTENER_CLASS, "oracle.tmm.jta.jpa.eclipselink.EclipseLinkXASessionEventAdaptor");
-
-        entityManagerFactory = Persistence.createEntityManagerFactory("mydeptxads", props);
-
-        TrmConfig.initEntityManagerFactory(entityManagerFactory); // Initialize TMM Library
+        props.put(PersistenceUnitProperties.CONNECTION_POOL ,"UCPPool");
+        props.put(PersistenceUnitProperties.EXCLUSIVE_CONNECTION_MODE ,"Always");
+        entityManagerFactory = Persistence.createEntityManagerFactory("mydeptds", props);
         return entityManagerFactory;
     }
+
+    private void initializeDataSource() {
+        try {
+            this.dataSource = PoolDataSourceFactory.getPoolDataSource();
+            this.dataSource.setURL(url);
+            this.dataSource.setUser(user);
+            this.dataSource.setPassword(password);
+            this.dataSource.setConnectionFactoryClassName("oracle.jdbc.pool.OracleDataSource");
+            this.xaDataSource.setMaxPoolSize(15);
+        } catch (SQLException e) {
+            logger.error("Failed to initialise database");
+        }
+    }
+
+    public PoolDataSource getDatasource() {
+        return dataSource;
+    }
+
 
     public EntityManagerFactory getEntityManagerFactory() {
         return this.entityManagerFactory;

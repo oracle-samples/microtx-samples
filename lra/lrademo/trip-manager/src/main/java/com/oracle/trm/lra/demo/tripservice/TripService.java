@@ -28,8 +28,8 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -38,7 +38,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 public class TripService {
 
     private static final Logger log = Logger.getLogger(TripService.class.getSimpleName());
-    private Map<String, Booking> bookings = new HashMap<>();
+    private Map<String, Booking> bookings = new ConcurrentHashMap<>();
 
     /**
      * Save the trip booking in memory (HashMap)
