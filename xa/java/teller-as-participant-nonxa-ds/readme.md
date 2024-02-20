@@ -14,7 +14,7 @@ executing the following commands
 
     export FEEDATASOURCE_PASSWORD=<password>
     export ORACLE_TMM_TCS_URL=<URL_OF_TMM_TRANSACTION_COORDINATOR>
-    java -DfeeDataSource.url="<database_url>" -DfeeDataSource.user=<user> -jar target/teller-as-participant-nonxa-ds.jar 
+    java -DfeeDataSource.url="<database_url>?wallet_location=Database_Wallet" -DfeeDataSource.user=<user> -jar target/teller-as-participant-nonxa-ds.jar 
 
 ### Configurations
 
