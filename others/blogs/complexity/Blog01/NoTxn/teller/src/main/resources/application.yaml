@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: teller
+
+server:
+  port : 8080
+
+departmentOneEndpoint: "http://localhost:8081"
+departmentTwoEndpoint: "http://localhost:8082"

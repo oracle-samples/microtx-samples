@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <appender name="Console"
+              class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %clr(%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd HH:mm:ss.SSS}}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %X{microtx-txnId} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}
+            </Pattern>
+        </layout>
+    </appender>
+
+    <appender name="ConsoleMTX"
+              class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %clr(%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd HH:mm:ss.SSS}}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %X{microtx-txnId} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}
+            </Pattern>
+        </layout>
+    </appender>
+
+    <logger name="com.oracle" level="INFO" additivity="false">
+        <appender-ref ref="ConsoleMTX" />
+    </logger>
+
+    <root level="info">
+        <appender-ref ref="Console" />
+    </root>
+
+</configuration>

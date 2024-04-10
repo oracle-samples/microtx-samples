@@ -1,0 +1,25 @@
+server:
+  port : 8080
+
+spring:
+  application:
+    name: teller
+
+  microtx:
+    coordinator-url: http://localhost:9000/api/v1
+    participant-url: http://localhost:8080
+    propagation-active: true
+    http-client-connection-pool-size: 60
+    xa-transaction-timeout: 60000
+    xa-resource-manager-id: NONE
+    xa-xa-support: true
+    xa-llr-support: false
+    xa-lrc-support: false
+    xa-llr-delete-commit-record-interval: 720000
+    xa-promotable-active: false
+    xa-rac-active: false
+    xa-weblogic-transaction-support: false
+    xa-weblogic-namespace: weblogic
+
+departmentOneEndpoint: "http://localhost:8081"
+departmentTwoEndpoint: "http://localhost:8082"
