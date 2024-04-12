@@ -1,0 +1,16 @@
+server:
+  port : 8080
+
+spring:
+  application:
+    name: teller
+  # MicroTx properties
+  microtx:
+    lra:
+      coordinator-url: http://localhost:9000/api/v1/lra-coordinator
+      participant-url: http://localhost:8080
+      propagation-active: true
+      headers-propagation-prefix: {x-b3-, oracle-tmm-, authorization, refresh-}
+
+departmentOneEndpoint: "http://localhost:8081"
+departmentTwoEndpoint: "http://localhost:8082"
