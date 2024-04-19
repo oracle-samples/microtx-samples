@@ -30,10 +30,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.oracle.mtm.sample</groupId>
-	<artifactId>department-spring</artifactId>
+	<artifactId>teller-spring</artifactId>
 	<version>23.4.2.1</version>
-	<name>department-spring</name>
-	<description>Demo springboot project for Microservice Transaction Management participant application</description>
+	<name>teller-spring</name>
+	<description>Demo springboot project for Microservice Transaction Management Initiator as participant application</description>
 	<properties>
 		<java.version>17</java.version>
 		<spring.version>3.1.2</spring.version>
@@ -45,14 +45,14 @@
 			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-			<version>${spring.version}</version>
+			<groupId>com.oracle.microtx</groupId>
+			<artifactId>microtx-spring-boot-starter</artifactId>
+			<version>23.4.2.1</version>
 		</dependency>
 		<dependency>
-			<groupId>com.oracle.microtx</groupId>
-			<artifactId>microtx-spring-boot-starter-hibernate</artifactId>
-			<version>23.4.2.1</version>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-tx</artifactId>
+			<version>6.0.11</version>
 		</dependency>
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
@@ -92,7 +92,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>department</finalName>
+		<finalName>teller-spring</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
