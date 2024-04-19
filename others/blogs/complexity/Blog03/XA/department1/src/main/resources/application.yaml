@@ -1,0 +1,55 @@
+server:
+  port : 8081
+
+spring:
+  application:
+    name: department1
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.OracleDialect
+        format_sql: true
+    show-sql: false
+  datasource:
+    url: "jdbc:oracle:thin:@tcps://<host>:<port>/<service_name>?wallet_location=Database_Wallet"
+    username: "dbuser"
+    password: "xxxxxx"
+    driver-class-name: oracle.jdbc.OracleDriver
+    type: oracle.ucp.jdbc.PoolDataSource
+    oracleucp:
+      connection-factory-class-name: oracle.jdbc.pool.OracleDataSource
+      connection-pool-name: TransactionConnectionPool
+      sql-for-validate-connection: select * from dual
+      type: oracle.ucp.jdbc.PoolDataSource
+      initial-pool-size: 15
+      min-pool-size: 10
+      max-pool-size: 30
+      data-source-name: deptdatasource
+    xaOracleucp:
+      driver-class-name: oracle.jdbc.OracleDriver
+      type: oracle.ucp.jdbc.PoolXADataSource
+      connection-factory-class-name: oracle.jdbc.xa.client.OracleXADataSource
+      sql-for-validate-connection: select * from dual
+      connection-pool-name: XAConnectionPool
+      initial-pool-size: 15
+      min-pool-size: 10
+      max-pool-size: 30
+      data-source-name: deptxadatasource
+  # MicroTx properties
+  microtx:
+    coordinator-url: http://localhost:9000/api/v1
+    participant-url: http://localhost:8081
+    propagation-active: true
+    http-client-connection-pool-size: 60
+    xa-transaction-timeout: 60000
+    xa-resource-manager-id: SPRING-JPA-DEPT1
+    xa-xa-support: true
+    xa-llr-support: false
+    xa-lrc-support: false
+    xa-llr-delete-commit-record-interval: 720000
+    xa-promotable-active: false
+    xa-rac-active: false
+    xa-weblogic-transaction-support: false
+    xa-weblogic-namespace: weblogic
