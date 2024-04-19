@@ -31,7 +31,7 @@
     </parent>
     <groupId>com.example</groupId>
     <artifactId>teller-spring-promotion-jpa</artifactId>
-    <version>23.4.2</version>
+    <version>23.4.2.1</version>
     <name>teller-spring-promotion-jpa</name>
     <description>teller-spring-promotion</description>
     <properties>
@@ -52,7 +52,7 @@
         <dependency>
             <groupId>com.oracle.microtx</groupId>
             <artifactId>microtx-spring-boot-starter-hibernate</artifactId>
-            <version>23.4.2</version>
+            <version>23.4.2.1</version>
         </dependency>
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
