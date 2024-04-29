@@ -44,7 +44,7 @@ To set up MySQL as a resource manager for the Teller application:
         PRIMARY KEY (GTRID)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ```
-4. Enable session affinity or sticky sessions for the participant service. See [Enable Session Affinity for XA Participants](https://docs.oracle.com/en/database/oracle/transaction-manager-for-microservices/23.4.2/tmmdg/set-sample-applications.html#GUID-F3BE4A11-1C96-4608-A000-DAD504D61349).
+4. Enable session affinity or sticky sessions for the participant service. See [Enable Session Affinity for XA Participants](https://docs.oracle.com/en/database/oracle/transaction-manager-for-microservices/23.4/tmmdg/set-sample-applications.html#GUID-F3BE4A11-1C96-4608-A000-DAD504D61349).
 
 5. Provide the details for the application to connect to the resource manager. If you want to run the application in the local enviroment, provide these details in the `application.yaml` file, which is located in the `../src/main/resources` folder of your application. If you want to run the application in Docker environment or Kubernetes cluster, provide these details in the `values.yaml` file, which is located in the `samples/xa/java/helmcharts/transfer-teller-as-participant-nonxa-ds` folder.
 

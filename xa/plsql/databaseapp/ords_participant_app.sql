@@ -43,7 +43,7 @@ AUTHID CURRENT_USER
 AS
   v_count   NUMBER;
 BEGIN
-    
+
     SELECT COUNT(*)
     INTO v_count
     FROM accounts

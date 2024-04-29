@@ -18,35 +18,48 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-package com.oracle.mtm.sample.data;
+package com.oracle.tmm.example.lra;
 
-import jakarta.persistence.*;
+import java.util.UUID;
 
-import com.oracle.mtm.sample.entity.Account;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Repository;
+public class BookingResponse {
+    private UUID id;
+    private String name;
+    private String lraId;
+    private String seatId;
 
-
-
-@Repository
-public class CustomAccountRepository {
-    @Autowired
-    @Qualifier("localEntityManagerFactory")
-    EntityManager entityManager;
-
-    public Account findByAccountId(String accountId) {
-        Query query = entityManager.createNativeQuery("SELECT * FROM accounts where account_id= :account_id", Account.class);
-        query.setParameter("account_id", accountId);
-        Account account = (Account) query.getSingleResult();
-        return account;
+    public BookingResponse() {
     }
 
-    public Account findByAccountId(String accountId, EntityManager em) {
-        Query query = em.createNativeQuery("SELECT * FROM accounts where account_id= :account_id", Account.class);
-        query.setParameter("account_id", accountId);
-        Account account = (Account) query.getSingleResult();
-        return account;
+    public void setId(UUID id) {
+        this.id = id;
     }
 
+    public UUID getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getLraId() {
+        return lraId;
+    }
+
+    public void setLraId(String lraId) {
+        this.lraId = lraId;
+    }
+
+    public String getSeatId() {
+        return seatId;
+    }
+
+    public void setSeatId(String seatId) {
+        this.seatId = seatId;
+    }
 }

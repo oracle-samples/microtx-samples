@@ -11,10 +11,10 @@ This application used the TMM Node Js Library for XA and participates in an XA T
 
 1. Download the NodeJs Lib file from the official MicroTx Distribution package : https://www.oracle.com/in/database/transaction-manager-for-microservices/
 
-Copy `tmmlib-node-23.4.2.tgz` file from `otmm-23.4.2/lib/nodejs` to the department folder.
+Copy `tmmlib-node-1.0.0.tgz` file from `<distribution-package-dir>/lib/nodejs` to the department folder.
 
 ```
-cp installation_directory/otmm-23.4.2/lib/nodejs/tmmlib-node-23.4.2.tgz ./
+cp <distribution-package-dir>/lib/nodejs/tmmlib-node-1.0.0.tgz ./
 ```
 
 2. Download the Instant client Basic Package with version 21.5 or above from https://www.oracle.com/in/database/technologies/instant-client/linux-x86-64-downloads.html. Unzip the content to `Instant_Client` folder, which is present under root of department folder.
