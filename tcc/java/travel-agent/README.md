@@ -6,7 +6,7 @@ Sample Travel Agent App to demonstrate TCC Application using Java TRM lib for TC
 
 With JDK11+
 
-```bash
+```
 mvn package
 java -jar target/travel-agent.jar
 ```

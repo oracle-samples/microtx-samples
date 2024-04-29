@@ -39,14 +39,14 @@ public class BookingHistory {
     private Map<String, TransactionHistory> bookings = new HashMap<>();
 
     public class TransactionHistory {
-        String tripBookingId;
-        String status;
+        private String tripBookingId;
+        private String status;
 
-        Booking flightBooking;
+        private Booking flightBooking;
 
-        Booking hotelBooking;
+        private Booking hotelBooking;
 
-        String message;
+        private String message;
 
         public TransactionHistory() {}
 

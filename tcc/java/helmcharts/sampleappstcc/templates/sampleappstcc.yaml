@@ -1,0 +1,223 @@
+# Copyright (c) 2023, Oracle and/or its affiliates. **
+
+# The Universal Permissive License (UPL), Version 1.0 **
+
+# Subject to the condition set forth below, permission is hereby granted to any person obtaining a copy of this software, associated documentation and/or data
+# (collectively the "Software"), free of charge and under any and all copyright rights in the Software, and any and all patent rights owned or freely licensable by each
+# licensor hereunder covering either the unmodified Software as contributed to or provided by such licensor, or (ii) the Larger Works (as defined below), to deal in both
+# ** (a) the Software, and (b) any piece of software and/or hardware listed in the lrgrwrks.txt file if one is included with the Software (each a "Larger Work" to which
+# the Software is contributed by such licensors), **
+# without restriction, including without limitation the rights to copy, create derivative works of, display, perform, and distribute the Software and make, use, sell,
+# offer for sale, import, export, have made, and have sold the Software and the Larger Work(s), and to sublicense the foregoing rights on either these or other terms. **
+
+# This license is subject to the following condition: The above copyright notice and either this complete permission notice or at a minimum a reference to the UPL must be
+# included in all copies or substantial portions of the Software. **
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+##################################################################################################
+# Hotel-booking
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: hotel-booking
+  labels:
+    app: hotel-booking
+    service: hotel-booking
+spec:
+  ports:
+    - port: 8081
+      name: http
+      targetPort: 8081
+  selector:
+    app: hotel-booking
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hotel-booking
+  labels:
+    account: hotel-booking
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hotel-booking
+  labels:
+    app: hotel-booking
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hotel-booking
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: hotel-booking
+        version: v1
+    spec:
+      containers:
+        - name: hotel-booking
+          image: {{ .Values.sampleappstcc.hotelbooking.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+          resources:
+            limits:
+              memory: "500Mi"
+              cpu: "250m"
+          env:
+            - name: ORACLE_TMM_TCS_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: BOOKING_BASE_URL
+              value: http://hotel-booking:8081/api/bookings
+             # Spring boot properties
+            - name: SPRING_MICROTX_COORDINATOR_URL
+              value: http://otmm-tcs:9000/api/v1
+      imagePullSecrets:
+        - name: {{ .Values.sampleappstcc.hotelbooking.imagePullSecret }}
+---
+##################################################################################################
+# Flight-booking
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: flight-booking
+  labels:
+    app: flight-booking
+    service: flight-booking
+spec:
+  ports:
+    - port: 8082
+      name: http
+      targetPort: 8082
+  selector:
+    app: flight-booking
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: flight-booking
+  labels:
+    account: flight-booking
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flight-booking
+  labels:
+    app: flight-booking
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flight-booking
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: flight-booking
+        version: v1
+    spec:
+      containers:
+        - name: flight-booking
+          image: {{ .Values.sampleappstcc.flightbooking.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8082
+          resources:
+            limits:
+              memory: "500Mi"
+              cpu: "250m"
+          env:
+            - name: ORACLE_TMM_TCS_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: BOOKING_BASE_URL
+              value: http://flight-booking:8082/api/bookings
+              #Spring Boot properties
+            - name: SPRING_MICROTX_COORDINATOR_URL
+              value: http://otmm-tcs:9000/api/v1
+
+      imagePullSecrets:
+        - name: {{ .Values.sampleappstcc.flightbooking.imagePullSecret }}
+---
+##################################################################################################
+# Travel Agent
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: travel-agent
+  labels:
+    app: travel-agent
+    service: travel-agent
+spec:
+  ports:
+    - port: 8080
+      name: http
+      targetPort: 8080
+  selector:
+    app: travel-agent
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: travel-agent
+  labels:
+    account: travel-agent
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: travel-agent
+  labels:
+    app: travel-agent
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: travel-agent
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: travel-agent
+        version: v1
+    spec:
+      containers:
+        - name: travel-agent
+          image: {{ .Values.sampleappstcc.travelagent.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              memory: "500Mi"
+              cpu: "250m"
+          env:
+            - name: ORACLE_TMM_TCS_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: HOTEL_BOOKING_APP_URL
+              value: http://hotel-booking:8081/api
+            - name: FLIGHT_BOOKING_APP_URL
+              value: http://flight-booking:8082/api
+                #Spring Boot properties
+            - name: SPRING_MICROTX_COORDINATOR_URL
+              value:  http://otmm-tcs:9000/api/v1
+            - name : PARTICIPANTS_HOTEL_BOOKING_APP_URL
+              value: http://hotel-booking:8081/api
+            - name: PARTICIPANTS_FLIGHT_BOOKING_APP_URL
+              value: http://flight-booking:8082/api
+      imagePullSecrets:
+        - name: {{ .Values.sampleappstcc.travelagent.imagePullSecret }}
+---

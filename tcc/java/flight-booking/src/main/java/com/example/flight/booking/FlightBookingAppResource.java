@@ -20,7 +20,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 package com.example.flight.booking;
 
-import oracle.tmm.tcc.TccClient;
+import oracle.tmm.tcc.TccClientService;
 import oracle.tmm.tcc.annotation.TCC;
 import oracle.tmm.tcc.exception.TccUnknownTransactionException;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -49,6 +49,9 @@ public class FlightBookingAppResource extends Application {
     @ConfigProperty(name = "booking.base.url")
     private String bookingBaseUrl;
 
+    @Inject
+    TccClientService tccClientService;
+
     int currBookingID = 0;
     int totalBookingsAllowed = 30;
     Map<String, Booking> bookings = new HashMap<>();
@@ -65,18 +68,18 @@ public class FlightBookingAppResource extends Application {
         }
         UUID flightBookingId = UUID.randomUUID();
         StringBuilder bookingUri = new StringBuilder().append(bookingBaseUrl).append("/").append(flightBookingId.toString());
-        currBookingID++;
-        Booking booking = new Booking(bookingUri.toString(), System.currentTimeMillis(), TccClient.getTimeLimit(),flightBookingId.toString());
+        Booking booking = new Booking(bookingUri.toString(), System.currentTimeMillis(), tccClientService.getTimeLimit(),flightBookingId.toString());
         booking.setBookingMetadata("FLIGHT", flightNumber);
         bookings.put(flightBookingId.toString(), booking);
         // Register participant with the TCC transaction
         try {
             // call back define , then pass that URL :
-            TccClient.addTccParticipant(bookingUri.toString());
+            tccClientService.addTccParticipant(bookingUri.toString());
         } catch (TccUnknownTransactionException e) {
             log.severe("Flight booking failed :" + e.getLocalizedMessage());
             e.printStackTrace();
         }
+        currBookingID++;
         log.info("Booking created:" + booking);
         return Response.ok(booking).build();
     }
@@ -121,6 +124,6 @@ public class FlightBookingAppResource extends Application {
     }
 
     private boolean checkIfExpired(Booking booking) {
-        return (System.currentTimeMillis() - booking.startTime) > booking.expires;
+        return (System.currentTimeMillis() - booking.getStartTime() ) > booking.getExpires();
     }
 }
