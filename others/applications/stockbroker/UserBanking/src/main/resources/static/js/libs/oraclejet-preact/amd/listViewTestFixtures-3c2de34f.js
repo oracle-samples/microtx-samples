@@ -1,0 +1,2 @@
+define(["exports"],function(e){"use strict";e.populateData=function(e,n){const t=[];for(let o=0;o<e;o++)n?t.push({id:o,name:"Employee "+o}):t.push({id:"i"+o,name:"Employee "+o});return t},e.setupIntersectionObserverMock=()=>{const e=jest.fn();e.mockReturnValue({observe:()=>null,unobserve:()=>null,disconnect:()=>null}),Object.defineProperty(global,"IntersectionObserver",{writable:!0,configurable:!0,value:e})}});
+//# sourceMappingURL=listViewTestFixtures-3c2de34f.js.map

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<!--
+    Copyright (c) 2023, Oracle and/or its affiliates. **
+
+    The Universal Permissive License (UPL), Version 1.0 **
+
+    Subject to the condition set forth below, permission is hereby granted to any person obtaining a copy of this software, associated documentation and/or data
+    (collectively the "Software"), free of charge and under any and all copyright rights in the Software, and any and all patent rights owned or freely licensable by each
+    licensor hereunder covering either the unmodified Software as contributed to or provided by such licensor, or (ii) the Larger Works (as defined below), to deal in both **
+    (a) the Software, and (b) any piece of software and/or hardware listed in the lrgrwrks.txt file if one is included with the Software (each a "Larger Work" to which the
+    Software is contributed by such licensors), **
+    without restriction, including without limitation the rights to copy, create derivative works of, display, perform, and distribute the Software and make, use, sell,
+    offer for sale, import, export, have made, and have sold the Software and the Larger Work(s), and to sublicense the foregoing rights on either these or other terms. **
+
+    This license is subject to the following condition: The above copyright notice and either this complete permission notice or at a minimum a reference to the UPL must be
+    included in all copies or substantial portions of the Software. **
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+    PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+    CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+-->
+<html lang="en-us">
+<head>
+    <title>MicroTx BankApp</title>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1">
+    <link rel="icon" href="css/images/favicon.ico" type="image/x-icon"/>
+
+    <!-- This is the main css file for the default theme -->
+    <!-- injector:theme -->
+    <link rel="stylesheet" href="css/redwood/14.0.1/web/redwood.css" id="basestyles"/>
+    <link rel="stylesheet" href="css/theme-redwood/14.0.1/web/theme.css" id="themestyle"/>
+    <!-- endinjector -->
+
+    <!-- This contains icon fonts used by the starter template -->
+    <link rel="stylesheet" id="uxiconFont"
+          href="https://static.oracle.com/cdn/fnd/gallery/2304.0.0/images/iconfont/ojuxIconFont.min.css">
+
+    <!-- This is where you would add any app specific styling -->
+    <link rel="stylesheet" href="css/app.css" type="text/css"/>
+
+</head>
+<body class="oj-web-applayout-body">
+<!-- Template for rendering navigation items shared between nav bar and nav list -->
+<script type="text/html" id="navTemplate">
+    <li><a href="#">
+        <span :class="[[$data.detail.iconClass]]"></span>
+        <oj-bind-text value="[[$data.detail.label]]"></oj-bind-text>
+    </a></li>
+</script>
+
+<div id="globalBody">
+
+    <div id="announce" tabindex="-1" class="sendOffScreen" :aria-live="[[manner]]" aria-atomic="true">
+        <p id="ariaLiveMessage">
+            <oj-bind-text value="[[message]]"></oj-bind-text>
+        </p>
+    </div>
+
+    <!--
+       ** Oracle JET V14.0.0 web application navigation drawer pattern.
+       ** Please see the demos under Cookbook/Patterns/App Shell: Web
+       ** and the CSS documentation under Support/API Docs/Non-Component Styling
+       ** on the JET website for more information on how to use this pattern.
+       ** The off-canvas section is used when the browser is resized to a smaller media
+       ** query size for a phone format and hidden until a user clicks on
+       ** the header hamburger icon.
+    -->
+    <oj-drawer-popup id="navDrawer" edge="start" opened="{{sideDrawerOn}}"
+                     modality="modeless" role="navigation"
+                     class="oj-bg-neutral-170 oj-color-invert">
+        <oj-navigation-list id="navDrawerList" data="[[navDataProvider]]"
+                            edge="start"
+                            item.renderer="[[KnockoutTemplateUtils.getRenderer('navTemplate', true)]]"
+                            on-click="[[toggleDrawer]]"
+                            selection="{{selection.path}}">
+        </oj-navigation-list>
+    </oj-drawer-popup>
+    <div id="pageContent" class="oj-web-applayout-page">
+        <!--
+           ** Oracle JET V14.0.0 web application header pattern.
+           ** Please see the demos under Cookbook/Patterns/App Shell: Web
+           ** and the CSS documentation under Support/API Docs/Non-Component Styling
+           ** on the JET website for more information on how to use this pattern.
+        -->
+        <header role="banner" class="oj-web-applayout-header">
+            <!--<div class="oj-web-applayout-max-width oj-flex-bar oj-sm-align-items-center">-->
+            <div class="oj-flex-bar oj-sm-align-items-center">
+                <!-- Drawer toggle button -->
+                <div class="oj-flex-bar-start oj-md-hide">
+                    <oj-button id="drawerToggleButton" class="oj-button-lg" on-oj-action="[[toggleDrawer]]"
+                               chroming="borderless" display="icons">
+                        <span slot="startIcon" class="oj-web-applayout-offcanvas-icon"></span>
+                        <span>Application Navigation</span>
+                    </oj-button>
+                </div>
+                <div class="oj-flex-bar-middle oj-sm-align-items-baseline">
+                    <span role="img" class="oj-icon demo-oracle-icon" title="Oracle Logo" alt="Oracle Logo"></span>
+                    <h1 class="oj-sm-only-hide oj-web-applayout-header-title" title="Application Name">
+                        <oj-bind-text value="[[appName]]"></oj-bind-text>
+                    </h1>
+                </div>
+                <div class="oj-flex-bar-end">
+                    <!-- Responsive Toolbar -->
+                    <oj-toolbar>
+                        <oj-menu-button id="userMenu" display="[[smScreen() ? 'icons' : 'all']]" chroming="borderless">
+                            <span><oj-bind-text value="[[userLogin]]"></oj-bind-text></span>
+                            <span slot="endIcon"
+                                  :class="[[{'oj-icon demo-appheader-avatar': smScreen(), 'oj-component-icon oj-button-menu-dropdown-icon': !smScreen()}]]"></span>
+                            <oj-menu id="menu1" slot="menu" on-oj-menu-action="[[userProfileMenuActionListener]]">
+                                <oj-option id="help" value="help">Help</oj-option>
+                                <oj-option id="about" on-oj-action="[[openAboutSection]]" value="about">About
+                                </oj-option>
+                                <oj-option id="out" value="out">Sign Out</oj-option>
+                            </oj-menu>
+                        </oj-menu-button>
+                    </oj-toolbar>
+                </div>
+            </div>
+            <oj-dialog id="aboutModalDialog" dialog-title="About Bank and Trading Application" cancel-behavior="icon"
+                       aria-describedby="desc">
+                <div slot="body">
+                    <oj-text-area label-hint="Version" readonly="true" value="1.0"></oj-text-area>
+                    <oj-text-area label-hint="Transaction Coordinator" readonly="true"
+                                  value="Transactions are managed by MicroTx"></oj-text-area>
+                    <!--<oj-text-area label-hint="Development Information" readonly="true"
+                                  value="Backend services: SpringBoot
+                                  User Interface: Oracle JET
+                                  Security: OpenID">-->
+                    </oj-text-area>
+                </div>
+                <div slot="footer">
+                    <!--              <oj-button id="okButton" on-oj-action="[[closeAboutDialog]]">OK</oj-button>-->
+                </div>
+            </oj-dialog>
+            <!--<div role="navigation" class="oj-web-applayout-max-width oj-web-applayout-navbar">-->
+            <div role="navigation" class="oj-web-applayout-navbar">
+                <oj-navigation-list id="navTabBar" class="oj-sm-only-hide oj-md-condense oj-md-justify-content-flex-end"
+                                    data="[[navDataProvider]]"
+                                    edge="top"
+                                    item.renderer="[[KnockoutTemplateUtils.getRenderer('navTemplate', true)]]"
+                                    selection="{{selection.path}}">
+                </oj-navigation-list>
+            </div>
+        </header>
+        <!--<oj-module role="main" class="oj-web-applayout-max-width oj-web-applayout-content" config="[[moduleAdapter.koObservableConfig]]">-->
+        <oj-module role="main" class="oj-web-applayout-content" config="[[moduleAdapter.koObservableConfig]]">
+        </oj-module>
+        <footer class="oj-web-applayout-footer" role="contentinfo">
+            <!--<div class="oj-web-applayout-footer-item oj-web-applayout-max-width">-->
+            <div class="oj-web-applayout-footer-item">
+                <ul>
+                    <oj-bind-for-each data="[[footerLinks]]">
+                        <template>
+                            <li>
+                                <a :id="[[$current.data.linkId]]" :href="[[$current.data.linkTarget]]" target="_blank">
+                                    <oj-bind-text value="[[$current.data.name]]"></oj-bind-text>
+                                </a>
+                            </li>
+                        </template>
+                    </oj-bind-for-each>
+                </ul>
+            </div>
+            <!--<div class="oj-web-applayout-footer-item oj-web-applayout-max-width oj-text-color-secondary oj-typography-body-sm">-->
+            <div class="oj-web-applayout-footer-item oj-text-color-secondary oj-typography-body-sm">
+                Copyright © 2014, 2023 Oracle and/or its affiliates All rights reserved.
+            </div>
+        </footer>
+    </div>
+</div>
+
+<!-- This injects script tags for the main javascript files -->
+<!-- injector:scripts -->
+<script type='text/javascript' src='js/libs/require/require.js'></script>
+<script type='text/javascript' src='js/main.js'></script>
+<!-- endinjector -->
+<script type="text/javascript" src="js/user-apis.js"></script>
+<script type="text/javascript" src="js/admin-apis.js"></script>
+</body>
+
+</html>

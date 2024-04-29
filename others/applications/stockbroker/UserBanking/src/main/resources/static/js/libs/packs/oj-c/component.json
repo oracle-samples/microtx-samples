@@ -1,0 +1,104 @@
+{
+  "name": "oj-c",
+  "version": "1.0.0",
+  "jetVersion": "^14.0.1",
+  "type": "mono-pack",
+  "displayName": "Oracle JET Core pack",
+  "description": "Core Oracle JET components implemented using virtual DOM technology",
+  "help": "docs/index.html",
+  "license": "https://opensource.org/licenses/UPL",
+  "bundles": {
+    "oj-c/corepackbundle": [
+      "oj-c/input-number",
+      "oj-c/input-password",
+      "oj-c/input-text",
+      "oj-c/message-toast",
+      "oj-c/text-area",
+      "oj-c/progress-bar",
+      "oj-c/progress-circle",
+      "oj-c/avatar",
+      "oj-c/button",
+      "oj-c/rating-gauge",
+      "oj-c/select-multiple",
+      "oj-c/select-single",
+      "oj-c/collapsible",
+      "oj-c/file-picker",
+      "oj-c/meter-bar",
+      "oj-c/meter-circle",
+      "oj-c/list-item-layout",
+      "oj-c/split-menu-button"
+    ]
+  },
+  "contents": [
+    {
+      "name": "hooks",
+      "type": "resource"
+    },
+    {
+      "name": "utils",
+      "type": "resource"
+    },
+    {
+      "name": "input-number"
+    },
+    {
+      "name": "input-password"
+    },
+    {
+      "name": "input-text"
+    },
+    {
+      "name": "message-toast"
+    },
+    {
+      "name": "select-multiple"
+    },
+    {
+      "name": "select-single"
+    },
+    {
+      "name": "select-common",
+      "type": "resource"
+    },
+    {
+      "name": "text-area"
+    },
+    {
+      "name": "progress-bar"
+    },
+    {
+      "name": "progress-circle"
+    },
+    {
+      "name": "avatar"
+    },
+    {
+      "name": "editable-value",
+      "type": "resource"
+    },
+    {
+      "name": "button"
+    },
+    {
+      "name": "rating-gauge"
+    },
+    {
+      "name": "collapsible"
+    },
+    {
+      "name": "file-picker"
+    },
+    {
+      "name": "meter-bar"
+    },
+    {
+      "name": "meter-circle"
+    },
+    {
+      "name": "list-item-layout"
+    },
+    {
+      "name": "split-menu-button"
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+define(["exports"],function(e){"use strict";e.sizeToCSS=e=>0===e||(e=>0===parseFloat(e))(e)?0:(e=>e.startsWith("calc(")&&e.endsWith(")"))(e)||(e=>e.endsWith("%"))(e)?e:(e=>e.startsWith("--"))(e)?`var(${e})`:(e=>e.endsWith("x"))(e)?(e=>{const t=e.slice(0,e.length-1),s=Number(t);return isNaN(s)?0:1===s?"var(--oj-c-PRIVATE-DO-NOT-USE-core-spacing-1x)":`calc(${s} * var(--oj-c-PRIVATE-DO-NOT-USE-core-spacing-1x))`})(e):0,Object.defineProperty(e,"__esModule",{value:!0})});
+//# sourceMappingURL=UNSAFE_size.js.map

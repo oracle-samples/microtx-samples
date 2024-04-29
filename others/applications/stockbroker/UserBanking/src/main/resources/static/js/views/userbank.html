@@ -1,0 +1,263 @@
+<!--
+Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+Licensed under The Universal Permissive License (UPL), Version 1.0
+as shown at https://oss.oracle.com/licenses/upl/
+-->
+<div class="oj-hybrid-padding">
+    <div class="oj-flex-item oj-xl-9 oj-lg-8 oj-md-8 oj-sm-8">
+        <p class="h3-black" style="padding-left: 10px; line-height: 32px" data-bind="text: 'Bank Operations'"></p>
+    </div>
+    <div>
+        <div class="oj-flex">
+            <oj-navigation-list
+                    selection="{{selectedItem1}}"
+                    display="all"
+                    aria-label="Choose a navigation item"
+                    drill-mode="none"
+                    data="[[bankNavigationDataProvider]]"
+                    on-current-item-changed="[[onBankingNavigationValueChangeEvent]]"
+            >
+                <template slot="itemTemplate" data-oj-as="item">
+                    <li :class="[[{'oj-disabled' : item.data.disabled === 'true'}]]">
+                        <a href="#">
+                            <span :class="[['oj-navigationlist-item-icon ' + item.data.icons]]"></span>
+                            <oj-bind-text value="[[item.data.name]]"></oj-bind-text>
+                        </a>
+                    </li>
+                </template>
+            </oj-navigation-list>
+
+            <oj-switcher class="oj-flex-item oj-sm-10 oj-xl-10 oj-lg-10 oj-md-10" value="[[selectedItem1]]"
+                         on-value-changed="[[onSwitcherValueChangeEvent]]">
+
+                <div slot="summary">
+                    <div class="oj-flex-item oj-xl-9 oj-lg-8 oj-md-8 oj-sm-8">
+                        <p class="h3-black" style="padding-left: 10px; line-height: 32px"
+                           data-bind="text: 'Account Summary'"></p>
+                    </div>
+                    <div class="oj-flex">
+                        <div class="oj-flex-item oj-sm-6 oj-md-6 oj-lg-10 oj-xl-10 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal oj-xl-padding-4x-vertical">
+                            <div>
+                                <oj-label slot="label" for="address">Savings Account Id</oj-label>
+                                <oj-input-text slot="value" id="address" readonly="true"
+                                               value="[[savingsAccountNumber]]"></oj-input-text>
+                            </div>
+                            </br>
+                            <div>
+                                <oj-label slot="label" for="accountBalance">Savings Account Balance</oj-label>
+                                <oj-input-text slot="value" id="accountBalance" readonly="true"
+                                               value="[[savingsAccountBalance]]"
+                                               converter="[[amountUnitConverter]]"></oj-input-text>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div slot="fundtransfer">
+                    <div class="oj-flex-item oj-xl-9 oj-lg-8 oj-md-8 oj-sm-8">
+                        <p class="h3-black" style="padding-left: 10px; line-height: 32px"
+                           data-bind="text: 'Fund Transfer'"></p>
+                    </div>
+                    <oj-dialog id="transferModalDialog" aria-describedby="desc">
+                        <div slot="body">
+
+                            <div id="train-container">
+                                <h3 class="oj-helper-text-align-center">Transfer Funds</h3>
+                                <oj-train
+                                        id="train"
+                                        class="oj-train-stretch oj-sm-margin-4x-horizontal"
+                                        on-selected-step-changed="[[updateLabelText]]"
+                                        on-oj-before-select="[[validate]]"
+                                        selected-step="{{selectedStepValue}}"
+                                        steps="[[stepArray]]">
+                                </oj-train>
+                                <!-- Train Header text
+                                  <div class="oj-sm-margin-4x-vertical">
+                                    <p class="oj-helper-text-align-center">
+                                        <oj-bind-text value="[[selectedStepLabel()]]"></oj-bind-text>
+                                    </p>
+                                </div> -->
+                                <!-- Step Label
+                                <div class="oj-sm-margin-4x-vertical">
+                                    <h3 class="oj-header-border">
+                                        <oj-bind-text value="[[selectedStepLabel()]]"></oj-bind-text>
+                                    </h3>
+                                </div>
+                                -->
+
+                                <oj-label label-id="grouplabelid">
+                                    <oj-bind-text value="[[selectedStepFormLabel()]]"></oj-bind-text>
+                                </oj-label>
+
+                                <oj-validation-group id="tracker" role="group" aria-labelledby="grouplabelid">
+                                    <oj-bind-if test="[[selectedStepValue() === 'transferDetails']]">
+                                        <oj-form-layout id="transferDetails" readonly="[[isFormReadonly()]]">
+                                            <!--<oj-input-text
+                                                    required
+                                                    id="transferAccountNumberfieldid"
+                                                    value="{{transferAccountNumber}}"
+                                                    autocomplete="off"
+                                                    label-hint="Recipient Account Number"
+                                                    validators="[[[accountNumberRegExpValidator]]]"></oj-input-text>-->
+                                            <oj-select-single
+                                                    id="recipientAccountNumberfieldid"
+                                                    label-hint="Beneficiary account"
+                                                    label-edge="inside"
+                                                    data="[[recipientAccountNumberListDP]]"
+                                                    value="{{recipientAccountNumber}}"
+                                                    on-oj-value-action="[[onValueChangeActionForRecipientAccount]]">
+                                            </oj-select-single>
+                                            <oj-input-text
+                                                    required
+                                                    id="transferAmountfieldid"
+                                                    value="{{transferAmount}}"
+                                                    autocomplete="off"
+                                                    label-hint="Amount"
+                                                    validators="[[[amountRegExpValidator]]]"></oj-input-text>
+                                            <oj-input-text
+                                                    id="transferRemarksfieldid"
+                                                    value="{{transferRemarks}}"
+                                                    autocomplete="off"
+                                                    label-hint="Remarks">
+                                            </oj-input-text>
+                                        </oj-form-layout>
+                                    </oj-bind-if>
+                                </oj-validation-group>
+
+                                <oj-bind-if test="[[selectedStepValue() === 'transferConfirmation']]">
+
+                                    <div class="oj-flex-item oj-sm-12 oj-md-12 oj-lg-12 oj-xl-12 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal">
+                                        <oj-form-layout id="transferDetails" label-edge="start" max-columns="1"
+                                                        direction="column">
+                                            <oj-label for="recipientAccountDisplay">Recipient Account</oj-label>
+                                            <oj-input-text id="recipientAccountDisplay" readonly=true
+                                                           value="{{recipientAccountDisplay}}"></oj-input-text>
+                                            <oj-label for="transferAmount">Amount</oj-label>
+                                            <oj-input-text id="transferAmount" readonly=true
+                                                           value="{{transferAmount}}"
+                                                           converter="[[amountUnitConverter]]"></oj-input-text>
+                                            <oj-label for="transferRemarks">Remarks</oj-label>
+                                            <oj-input-text id="transferRemarks" readonly=true
+                                                           value="{{transferRemarks}}"></oj-input-text>
+                                        </oj-form-layout>
+                                    </div>
+
+                                    <div class="oj-flex-bar oj-sm-margin-4x-vertical">
+                                        <oj-button
+                                                id="confirmBtn"
+                                                class="oj-flex-bar-end"
+                                                chroming="callToAction"
+                                                on-oj-action="[[confirmTransfer]]"
+                                                :style.display="[[transferConfirmButtonDisplay]]">
+                                            Confirm
+                                        </oj-button>
+                                        <oj-bind-if test="[[showTransferProgressAnimation]]">
+                                            <div class="oj-flex-bar-end">
+                                                <!--<oj-progress-circle size="sm" value="-1"></oj-progress-circle>-->
+                                                <oj-progress-bar
+                                                        class="oj-sm-margin-4x-bottom transfer-progress-bar-width"
+                                                        value="-1"></oj-progress-bar>
+                                            </div>
+                                        </oj-bind-if>
+                                    </div>
+                                </oj-bind-if>
+                                <oj-bind-if test="[[selectedStepValue() === 'transferSummary']]">
+                                    <div class="oj-flex-item oj-sm-12 oj-md-12 oj-lg-12 oj-xl-12 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal">
+                                        <oj-form-layout id="transferSummary" label-edge="start" max-columns="1"
+                                                        direction="column">
+                                            <oj-label for="recipientAccountDisplay">Recipient Account</oj-label>
+                                            <oj-input-text id="recipientAccountDisplay" readonly=true
+                                                           value="{{recipientAccountDisplay}}"></oj-input-text>
+                                            <oj-label for="transferAmount">Amount</oj-label>
+                                            <oj-input-text id="transferAmount" readonly=true
+                                                           value="{{transferAmount}}"
+                                                           converter="[[amountUnitConverter]]"></oj-input-text>
+                                            <oj-label for="transferRemarks">Remarks</oj-label>
+                                            <oj-input-text id="transferRemarks" readonly=true
+                                                           value="{{transferRemarks}}"></oj-input-text>
+                                            <oj-label for="transactionId">Transaction ID</oj-label>
+                                            <oj-input-text id="transactionId" readonly=true
+                                                           value="{{transferTransactionId}}"></oj-input-text>
+                                            <oj-label for="transferResultMessage">Result</oj-label>
+                                            <oj-text-area id="transferResultMessage" readonly=true rows="3"
+                                                          value="{{transferResultMessage}}"></oj-text-area>
+                                        </oj-form-layout>
+                                    </div>
+                                </oj-bind-if>
+                            </div>
+                        </div>
+                        <div slot="footer">
+                            <oj-button id="cancelButton" on-oj-action="[[cancelTransfer]]" label="[[closeTransferCancelButton]]"></oj-button>
+                        </div>
+                    </oj-dialog>
+                    <div class="oj-flex-item oj-sm-6 oj-md-6 oj-lg-10 oj-xl-10 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal oj-xl-padding-4x-vertical">
+                        <p>To initiate fund transfer from
+                            <oj-bind-text value="[[savingsAccountUserName]]"></oj-bind-text>
+                            's account with savings account number
+                            <oj-bind-text value="[[savingsAccountNumber]]"></oj-bind-text>
+                            , click on Transfer Funds button.
+                            </br></br>
+                            <oj-button id="buttonOpener" on-oj-action="[[fundTransfer]]">Transfer Funds</oj-button>
+                        </p>
+                    </div>
+
+                </div>
+
+                <div slot="loan">
+                    <div class="oj-flex-item oj-xl-9 oj-lg-8 oj-md-8 oj-sm-8">
+                        <p class="h3-black" style="padding-left: 10px; line-height: 32px"
+                           data-bind="text: 'Apply for Loan'"></p>
+                    </div>
+                    <div class="oj-flex">
+                        <div class="oj-flex-item oj-sm-6 oj-md-6 oj-lg-10 oj-xl-10 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal oj-xl-padding-4x-vertical">
+                            This operation is not implemented yet.
+                        </div>
+                    </div>
+                </div>
+
+                <div slot="billpay">
+                    <div class="oj-flex-item oj-xl-9 oj-lg-8 oj-md-8 oj-sm-8">
+                        <p class="h3-black" style="padding-left: 10px; line-height: 32px"
+                           data-bind="text: 'Setup Auto Bill Payments'"></p>
+                    </div>
+                    <div class="oj-flex">
+                        <div class="oj-flex-item oj-sm-6 oj-md-6 oj-lg-10 oj-xl-10 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal oj-xl-padding-4x-vertical">
+                            This operation is not implemented yet.
+                        </div>
+                    </div>
+                </div>
+
+                <div slot="statement">
+                    <div class="oj-flex-item oj-xl-9 oj-lg-8 oj-md-8 oj-sm-8">
+                        <p class="h3-black" style="padding-left: 10px; line-height: 32px"
+                           data-bind="text: 'Transaction Details'"></p>
+                    </div>
+                    <div class="oj-flex">
+                        <oj-table
+                                id="bankStatementtable"
+                                aria-label="Transactions Table"
+                                accessibility.row-header="depName"
+                                data="[[bankStatementTableDataprovider]]"
+                                dnd='{"reorder": {"columns": "enabled"}}'
+                                scroll-policy="loadMoreOnScroll"
+                                scroll-policy-options='{"fetchSize": 10}'
+                                columns='[{"headerText": "Transaction Time","field": "transactionTime","headerClassName": "oj-sm-only-hide","className": "oj-sm-only-hide","resizable": "enabled","id": "transactionTime","template": "transactionTimeCellTemplate" ,  "maxWidth": "20%"},
+                                {"headerText": "Type", "field": "transactionType","resizable": "enabled","id": "transactionType", "sortable": "disabled","maxWidth": "15%"},
+                                {"headerText": "Description", "field": "description", "headerClassName": "oj-sm-only-hide","className": "oj-sm-only-hide transaction-table-remarks","resizable": "enabled", "id": "description", "sortable": "disabled",  "maxWidth": "35%"},
+                                {"headerText": "Amount", "field": "amount","resizable": "enabled","id": "amount", "maxWidth": "15%", "template": "amountUnitCellTemplate"},
+                                {"headerText": "Balance", "field": "balance","headerClassName": "oj-md-down-hide","className": "oj-md-down-hide","resizable": "enabled","id": "balance", "maxWidth": "15%", "template": "amountUnitCellTemplate"}]'
+                                class="transaction-table-container">
+                            <template slot="transactionTimeCellTemplate" data-oj-as="cell">
+                                <oj-bind-text value="[[dateTimeConverter.format(cell.data)]]"></oj-bind-text>
+                            </template>
+                            <template slot="amountUnitCellTemplate" data-oj-as="cell">
+                                <oj-bind-text value="[[amountUnitConverter.format(cell.data)]]"></oj-bind-text>
+                            </template>
+                        </oj-table>
+                    </div>
+                </div>
+            </oj-switcher>
+
+        </div>
+    </div>
+</div>
