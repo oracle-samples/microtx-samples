@@ -21,7 +21,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 package io.helidon.examples.quickstart.mp;
 
 
-import oracle.tmm.tcc.TccClient;
+import oracle.tmm.tcc.TccClientService;
 import oracle.tmm.tcc.TccParticipantStatus;
 import oracle.tmm.tcc.annotation.TCC;
 import oracle.tmm.tcc.exception.TccException;
@@ -60,6 +60,9 @@ public class BookingResource {
     @Inject
     private BookingHistory service;
 
+    @Inject
+    TccClientService tccClientService;
+
     private static final Logger log = Logger.getLogger(BookingResource.class.getSimpleName());
 
     @GET
@@ -82,14 +85,14 @@ public class BookingResource {
     public Response booking(@QueryParam("cancel") boolean cancel, @QueryParam("hotelName") @DefaultValue("Hotel-01") String hotelName, @QueryParam("flightNumber") @DefaultValue("Flight-01") String flightNumber) {
         try {
             Vector<Booking> ParticipantBookings = createBookings(hotelName, flightNumber);
-            log.info("MicroTx TCC Transaction Id : "+TccClient.getTransactionId());
+            log.info("MicroTx TCC Transaction Id : "+tccClientService.getTransactionId());
             // Confirm tcc transaction
             if (cancel) {
-                CancelResponse cancelResponse = TccClient.cancel();
+                CancelResponse cancelResponse = tccClientService.cancel();
                 log.info("Cancel response" + cancelResponse);
                 return Response.status(Response.Status.OK).entity(service.saveBooking(ParticipantBookings, BookingStatus.CANCELLED.name(), "Trip Booking has been cancelled")).build();
             }
-            ConfirmResponse confirmResponse = TccClient.confirm();
+            ConfirmResponse confirmResponse = tccClientService.confirm();
             log.info("Confirm response " + confirmResponse.toString());
             return Response.status(Response.Status.OK).entity(service.saveBooking(ParticipantBookings, BookingStatus.CONFIRMED.name(), "Successfully booked the trip")).build();
         } catch (InternalServerErrorException e) {
@@ -124,7 +127,7 @@ public class BookingResource {
     public Response reservation(@QueryParam("hotelName") @DefaultValue("Hotel-01") String hotelName, @QueryParam("flightNumber") @DefaultValue("Flight-01") String flightNumber) {
         try {
             Vector<Booking> participantBookings = createBookings(hotelName, flightNumber);
-            log.info("MicroTx TCC Transaction Id : "+TccClient.getTransactionId());
+            log.info("MicroTx TCC Transaction Id : "+tccClientService.getTransactionId());
             return Response.status(Response.Status.OK)
                     .entity(service.saveBooking(participantBookings,BookingStatus.RESERVED.name(), "Trip Reservation was successful"))
                     .build();
@@ -156,8 +159,8 @@ public class BookingResource {
         try {
             BookingHistory.TransactionHistory transactionHistory = service.get(tripBookingId);
             List<TccParticipant> participants = getTravelParticipants(transactionHistory);
-            ConfirmResponse confirmResponse = TccClient.confirm(participants);
-            log.info("MicroTx TCC Transaction Id : "+TccClient.getTransactionId());
+            ConfirmResponse confirmResponse = tccClientService.confirm(participants);
+            log.info("MicroTx TCC Transaction Id : "+tccClientService.getTransactionId());
             log.info("Confirm response : " + confirmResponse.toString());
             if (hasAllParticipantsConfirmed(confirmResponse)) {
                 return Response.status(Response.Status.OK)
@@ -201,8 +204,8 @@ public class BookingResource {
         try {
             BookingHistory.TransactionHistory transactionHistory = service.get(tripBookingId);
             List<TccParticipant> participants = getTravelParticipants(transactionHistory);
-            CancelResponse cancelResponse = TccClient.cancel(participants);
-            log.info("MicroTx TCC Transaction Id : "+TccClient.getTransactionId());
+            CancelResponse cancelResponse = tccClientService.cancel(participants);
+            log.info("MicroTx TCC Transaction Id : "+tccClientService.getTransactionId());
             log.info("Cancel response : " + cancelResponse.toString());
             if (hasAllParticipantsCancelled(cancelResponse)) {
                 return Response.status(Response.Status.OK)

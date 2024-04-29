@@ -48,7 +48,7 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 @Service
 public class MongoDbNonXAResource implements NonXAResource {
 
-    private Integer LLR_DELETE_COMMIT_RECORD_TIME_INTERVAL;
+    private long LLR_DELETE_COMMIT_RECORD_TIME_INTERVAL;
     @Autowired
     ClientSession clientSessionProvider;
 

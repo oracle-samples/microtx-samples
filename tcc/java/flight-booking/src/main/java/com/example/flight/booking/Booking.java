@@ -21,14 +21,14 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 package com.example.flight.booking;
 public class Booking {
 
-    String bookingUri;
-    long startTime;
-    long expires;
-    String bookingId;
+    private String bookingUri;
+    private long startTime;
+    private long expires;
+    private String bookingId;
 
-    String type;
+    private String type;
 
-    String name;
+    private String name;
 
     public Booking() {
     }

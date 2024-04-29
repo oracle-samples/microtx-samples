@@ -12,7 +12,7 @@ This will create an executable jar file **department-nonxa.jar** within the _tar
 executing the following commands
  
     export ORACLE_TMM_TCS_URL=<URL_OF_MTM_TRANSACTION_COORDINATOR>
-    java -DdepartmentDataSource.url="mongodb://<host>:<port>/" -DdepartmentDataSource.name=<collectionname> -jar target/department-nonxa.jar
+    java -DdepartmentDataSource.url="mongodb://<host>:<port>/" -DdepartmentDataSource.databaseName=<collectionname> -jar target/department-nonxa.jar
 
 ### Configurations
 

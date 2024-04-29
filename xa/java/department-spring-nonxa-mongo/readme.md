@@ -14,7 +14,7 @@ executing the following commands
 
     export DEPARTMENTDATASOURCE_PASSWORD=<PASSWORD>
     export SPRING_MICROTX_COORDINATOR_URL=<URL_OF_MTM_TRANSACTION_COORDINATOR>
-    java -DdepartmentDataSource.url=<database_url> -DdepartmentDataSource.name=<database_name> -jar target/department.jar 
+    java -DdepartmentDataSource.url=<database_url> -DdepartmentDataSource.databaseName=<database_name> -jar target/department.jar 
 
 
 ### Resources
