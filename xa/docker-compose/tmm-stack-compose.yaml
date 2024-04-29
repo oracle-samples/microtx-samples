@@ -1,0 +1,109 @@
+# Copyright (c) 2023, Oracle and/or its affiliates. **
+
+# The Universal Permissive License (UPL), Version 1.0 **
+
+# Subject to the condition set forth below, permission is hereby granted to any person obtaining a copy of this software, associated documentation and/or data
+# (collectively the "Software"), free of charge and under any and all copyright rights in the Software, and any and all patent rights owned or freely licensable by each
+# licensor hereunder covering either the unmodified Software as contributed to or provided by such licensor, or (ii) the Larger Works (as defined below), to deal in both
+# ** (a) the Software, and (b) any piece of software and/or hardware listed in the lrgrwrks.txt file if one is included with the Software (each a "Larger Work" to which
+# the Software is contributed by such licensors), **
+# without restriction, including without limitation the rights to copy, create derivative works of, display, perform, and distribute the Software and make, use, sell,
+# offer for sale, import, export, have made, and have sold the Software and the Larger Work(s), and to sublicense the foregoing rights on either these or other terms. **
+
+# This license is subject to the following condition: The above copyright notice and either this complete permission notice or at a minimum a reference to the UPL must be
+# included in all copies or substantial portions of the Software. **
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+version: "3.9"
+   
+configs:
+  my_tcs_config:
+    file: ./tcs-docker-swarm.yaml
+
+secrets:
+  TMMSECRETKEY:
+    external: true
+  TMMPRIKEY:
+    external: true
+  TMMPUBKEY:
+    external: true
+  TMMPRIKEYPASSWD:
+    external: true
+
+services:
+  otmm-tcs:
+    image: "127.0.0.1:5000/tmm"
+    ports:
+      - "9000:9000"
+    deploy:
+      replicas: 1
+    configs:
+      - source: my_tcs_config
+        target: /tcs.yaml
+    entrypoint: ['/bin/sh', '-c', 'export TMMSECRETKEY=$$(cat /run/secrets/TMMSECRETKEY); export TMMPRIKEY=$$(cat /run/secrets/TMMPRIKEY); export TMMPUBKEY=$$(cat /run/secrets/TMMPUBKEY); export TMMPRIKEYPASSWD=$$(cat /run/secrets/TMMPRIKEYPASSWD); /app/tcs' ]
+    environment:
+      - CONFIG_FILE=/tcs.yaml
+    secrets:
+      - TMMSECRETKEY
+      - TMMPRIKEY
+      - TMMPUBKEY
+      - TMMPRIKEYPASSWD
+    
+
+  # XA Sample Application (services) below (Uncomment and edit to run)
+
+  dept1:
+    image: "127.0.0.1:5000/department-helidon:1.0"
+    ports:
+      - "8086:8080"
+    deploy:
+      replicas: 1
+    environment:
+      ORACLE_TMM_TCS_URL: "http://otmm-tcs:9000/api/v1"
+      ORACLE_TMM_CALLBACK_URL: "http://dept1:8080"
+      SERVICE_NAME: dept1
+      DEPARTMENTDATASOURCE_URL: "<Database Connection String>"
+      #Example:
+      #DEPARTMENTDATASOURCE_URL: "jdbc:oracle:thin:@tcps://adb.us-ashburn-1.oraclecloud.com:1522/bfeldabcdjvtddi_tmmdb1_tp.adb.oraclecloud.com?retry_count=20&retry_delay=3&wallet_location=Database_Wallet"
+      DEPARTMENTDATASOURCE_USER: "<Database User>"
+      DEPARTMENTDATASOURCE_PASSWORD: "<Database User Password>"
+      ORACLE_TMM_PROPAGATE_TRACE_HEADERS: "false"
+
+  dept2:
+    image: "127.0.0.1:5000/department-spring:1.0"
+    ports:
+      - "8087:8082"
+    deploy:
+      replicas: 1
+    environment:
+      SPRING_MICROTX_COORDINATOR_URL: "http://otmm-tcs:9000/api/v1"
+      SPRING_MICROTX_PARTICIPANT_URL: "http://dept2:8082"
+      SPRING_MICROTX_PROPAGATION_ACTIVE: "false"
+      SPRING_MICROTX_XA_RESOURCE_MANAGER_ID: "77e75891-27f4-49cf-a488-7e6fece865b7"      
+      SERVICE_NAME: dept2
+      DEPARTMENTDATASOURCE_URL: "<Database Connection String>"
+      #Example:
+      #DEPARTMENTDATASOURCE_URL: "jdbc:oracle:thin:@tcps://adb.us-ashburn-1.oraclecloud.com:1522/bfeldprqrjvtddi_tmmdb2_tp.adb.oraclecloud.com?retry_count=20&retry_delay=3&wallet_location=Database_Wallet"
+      DEPARTMENTDATASOURCE_USER: "<Database User>"
+      DEPARTMENTDATASOURCE_PASSWORD: "<Database User Password>"
+      #### Copying the values to older env variables for backward compatibility 
+      ORACLE_TMM_TCS_URL: "http://otmm-tcs:9000/api/v1"
+      ORACLE_TMM_CALLBACK_URL: "http://dept2:8082"
+      ORACLE_TMM_PROPAGATE_TRACE_HEADERS: "false"
+      ORACLE_TMM_XA_RMID: "77e75891-27f4-49cf-a488-7e6fece865b7"
+
+  teller:
+    image: "127.0.0.1:5000/teller:1.0"
+    ports:
+      - "8085:8080"
+    deploy:
+      replicas: 1
+    environment:
+      ORACLE_TMM_TCS_URL: "http://otmm-tcs:9000/api/v1"
+      SERVICE_NAME: teller
+      DEPARTMENTONEENDPOINT: "http://dept1:8080"
+      DEPARTMENTTWOENDPOINT: "http://dept2:8082"
+      ORACLE_TMM_PROPAGATE_TRACE_HEADERS: "false"
+      ORACLE_TMM_XA_RMID: "17ff43bb-6a4d-4833-a189-56ef023158d3"

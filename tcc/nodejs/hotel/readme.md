@@ -5,10 +5,10 @@ TMM TCC nodejs hotel sample
 
 Download the NodeJs Lib file from the official MicroTx Distribution package : https://www.oracle.com/in/database/transaction-manager-for-microservices/
 
-Copy `tmmlib-node-23.4.2.tgz` file from `otmm-23.4.2/lib/nodejs` to the hotel folder.
+Copy `tmmlib-node-1.0.0.tgz` file from `<distribution-package-dir>/lib/nodejs` to the hotel folder.
 
 ```
-cp installation_directory/otmm-23.4.2/lib/nodejs/tmmlib-node-23.4.2.tgz ./
+cp <distribution-package-dir>/lib/nodejs/tmmlib-node-1.0.0.tgz ./
 ```
 
 To install this dependency use:
