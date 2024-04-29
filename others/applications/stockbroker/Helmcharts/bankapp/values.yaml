@@ -1,0 +1,90 @@
+# Copyright (c) 2023, Oracle and/or its affiliates. **
+
+# The Universal Permissive License (UPL), Version 1.0 **
+
+# Subject to the condition set forth below, permission is hereby granted to any person obtaining a copy of this software, associated documentation and/or data
+# (collectively the "Software"), free of charge and under any and all copyright rights in the Software, and any and all patent rights owned or freely licensable by each
+# licensor hereunder covering either the unmodified Software as contributed to or provided by such licensor, or (ii) the Larger Works (as defined below), to deal in both
+# ** (a) the Software, and (b) any piece of software and/or hardware listed in the lrgrwrks.txt file if one is included with the Software (each a "Larger Work" to which
+# the Software is contributed by such licensors), **
+# without restriction, including without limitation the rights to copy, create derivative works of, display, perform, and distribute the Software and make, use, sell,
+# offer for sale, import, export, have made, and have sold the Software and the Larger Work(s), and to sublicense the foregoing rights on either these or other terms. **
+
+# This license is subject to the following condition: The above copyright notice and either this complete permission notice or at a minimum a reference to the UPL must be
+# included in all copies or substantial portions of the Software. **
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+bankapp:
+  UserBanking:
+    name: user-banking
+    host: user-banking
+    version: v1
+    image: user-banking:1.0
+    gatewayUriPrefix: /bankapp
+    rewriteUriPrefix: /bankapp
+    destinationHost: user-banking
+    security:
+      # realm client Id
+      clientId: microtx-bankapp
+      # keycloak-bankapp-client-secret
+      clientSecret: <keycloak-bankapp-client-secret>
+      # Identity provider issuer URL
+      issuerURL: <Identity provider issuer URL>
+      # http://<istio-external-ip>/bankapp
+      logoutRedirectURL: http://<istio-public-ip>/bankapp
+  CoreBanking:
+    name: core-banking
+    host: core-banking
+    version: v1
+    image: core-banking:1.0
+    gatewayUriPrefix: /core-banking/
+    rewriteUriPrefix: /
+    destinationHost: core-banking
+    databaseUrl: <Fill in the connect string of core-banking database>
+    databaseUser: <Fill in the database user>
+    databasePassword: <Fill in the database password>
+    propagateTraceHeader: true
+    resourceManagerId: CORE-BANKING-B4D3-AEA644EE20EC
+  StockBroker:
+    name: stock-broker
+    host: stock-broker
+    version: v1
+    image: stockbroker:1.0
+    gatewayUriPrefix: /stock-broker/
+    rewriteUriPrefix: /
+    destinationHost: stock-broker
+    databaseUrl: <Fill in the connect string of stock-broker database>
+    databaseUser: <Fill in the database user>
+    databasePassword: <Fill in the database password>
+    propagateTraceHeader: true
+    resourceManagerId: STOCK-BROKER-488A-AF0A-16933277D296
+    # This flag controls the StockBroker application deployment (true | false)
+    deploymentEnabled: false
+  ArizonaBranchBank:
+    name: arizona-branch-bank
+    host: arizona-branch-bank
+    version: v1 
+    image: branch-banking:1.0
+    gatewayUriPrefix: /arizona-branch-bank/
+    rewriteUriPrefix: /
+    destinationHost: arizona-branch-bank
+    databaseUrl: <Fill in the connect string of arizona-branch database>
+    databaseUser: <Fill in the database user>
+    databasePassword: <Fill in the database password>
+    propagateTraceHeader: true
+    resourceManagerId: BRANCH-BANKING-AZ-C1052FA8914B
+  LosAngelesBranchBank:
+    name: losangeles-branch-bank
+    host: losangeles-branch-bank
+    version: v1 
+    image: branch-banking:1.0
+    gatewayUriPrefix: /losangeles-branch-bank/
+    rewriteUriPrefix: /
+    destinationHost: losangeles-branch-bank
+    databaseUrl: <Fill in the connect string of losangeles-branch database>
+    databaseUser: <Fill in the database user>
+    databasePassword: <Fill in the database password>
+    propagateTraceHeader: true
+    resourceManagerId: BRANCH-BANKING-LA-C2022FA8912C

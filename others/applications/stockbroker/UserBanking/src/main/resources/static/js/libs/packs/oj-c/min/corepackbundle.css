@@ -1,0 +1,226 @@
+oj-c-input-number:not(.oj-complete) {
+  visibility: hidden;
+}
+
+oj-c-input-number {
+	display: inline-block;
+  max-width: 100%;
+  width: 100%;
+}
+
+oj-c-input-number[hidden] {
+  display: none;
+}oj-c-input-password:not(.oj-complete) {
+  visibility: hidden;
+}
+
+oj-c-input-password {
+	display: inline-block;
+  max-width: 100%;
+  width: 100%;
+}
+
+oj-c-input-password[hidden] {
+  display: none;
+}oj-c-input-text:not(.oj-complete) {
+  visibility: hidden;
+}
+
+oj-c-input-text {
+	display: inline-block;
+  max-width: 100%;
+  width: 100%;
+}
+
+oj-c-input-text[hidden] {
+  display: none;
+}oj-c-message-toast:not(.oj-complete){
+  visibility: hidden;
+}
+
+oj-c-message-toast[hidden]
+{
+  display: none;
+}
+oj-c-text-area:not(.oj-complete) {
+  visibility: hidden;
+}
+
+oj-c-text-area {
+  display: inline-block;
+  max-width: 100%;
+  width: 100%;
+}
+
+oj-c-text-area[hidden] {
+  display: none;
+}oj-c-progress-bar:not(.oj-complete) {
+  visibility: hidden;
+}
+
+oj-c-progress-bar {
+  display: block;
+}
+
+oj-c-progress-bar[hidden] {
+  display: none;
+}
+oj-c-progress-circle:not(.oj-complete) {
+  visibility: hidden;
+}
+oj-c-progress-circle {
+  display: inline-block;
+}
+oj-c-progress-circle[hidden] {
+  display: none;
+}
+oj-c-progress-circle {
+  height: var(--oj-c-PRIVATE-DO-NOT-USE-progress-circle-size);
+  width: var(--oj-c-PRIVATE-DO-NOT-USE-progress-circle-size);
+  line-height: 0;
+}oj-c-avatar:not(.oj-complete) {
+  visibility: hidden;
+}
+
+oj-c-avatar[hidden] {
+  display: none;
+}
+oj-c-avatar {
+  display: inline-block;
+}
+oj-c-button:not(.oj-complete) {
+  visibility: hidden;
+}
+
+oj-c-button {
+  display: inline-block;
+}
+
+oj-c-button [hidden] {
+  display: none;
+}oj-c-rating-gauge:not(.oj-complete) {
+    visibility: hidden;
+}
+
+oj-c-rating-gauge[hidden] {
+    display: none;
+}
+
+oj-c-rating-gauge {
+    display: block;
+    line-height: 0;
+}oj-c-select-multiple:not(.oj-complete) {
+  visibility: hidden;
+}
+
+oj-c-select-multiple {
+	display: inline-block;
+  max-width: 100%;
+  width: 100%;
+}
+
+oj-c-select-multiple[hidden] {
+  display: none;
+}/* This file is where css selectors for the component go.
+   There will be hard coded properties and properties controlled by variables, for example
+
+   oj-c-select-single .oj-c-select-single-value-text {
+   color: var(--oj-c-select-single-value-text-color);
+   display: inline-block;
+	 }
+*/
+
+oj-c-select-single:not(.oj-complete){
+  visibility: hidden;
+}
+
+oj-c-select-single{
+	display: inline-block;
+  max-width: 100%;
+  width: 100%;
+}
+
+oj-c-select-single[hidden] {
+  display: none;
+}oj-c-collapsible:not(.oj-complete) {
+  visibility: hidden;
+}
+
+oj-c-collapsible {
+  display: block;
+}
+
+oj-c-collapsible [hidden] {
+  display: none;
+}
+oj-c-file-picker:not(.oj-complete) {
+  visibility: hidden;
+}
+
+oj-c-file-picker {
+  display: block;
+  max-width: 400px;
+  width: 100%;
+}
+ 
+oj-c-file-picker.oj-c-file-picker-with-trigger {
+  display: inline-block;
+}
+
+oj-c-file-picker[hidden] {
+  display: none;
+}oj-c-meter-bar:not(.oj-complete) {
+    visibility: hidden;
+}
+
+oj-c-meter-bar[hidden] {
+    display: none;
+}
+
+oj-c-meter-bar {
+    display: block;
+}
+
+oj-c-meter-bar.oj-c-meter-bar-horizontal {
+    width: 100%;
+    line-height: 0;
+}
+
+oj-c-meter-bar.oj-c-meter-bar-vertical {
+    height: 100%;
+    min-height: 154px;
+}oj-c-meter-circle:not(.oj-complete) {
+    visibility: hidden;
+}
+
+oj-c-meter-circle[hidden] {
+    display: none;
+}
+
+oj-c-meter-circle {
+    display: block;
+    width: fit-content;
+    height: fit-content;
+    line-height: 0;
+}oj-c-list-item-layout:not(.oj-complete){
+  visibility: hidden;
+}
+
+oj-c-list-item-layout {
+  display: block;
+}
+
+oj-c-list-item-layout[hidden]
+{
+  display: none;
+}oj-c-split-menu-button:not(.oj-complete) {
+  visibility: hidden;
+}
+
+oj-c-split-menu-button {
+  display: inline-block;
+}
+
+oj-c-split-menu-button [hidden] {
+  display: none;
+}

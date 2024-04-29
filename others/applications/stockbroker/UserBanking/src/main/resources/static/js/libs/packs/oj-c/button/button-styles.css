@@ -1,0 +1,11 @@
+oj-c-button:not(.oj-complete) {
+  visibility: hidden;
+}
+
+oj-c-button {
+  display: inline-block;
+}
+
+oj-c-button [hidden] {
+  display: none;
+}

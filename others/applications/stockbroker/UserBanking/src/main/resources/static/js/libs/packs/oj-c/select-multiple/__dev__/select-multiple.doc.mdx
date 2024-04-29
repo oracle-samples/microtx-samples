@@ -1,0 +1,30 @@
+import { ArgsTable, Canvas, Meta, Story } from '@storybook/addon-docs';
+import 'oj-c/input-text';
+
+<Meta title="SelectMultiple" component="oj-c-select-multiple" />
+
+# Select Multiple
+
+The `oj-c-select-multiple` component provides support for multi-select and search filtering.
+
+## Import
+
+```js
+//To typecheck the element APIs, import as below.
+import { CSelectMultipleElement } from 'oj-c/select-multiple';
+
+//For the transpiled javascript to load the element's module, import as below
+import 'oj-c/select-multiple';
+```
+
+## Usage
+
+Here's how to implement a basic `oj-c-select-multiple`.
+
+<Canvas>
+  <Story id="form-selectmultiple--basic" name="Basic" height={350} />
+</Canvas>
+
+## Props
+
+<ArgsTable of="oj-c-select-multiple" />

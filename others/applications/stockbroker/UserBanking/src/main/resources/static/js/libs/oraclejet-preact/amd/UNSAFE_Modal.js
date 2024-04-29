@@ -1,0 +1,2 @@
+define(["exports","./Modal-e9678638","preact/jsx-runtime","preact/compat","./UNSAFE_FocusTrap","./FocusTrap-b42970ea","preact","./utils/UNSAFE_classNames","./classNames-e842f86a","css!./UNSAFE_Modal.css","./utils/PRIVATE_tabbableUtils","./_curry1-a2227576","./_curry2-a4242d52","./_curry3-3a3ba6d5","./UNSAFE_Layer"],function(a,e,r,s,t,c,l,u,i,o,_,d,p,b,n){"use strict";a.Modal=e.Modal,Object.defineProperty(a,"__esModule",{value:!0})});
+//# sourceMappingURL=UNSAFE_Modal.js.map

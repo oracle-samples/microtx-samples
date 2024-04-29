@@ -1,0 +1,393 @@
+<!--
+ Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ Licensed under The Universal Permissive License (UPL), Version 1.0
+ as shown at https://oss.oracle.com/licenses/upl/
+ -->
+<div class="oj-hybrid-padding">
+    <div class="oj-flex-item oj-xl-9 oj-lg-8 oj-md-8 oj-sm-8">
+        <p class="h3-black" style="padding-left: 10px; line-height: 32px" data-bind="text: 'Stock Trading'"></p>
+    </div>
+    <div class="oj-flex">
+        <oj-navigation-list
+                selection="{{selectedItem1}}"
+                display="all"
+                aria-label="Choose a navigation item"
+                drill-mode="none"
+                data="[[tradingNavigationDataProvider]]"
+                on-current-item-changed="[[onTradingNavigationValueChangeEvent]]">
+            <template slot="itemTemplate" data-oj-as="item">
+                <li :class="[[{'oj-disabled' : item.data.disabled === 'true'}]]">
+                    <a href="#">
+                        <span :class="[['oj-navigationlist-item-icon ' + item.data.icons]]"></span>
+                        <oj-bind-text value="[[item.data.name]]"></oj-bind-text>
+                    </a>
+                </li>
+            </template>
+        </oj-navigation-list>
+
+        <oj-switcher class="oj-flex-item oj-sm-10 oj-xl-10 oj-lg-10 oj-md-10" value="[[selectedItem1]]">
+
+            <div slot="stocks">
+
+                <div class="oj-hybrid-padding">
+                    <strong style="padding-left: 1%">Available Stocks to Trade</strong>
+                    <div class="oj-flex">
+                        <div class="oj-flex-item oj-sm-12 oj-md-12 oj-lg-12 oj-xl-8 oj-panel oj-sm-margin-5x-vertical oj-xl-margin-4x-horizontal oj-panel-shadow-xl">
+                            <oj-table
+                                    id="availableStocksTable"
+                                    aria-label="Available Stocks Table"
+                                    accessibility.row-header="stockSymbol"
+                                    data="[[availableStocksTableDataprovider]]"
+                                    dnd='{"reorder": {"columns": "enabled"}}'
+                                    scroll-policy="loadMoreOnScroll"
+                                    scroll-policy-options='{"fetchSize": 10}'
+                                    columns='[
+                                {"headerText": "Symbol", "field": "stockSymbol", "headerClassName": "oj-sm-only-hide", "className": "oj-sm-only-hide", "resizable": "enabled","id": "stockSymbol"},
+                                {"headerText": "Company", "field": "companyName", "resizable": "enabled", "id": "companyName"},
+                                {"headerText": "Industry", "field": "industry", "resizable": "enabled", "id": "industry"},
+                                {"headerText": "Stock Price", "field": "stockPrice","resizable": "enabled","id": "stockPrice", "template": "stockPriceCellTemplate"}]'
+                                    class="stockbroker-stocks-table-container">
+                                <template slot="stockPriceCellTemplate" data-oj-as="cell">
+                                    <oj-bind-text value="[[stockPriceConverter.format(cell.data)]]"></oj-bind-text>
+                                </template>
+                            </oj-table>
+                        </div>
+                    </div>
+                    </br></br>
+                    <strong style="padding-left: 1%">User Portfolio Summary</strong>
+                    <div class="oj-flex">
+                        <div class="oj-flex-item oj-sm-4 oj-md-4 oj-lg-4 oj-xl-4 oj-panel oj-sm-margin-3x-vertical oj-sm-margin-4x-horizontal oj-panel-shadow-xl user-portfolio-table">
+                            <p class="h3-black" style="padding-left: 10px; line-height: 32px; text-align: center;">
+                                User Portfolio</p>
+                            <oj-chart
+                                    id="userStocksPieChart"
+                                    type="pie"
+                                    data="[[userStocksChartDataProvider]]"
+                                    animation-on-display="auto"
+                                    animation-on-data-change="auto"
+                                    style-defaults.three-d-effect="[[threeDChart]]"
+                                    hover-behavior="dim">
+                                <template slot="itemTemplate" data-oj-as="item">
+                                    <oj-chart-item
+                                            value="[[item.data.stockUnits]]"
+                                            label="[[stockPriceConverter.format(item.data.totalStockPrice)]]"
+                                            group-id="[[ [userStocksChartGroup] ]]"
+                                            series-id="[[item.data.companyName]]">
+                                    </oj-chart-item>
+                                </template>
+                            </oj-chart>
+                        </div>
+                        <div class="oj-flex-item oj-sm-7 oj-md-7 oj-lg-7 oj-xl-7 oj-panel oj-sm-margin-3x-vertical oj-sm-margin-4x-horizontal oj-panel-shadow-xl ">
+                            <p class="h3-black" style="padding-left: 10px; line-height: 32px; text-align: center;">
+                                User Portfolio Details
+                            </p>
+                            <oj-table
+                                    id="userStocksTable"
+                                    aria-label="User Stocks Table"
+                                    accessibility.row-header="accountId"
+                                    data="[[userStocksTableDataprovider]]"
+                                    dnd='{"reorder": {"columns": "enabled"}}'
+                                    scroll-policy="loadMoreOnScroll"
+                                    scroll-policy-options='{"fetchSize": 10}'
+                                    columns='[
+                                {"headerText": "Account ID", "field": "accountId","headerClassName": "oj-sm-only-hide","className": "oj-sm-only-hide","resizable": "enabled", "id": "accountId"},
+                                {"headerText": "Symbol", "field": "stockSymbol","resizable": "enabled", "id": "stockSymbol"},
+                                {"headerText": "Company", "field": "companyName", "resizable": "enabled", "id": "companyName"},
+                                {"headerText": "Current Holdings", "field": "stockUnits","resizable": "enabled","id": "stockUnits"},
+                                {"headerText": "Current Stock Price", "field": "currentStockPrice", "resizable": "enabled", "id": "currentStockPrice", "template": "stockPriceCellTemplate"},
+                                {"headerText": "Total Holdings Price", "field": "totalStockPrice", "resizable": "enabled","id": "totalStockPrice", "template": "stockPriceCellTemplate"}]'
+                                    class="demo-table-container">
+                                <template slot="stockPriceCellTemplate" data-oj-as="cell">
+                                    <oj-bind-text value="[[stockPriceConverter.format(cell.data)]]"></oj-bind-text>
+                                </template>
+                            </oj-table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div slot="buystocks">
+                <div class="oj-flex-item oj-xl-9 oj-lg-8 oj-md-8 oj-sm-8">
+                    <p class="h3-black" style="padding-left: 10px; line-height: 32px"
+                       data-bind="text: 'Purchase Stocks'"></p>
+                </div>
+                <oj-dialog id="buyStocksModalDialog" aria-describedby="desc">
+                    <div slot="body">
+
+                        <div id="buyStocks-train-container">
+                            <h3 class="oj-helper-text-align-center">Purchase Stocks</h3>
+                            <oj-train
+                                    id="buyStocksTrain"
+                                    class="oj-train-stretch oj-sm-margin-4x-horizontal"
+                                    on-selected-step-changed="[[buyStockUpdateLabelText]]"
+                                    on-oj-before-select="[[buyValidate]]"
+                                    selected-step="{{buyStockSelectedStepValue}}"
+                                    steps="[[buyStockStepArray]]">
+                            </oj-train>
+
+                            <oj-label label-id="buygrouplabelid">
+                                <oj-bind-text value="[[buyStockSelectedStepFormLabel()]]"></oj-bind-text>
+                            </oj-label>
+
+                            <oj-validation-group id="buyTracker" role="group" aria-labelledby="buygrouplabelid">
+                                <oj-bind-if test="[[buyStockSelectedStepValue() === 'buyStockDetails']]">
+                                    <oj-form-layout id="buyStockDetails" readonly="[[isBuyStockFormReadonly()]]">
+                                        <!--<oj-input-text
+                                                required
+                                                id="buyStockSymbol"
+                                                value="{{buyStockSymbol}}"
+                                                autocomplete="off"
+                                                label-hint="Enter the Symbol to purchase"></oj-input-text>-->
+                                        <oj-select-single
+                                                id="buyStockByNameid"
+                                                label-hint="Select the stock to Purchase"
+                                                label-edge="inside"
+                                                data="[[buyStocksListDP]]"
+                                                value="{{buyStockSymbol}}"
+                                                on-oj-value-action="[[onValueChangeActionForbuyStocks]]">
+                                        </oj-select-single>
+                                        <oj-input-text
+                                                required
+                                                id="buystockUnitsid"
+                                                value="{{buyStockUnits}}"
+                                                autocomplete="off"
+                                                label-hint="Number of Stock Units to be purchased"
+                                                validators="[[[stockUnitRegExpValidator]]]"></oj-input-text>
+                                        <oj-input-text
+                                                id="buyStockRemarksfieldid"
+                                                value="{{buyStocksRemarks}}"
+                                                autocomplete="off"
+                                                label-hint="Purchase Stock Remarks">
+                                        </oj-input-text>
+                                    </oj-form-layout>
+                                </oj-bind-if>
+                            </oj-validation-group>
+
+                            <oj-bind-if test="[[buyStockSelectedStepValue() === 'buyStockConfirmation']]">
+
+                                <div class="oj-flex-item oj-sm-12 oj-md-12 oj-lg-12 oj-xl-12 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal">
+                                    <oj-form-layout id="buyStockDetails" label-edge="start" max-columns="1"
+                                                    direction="column">
+                                        <oj-label for="selectedBuyStock">Stock</oj-label>
+                                        <oj-input-text id="selectedBuyStock" readonly=true
+                                                       value="{{selectedBuyStock}}"></oj-input-text>
+                                        <oj-label for="buyStockUnits">Stock Units</oj-label>
+                                        <oj-input-text id="buyStockUnits" readonly=true
+                                                       value="{{buyStockUnits}}"></oj-input-text>
+                                        <oj-label for="buyStocksRemarks">Remarks</oj-label>
+                                        <oj-input-text id="buyStocksRemarks" readonly=true
+                                                       value="{{buyStocksRemarks}}"></oj-input-text>
+                                    </oj-form-layout>
+                                </div>
+
+                                <div class="oj-flex-bar oj-sm-margin-4x-vertical">
+                                    <oj-button
+                                            id="confirmBuyStockBtn"
+                                            class="oj-flex-bar-end"
+                                            chroming="callToAction"
+                                            on-oj-action="[[confirmStockPurchase]]"
+                                            :style.display="[[buyStockConfirmButtonDisplay]]">
+                                        Confirm
+                                    </oj-button>
+                                    <oj-bind-if test="[[showBuyStockProgressAnimation]]">
+                                        <div class="oj-flex-bar-end">
+                                            <oj-progress-bar class="oj-sm-margin-4x-bottom trading-progress-bar-width"
+                                                             value="-1"></oj-progress-bar>
+                                        </div>
+                                    </oj-bind-if>
+                                </div>
+                            </oj-bind-if>
+                            <oj-bind-if test="[[buyStockSelectedStepValue() === 'buyStockSummary']]">
+                                <div class="oj-flex-item oj-sm-12 oj-md-12 oj-lg-12 oj-xl-12 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal">
+                                    <oj-form-layout id="buyStockSummary" label-edge="start" max-columns="1"
+                                                    direction="column">
+                                        <oj-label for="selectedBuyStock">Stock</oj-label>
+                                        <oj-input-text id="selectedBuyStock" readonly=true
+                                                       value="{{selectedBuyStock}}"></oj-input-text>
+                                        <oj-label for="buyStockUnits">Stock Units</oj-label>
+                                        <oj-input-text id="buyStockUnits" readonly=true
+                                                       value="{{buyStockUnits}}"></oj-input-text>
+                                        <oj-label for="buyStocksRemarks">Remarks</oj-label>
+                                        <oj-input-text id="buyStocksRemarks" readonly=true
+                                                       value="{{buyStocksRemarks}}"></oj-input-text>
+                                        <oj-label for="buyStockTransactionId">Transaction ID</oj-label>
+                                        <oj-input-text id="buyStockTransactionId" readonly=true
+                                                       value="{{buyStockTransactionId}}"></oj-input-text>
+                                        <oj-label for="buyStockResultMessage">Result</oj-label>
+                                        <oj-text-area id="buyStockResultMessage" readonly=true rows="3"
+                                                      value="{{buyStockResultMessage}}"></oj-text-area>
+                                    </oj-form-layout>
+                                </div>
+                            </oj-bind-if>
+                        </div>
+                    </div>
+                    <div slot="footer">
+                        <oj-button id="buyCancelButton" on-oj-action="[[cancelBuyStockWiz]]" label="[[buyCloseCancelButton]]"></oj-button>
+                    </div>
+                </oj-dialog>
+                <div class="oj-flex-item oj-sm-6 oj-md-6 oj-lg-10 oj-xl-10 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal oj-xl-padding-4x-vertical">
+                    <p>To purchase stocks from stock broker, click on Buy Stocks button.
+                        </br></br>
+                        <oj-button id="buyButtonOpener" on-oj-action="[[openBuyStockWiz]]">Buy Stocks</oj-button>
+                    </p>
+                </div>
+            </div>
+
+            <div slot="sellstocks">
+                <div class="oj-flex-item oj-xl-9 oj-lg-8 oj-md-8 oj-sm-8">
+                    <p class="h3-black" style="padding-left: 10px; line-height: 32px"
+                       data-bind="text: 'Sell Stocks'"></p>
+                </div>
+                <oj-dialog id="sellStocksModalDialog" aria-describedby="desc">
+                    <div slot="body">
+
+                        <div id="sellStocks-train-container">
+                            <h3 class="oj-helper-text-align-center">Sell Stocks</h3>
+                            <oj-train
+                                    id="sellStocksTrain"
+                                    class="oj-train-stretch oj-sm-margin-4x-horizontal"
+                                    on-selected-step-changed="[[sellStockUpdateLabelText]]"
+                                    on-oj-before-select="[[sellValidate]]"
+                                    selected-step="{{sellStockSelectedStepValue}}"
+                                    steps="[[sellStockStepArray]]">
+                            </oj-train>
+
+                            <oj-label label-id="sellgrouplabelid">
+                                <oj-bind-text value="[[sellStockSelectedStepFormLabel()]]"></oj-bind-text>
+                            </oj-label>
+
+                            <oj-validation-group id="sellTracker" role="group" aria-labelledby="sellgrouplabelid">
+                                <oj-bind-if test="[[sellStockSelectedStepValue() === 'sellStockDetails']]">
+                                    <oj-form-layout id="sellStockDetails" readonly="[[isSellStockFormReadonly()]]">
+                                        <!--<oj-input-text
+                                                required
+                                                id="sellStockSymbol"
+                                                value="{{sellStockSymbol}}"
+                                                autocomplete="off"
+                                                label-hint="Enter the Stock Symbol to sell"></oj-input-text>-->
+                                        <oj-select-single
+                                                id="sellStockByNameid"
+                                                label-hint="Select the stock to Sell"
+                                                label-edge="inside"
+                                                data="[[sellStocksListDP]]"
+                                                value="{{sellStockSymbol}}"
+                                                on-oj-value-action="[[onValueChangeActionForSellStocks]]">
+                                        </oj-select-single>
+                                        <oj-input-text
+                                                required
+                                                id="sellstockUnitsid"
+                                                value="{{sellStockUnits}}"
+                                                autocomplete="off"
+                                                label-hint="Number of Stock Units to sell"
+                                                validators="[[[stockUnitRegExpValidator]]]"></oj-input-text>
+                                        <oj-input-text
+                                                id="sellStockRemarksfieldid"
+                                                value="{{sellStocksRemarks}}"
+                                                autocomplete="off"
+                                                label-hint="Remarks on selling Stock">
+                                        </oj-input-text>
+                                    </oj-form-layout>
+                                </oj-bind-if>
+                            </oj-validation-group>
+
+                            <oj-bind-if test="[[sellStockSelectedStepValue() === 'sellStockConfirmation']]">
+
+                                <div class="oj-flex-item oj-sm-12 oj-md-12 oj-lg-12 oj-xl-12 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal">
+                                    <oj-form-layout id="sellStockDetails" label-edge="start" max-columns="1"
+                                                    direction="column">
+                                        <oj-label for="selectedSellStock">Stock</oj-label>
+                                        <oj-input-text id="selectedSellStock" readonly=true
+                                                       value="{{selectedSellStock}}"></oj-input-text>
+                                        <oj-label for="sellStockUnits">Stock Units</oj-label>
+                                        <oj-input-text id="sellStockUnits" readonly=true
+                                                       value="{{sellStockUnits}}"></oj-input-text>
+                                        <oj-label for="sellStocksRemarks">Remarks</oj-label>
+                                        <oj-input-text id="sellStocksRemarks" readonly=true
+                                                       value="{{sellStocksRemarks}}"></oj-input-text>
+                                    </oj-form-layout>
+                                </div>
+
+                                <div class="oj-flex-bar oj-sm-margin-4x-vertical">
+                                    <oj-button
+                                            id="confirmSellStockBtn"
+                                            class="oj-flex-bar-end"
+                                            chroming="callToAction"
+                                            on-oj-action="[[confirmSellStock]]"
+                                            :style.display="[[sellStockConfirmButtonDisplay]]">
+                                        Confirm
+                                    </oj-button>
+                                    <oj-bind-if test="[[showSellStockProgressAnimation]]">
+                                        <div class="oj-flex-bar-end">
+                                            <oj-progress-bar class="oj-sm-margin-4x-bottom trading-progress-bar-width"
+                                                             value="-1"></oj-progress-bar>
+                                        </div>
+                                    </oj-bind-if>
+                                </div>
+                            </oj-bind-if>
+                            <oj-bind-if test="[[sellStockSelectedStepValue() === 'sellStockSummary']]">
+                                <div class="oj-flex-item oj-sm-12 oj-md-12 oj-lg-12 oj-xl-12 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal">
+                                    <oj-form-layout id="sellStockSummary" label-edge="start" max-columns="1"
+                                                    direction="column">
+                                        <oj-label for="selectedSellStock">Stock</oj-label>
+                                        <oj-input-text id="selectedSellStock" readonly=true
+                                                       value="{{selectedSellStock}}"></oj-input-text>
+                                        <oj-label for="sellStockUnits">Stock Units</oj-label>
+                                        <oj-input-text id="sellStockUnits" readonly=true
+                                                       value="{{sellStockUnits}}"></oj-input-text>
+                                        <oj-label for="sellStocksRemarks">Remarks</oj-label>
+                                        <oj-input-text id="sellStocksRemarks" readonly=true
+                                                       value="{{sellStocksRemarks}}"></oj-input-text>
+                                        <oj-label for="sellStockTransactionId">Transaction ID</oj-label>
+                                        <oj-input-text id="sellStockTransactionId" readonly=true
+                                                       value="{{sellStockTransactionId}}"></oj-input-text>
+                                        <oj-label for="sellStockResultMessage">Result</oj-label>
+                                        <oj-text-area id="sellStockResultMessage" readonly=true rows="3"
+                                                      value="{{sellStockResultMessage}}"></oj-text-area>
+                                    </oj-form-layout>
+                                </div>
+                            </oj-bind-if>
+                        </div>
+                    </div>
+                    <div slot="footer">
+                        <oj-button id="sellCancelButton" on-oj-action="[[cancelSellStocksWiz]]" label="[[sellCloseCancelButton]]"></oj-button>
+                    </div>
+                </oj-dialog>
+                <div class="oj-flex-item oj-sm-6 oj-md-6 oj-lg-10 oj-xl-10 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal oj-xl-padding-4x-vertical">
+                    <p>To sell stocks via stock broker, click on Sell Stocks button.
+                        </br></br>
+                        <oj-button id="sellButtonOpener" on-oj-action="[[openSellStocksWiz]]">Sell Stocks</oj-button>
+                    </p>
+                </div>
+            </div>
+
+            <div slot="statement">
+                <div class="oj-flex-item oj-xl-9 oj-lg-8 oj-md-8 oj-sm-8">
+                    <p class="h3-black" style="padding-left: 10px; line-height: 32px"
+                       data-bind="text: 'Transaction Statement'"></p>
+                </div>
+                <div class="oj-flex">
+                    <oj-table
+                            id="stockStatementTable"
+                            aria-label="Stock Transactions Table"
+                            accessibility.row-header="transactionTime"
+                            data="[[stockStatementTableDataprovider]]"
+                            dnd='{"reorder": {"columns": "enabled"}}'
+                            scroll-policy="loadMoreOnScroll"
+                            scroll-policy-options='{"fetchSize": 10}'
+                            columns='[{"headerText": "Transaction Time", "field": "transactionTime", "headerClassName": "oj-sm-only-hide","className": "oj-sm-only-hide", "resizable": "enabled", "id": "transactionTime", "template": "transactionTimeCellTemplate"},
+                            {"headerText": "Savings A/c", "field": "accountId","resizable": "enabled", "sortable": "disabled", "id": "accountId"},
+                            {"headerText": "Stock Operation", "field": "stockOperation","resizable": "enabled", "sortable": "disabled", "id": "stockOperation"},
+                            {"headerText": "Stock Units", "field": "stockUnits","headerClassName": "oj-md-down-hide","className": "oj-md-down-hide","resizable": "enabled","id": "stockUnits"},
+                            {"headerText": "Stock Symbol", "field": "stockSymbol","headerClassName": "oj-md-down-hide", "className": "oj-md-down-hide","resizable": "enabled", "id": "stockName"},
+                            {"headerText": "Description", "field": "description", "headerClassName": "oj-sm-only-hide", "className": "oj-sm-only-hide transaction-table-remarks", "sortable": "disabled", "resizable": "enabled", "id": "description"}]'
+                            class="transaction-table-container">
+                        <template slot="transactionTimeCellTemplate" data-oj-as="cell">
+                            <oj-bind-text value="[[dateTimeConverter.format(cell.data)]]"></oj-bind-text>
+                        </template>
+                    </oj-table>
+                </div>
+            </div>
+        </oj-switcher>
+
+    </div>
+</div>

@@ -1,0 +1,2 @@
+define(["exports","preact/jsx-runtime",'module',"./hooks/UNSAFE_useTabbableMode","./hooks/UNSAFE_useTranslationBundle"],function(e,n,s,a,r){"use strict";e.InlineHelpSource=function({children:e,source:s}){const l=r.useTranslationBundle("@oracle/oraclejet-preact").userAssistance_learnMore();e=null!=e?e:l;const{isTabbable:o,tabbableModeProps:t}=a.useTabbableMode();return n.jsx("a",Object.assign({class:"_17k4n9t",target:"_blank",href:s},!o&&t,{children:e}))}});
+//# sourceMappingURL=InlineHelpSource-7270d6c0.js.map

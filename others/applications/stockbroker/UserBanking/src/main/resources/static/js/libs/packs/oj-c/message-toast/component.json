@@ -1,0 +1,244 @@
+{
+  "name": "message-toast",
+  "version": "1.0.0",
+  "jetVersion": "^14.0.1",
+  "type": "composite",
+  "pack": "oj-c",
+  "implements": [
+    "CMessageToastElement"
+  ],
+  "displayName": "MessageToast",
+  "description": "Toast messages are short, noncritical, auto-dismissible messages that communicate non-disruptive contextual messages.",
+  "help": "oj-c.MessageToast.html",
+  "main": "oj-c/message-toast",
+  "extension": {
+    "vbdt": {
+      "defaultColumns": 2,
+      "minColumns": 1,
+      "module": "oj-c/message-toast"
+    },
+    "oracle": {
+      "icon": "oj-ux-ico-messages",
+      "uxSpecs": [
+        "toast-messages"
+      ]
+    }
+  },
+  "propertyLayout": [
+    {
+      "propertyGroup": "data",
+      "items": [
+        "data"
+      ]
+    }
+  ],
+  "since": "14.0.0",
+  "properties": {
+    "data": {
+      "type": "object",
+      "description": "Data for the Message Toast component.",
+      "displayName": "Data",
+      "help": "#data"
+    },
+    "detailTemplateValue": {
+      "type": "string|function",
+      "description": "A dynamic template key or a function that determines the detail template for the current row.",
+      "displayName": "Current Detail Template",
+      "help": "#detailTemplateValue",
+      "dynamicSlotDef": "MessageToastTemplateContext"
+    },
+    "iconTemplateValue": {
+      "type": "string|function",
+      "description": "A dynamic template key or a function that determines the icon template for the current row.",
+      "displayName": "Current Icon Template",
+      "help": "#iconTemplateValue",
+      "dynamicSlotDef": "MessageToastTemplateContext"
+    },
+    "offset": {
+      "type": "number|object",
+      "description": "Offset for the Message Toast component's position.",
+      "displayName": "Offset",
+      "help": "#offset",
+      "value": 0
+    },
+    "position": {
+      "type": "string",
+      "description": "Position for the Message Toast component.",
+      "displayName": "Position",
+      "help": "#position",
+      "enumValues": [
+        "bottom",
+        "top",
+        "top-start",
+        "top-end",
+        "bottom-start",
+        "bottom-end",
+        "top-left",
+        "top-right",
+        "bottom-left",
+        "bottom-right"
+      ],
+      "value": "bottom"
+    }
+  },
+  "dynamicSlots": {
+    "MessageToastTemplateContext": {
+      "description": "The dynamic template slots for the Toast message.",
+      "displayName": "Dynamic Template Slots",
+      "help": "#dynamicTemplates",
+      "data": {
+        "data": {
+          "type": "any"
+        },
+        "key": {
+          "type": "any"
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "indexFromParent": {
+              "type": "number"
+            },
+            "isLeaf": {
+              "type": "boolean"
+            },
+            "key": {
+              "type": "any"
+            },
+            "message": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string"
+                },
+                "severity": {
+                  "type": "number|string",
+                  "enumValues": [
+                    "error",
+                    "confirmation",
+                    "info",
+                    "warning",
+                    "fatal"
+                  ]
+                },
+                "summary": {
+                  "type": "string"
+                }
+              }
+            },
+            "parentKey": {
+              "type": "any"
+            },
+            "suggestion": {
+              "type": "object"
+            },
+            "treeDepth": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    }
+  },
+  "events": {
+    "ojClose": {
+      "description": "Event emitted when the user tries to close a message though UI interaction",
+      "help": "#event:ojClose",
+      "detail": {
+        "data": {
+          "type": "any"
+        },
+        "key": {
+          "type": "any"
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "indexFromParent": {
+              "type": "number"
+            },
+            "isLeaf": {
+              "type": "boolean"
+            },
+            "key": {
+              "type": "any"
+            },
+            "message": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "string"
+                },
+                "severity": {
+                  "type": "number|string",
+                  "enumValues": [
+                    "error",
+                    "confirmation",
+                    "info",
+                    "warning",
+                    "fatal"
+                  ]
+                },
+                "summary": {
+                  "type": "string"
+                }
+              }
+            },
+            "parentKey": {
+              "type": "any"
+            },
+            "suggestion": {
+              "type": "object"
+            },
+            "treeDepth": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    }
+  },
+  "methods": {
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a corresponding event.",
+      "help": "#setProperty",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "any"
+        }
+      ],
+      "return": "void"
+    },
+    "getProperty": {
+      "description": "Retrieves the value of a property or a subproperty.",
+      "help": "#getProperty",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "any"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "help": "#setProperties",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "object"
+        }
+      ],
+      "return": "void"
+    }
+  }
+}

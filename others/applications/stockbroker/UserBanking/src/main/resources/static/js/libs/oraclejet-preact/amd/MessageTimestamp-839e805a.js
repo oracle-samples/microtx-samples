@@ -1,0 +1,2 @@
+define(["exports","preact/jsx-runtime",'module',"./utils/UNSAFE_classNames","./MessageFormattingUtils-bf5de0fd","./classNames-e842f86a"],function(s,e,a,n,t,i){"use strict";const r={banner:"_1ojqqfn",inline:void 0,toast:void 0};s.MessageTimestamp=function({value:s,variant:a="banner"}){const n=i.classNames(["banner"===a&&"oj-c-messagebanner-timestamp",r[a]]),c=t.formatTimestamp(s);return e.jsx("div",Object.assign({class:n},{children:c}))}});
+//# sourceMappingURL=MessageTimestamp-839e805a.js.map

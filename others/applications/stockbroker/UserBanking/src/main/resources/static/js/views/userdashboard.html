@@ -1,0 +1,42 @@
+<!--
+ Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+ Licensed under The Universal Permissive License (UPL), Version 1.0
+ as shown at https://oss.oracle.com/licenses/upl/
+ -->
+<div class="oj-hybrid-padding">
+    <!--<oj-input-text slot="value" id="loadingText" readonly="true" value="[[loadingText]]"></oj-input-text>-->
+    <div class="oj-flex">
+        <div class="oj-flex-item oj-sm-12 oj-md-12 oj-lg-5 oj-xl-5 oj-panel oj-bg-neutral-30 oj-panel-shadow-xl oj-sm-margin-5x-vertical oj-sm-margin-3x-horizontal ">
+            <p class="h3-black" style="padding-left: 10px; line-height: 32px; text-align: center;">Customer Details</p>
+            <oj-label-value label-edge="start" label-width="30%" colspan="2" style="text-align:left;">
+                <oj-label slot="label" for="userName">Customer Name</oj-label>
+                <oj-input-text slot="value" id="userName" readonly="true" value="{{userName}}"></oj-input-text>
+                <oj-label slot="label" for="accountNumber">Account Number</oj-label>
+                <oj-input-text slot="value" id="accountNumber" readonly="true"
+                               value="{{accountNumber}}"></oj-input-text>
+                <oj-label slot="label" for="ssn">Social Security Number</oj-label>
+                <oj-input-text slot="value" id="ssn" readonly="true" value="{{ssn}}" ></oj-input-text>
+                <oj-label slot="label" for="phoneNumber">Phone Number</oj-label>
+                <oj-input-text slot="value" id="phoneNumber" readonly="true"
+                               value="{{phoneNumber}}"></oj-input-text>
+                <oj-label slot="label" for="address">Address</oj-label>
+                <oj-input-text slot="value" id="address" readonly="true" value="{{address}}"></oj-input-text>
+            </oj-label-value>
+        </div>
+        <div class="oj-flex-item oj-sm-12 oj-md-12 oj-lg-5 oj-xl-5 oj-panel oj-bg-neutral-30 oj-panel-shadow-xl oj-sm-margin-5x-vertical oj-sm-margin-3x-horizontal ">
+            <p class="h3-black" style="padding-left: 10px; line-height: 32px; text-align: center;">Branch Details</p>
+            <oj-label-value label-edge="start" label-width="30%" colspan="2" style="text-align:left;">
+                <oj-label slot="label" for="branchName">Branch Name</oj-label>
+                <oj-input-text slot="value" id="branchName" readonly="true" value="{{branchName}}"></oj-input-text>
+                <oj-label slot="label" for="branchId">Branch Number</oj-label>
+                <oj-input-text slot="value" id="branchId" readonly="true" value="{{branchId}}"></oj-input-text>
+                <oj-label slot="label" for="branchPhoneNumber">Branch Contact Number</oj-label>
+                <oj-input-text slot="value" id="branchPhoneNumber" readonly="true"
+                               value="{{branchPhoneNumber}}"></oj-input-text>
+                <oj-label slot="label" for="branchAddress">Branch Address</oj-label>
+                <oj-input-text slot="value" id="branchAddress" readonly="true"
+                               value="{{branchAddress}}"></oj-input-text>
+            </oj-label-value>
+        </div>
+    </div>
+</div>
