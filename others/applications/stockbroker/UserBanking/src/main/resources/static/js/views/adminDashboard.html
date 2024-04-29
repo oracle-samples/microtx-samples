@@ -1,0 +1,40 @@
+<div class="oj-hybrid-padding">
+
+    <div class="oj-flex">
+        <div class="oj-flex-item oj-sm-6 oj-md-6 oj-lg-5 oj-xl-6 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal oj-panel-shadow-xl">
+            <p class="h3-black" style="padding-left: 10px; line-height: 32px; text-align: center;">
+                Welcome to Bank and Trading Application Admin Portal</p>
+            <oj-label-value label-edge="start" label-width="30%" colspan="2" style="text-align:left;">
+                <oj-label slot="label" for="address">Address</oj-label>
+                <oj-input-text slot="value" id="address" readonly="true"
+                               value="15311 Grove Ct. New York  95101"></oj-input-text>
+                <oj-label slot="label" for="phoneNumber">Phone Number</oj-label>
+                <oj-input-text slot="value" id="phoneNumber" readonly="true"
+                               value="408-100-5896"></oj-input-text>
+            </oj-label-value>
+        </div>
+        <div class="oj-flex-item oj-sm-6 oj-md-6 oj-lg-5 oj-xl-6 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal oj-panel-shadow-xl">
+            <p class="h3-black" style="padding-left: 10px; line-height: 32px; text-align: center;">Accounts by Bank
+                Branch</p>
+            <div id="chart-container">
+                <oj-chart
+                        id="bankAccountsPieChart"
+                        type="pie"
+                        data="[[bankAccountsChartDataProvider]]"
+                        animation-on-display="auto"
+                        animation-on-data-change="auto"
+                        style-defaults.three-d-effect="[[threeDChart]]"
+                        hover-behavior="dim">
+                    <template slot="itemTemplate" data-oj-as="item">
+                        <oj-chart-item
+                                value="[[item.data.totalAccounts]]"
+                                group-id="[[ [bankAccountsChartGroup] ]]"
+                                series-id="[[item.data.branch]]">
+                        </oj-chart-item>
+                    </template>
+                </oj-chart>
+            </div>
+        </div>
+    </div>
+</div>
+</div>

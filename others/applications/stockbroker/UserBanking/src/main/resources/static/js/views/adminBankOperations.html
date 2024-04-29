@@ -1,0 +1,372 @@
+<!--
+Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+Licensed under The Universal Permissive License (UPL), Version 1.0
+as shown at https://oss.oracle.com/licenses/upl/
+-->
+<div class="oj-hybrid-padding">
+    <div>
+        <div class="oj-flex">
+            <oj-navigation-list
+                    selection="{{selectedItem1}}"
+                    display="all"
+                    aria-label="Choose a navigation item"
+                    drill-mode="none"
+                    data="[[bankNavigationDataProvider]]"
+                    on-current-item-changed="[[onBankAdminNavigationValueChangeEvent]]"
+            >
+                <template slot="itemTemplate" data-oj-as="item">
+                    <li :class="[[{'oj-disabled' : item.data.disabled === 'true'}]]">
+                        <a href="#">
+                            <span :class="[['oj-navigationlist-item-icon ' + item.data.icons]]"></span>
+                            <oj-bind-text value="[[item.data.name]]"></oj-bind-text>
+                        </a>
+                    </li>
+                </template>
+            </oj-navigation-list>
+
+            <oj-switcher class="oj-flex-item oj-sm-9 oj-xl-10 oj-lg-10 oj-md-10" value="[[selectedItem1]]">
+
+                <div slot="banksummary">
+                    <div class="oj-flex-item oj-xl-9 oj-lg-8 oj-md-8 oj-sm-9">
+                        <p class="h3-black" style="padding-left: 10px; line-height: 32px">Bank Summary</p>
+                    </div>
+                    <div class="oj-flex">
+                        <div class="oj-flex-item oj-sm-6 oj-md-6 oj-lg-10 oj-xl-10 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal oj-xl-padding-4x-vertical">
+                            Some Bank summary (Optional):
+                            <!--<oj-bind-text value="[[savingsAccountNumber]]"></oj-bind-text>-->
+                        </div>
+                    </div>
+                </div>
+
+                <div slot="useraccounts">
+                    <div class="oj-flex">
+                        <div class="oj-flex-item oj-xl-9 oj-lg-8 oj-md-8 oj-sm-8">
+                            <p class="h3-black" style="padding-left: 10px; line-height: 32px">User Accounts</p>
+                        </div>
+
+                        <div class="oj-flex-item oj-sm-margin-4x-vertical">
+                            <oj-table
+                                    id="bankUserAccountsTable"
+                                    aria-label="Bank User Accounts Table"
+                                    accessibility.row-header="accountNumber"
+                                    data="[[bankUserAccountsDataprovider]]"
+                                    dnd='{"reorder": {"columns": "enabled"}}'
+                                    scroll-policy="loadMoreOnScroll"
+                                    scroll-policy-options='{"fetchSize": 10}'
+                                    columns='[
+                                {"headerText": "Account", "field": "accountNumber","resizable": "enabled","id": "accountNumber", "maxWidth": "12%"},
+                                {"headerText": "Branch Id", "field": "branchId","resizable": "enabled","id": "branchId", "maxWidth": "15%"},
+                                {"headerText": "Branch", "field": "branch","resizable": "enabled","id": "branch", "maxWidth": "15%"},
+                                {"headerText": "SSN", "field": "ssn","resizable": "enabled","id": "ssn", "template": "maskSSNTemplate", "maxWidth": "15%"},
+                                {"headerText": "First Name", "field": "firstName","resizable": "enabled","id": "firstName", "maxWidth": "15%"},
+                                {"headerText": "Middle Name", "field": "middleName","resizable": "enabled","id": "middleName", "maxWidth": "15%"},
+                                {"headerText": "Last Name", "field": "lastName","resizable": "enabled","id": "lastName", "maxWidth": "15%"},
+                                {"headerText": "Contact", "field": "phoneNumber","resizable": "enabled","id": "phoneNumber", "maxWidth": "12%"},
+                                {"headerText": "Address", "field": "address", "headerClassName": "oj-sm-only-hide","className": "oj-sm-only-hide user-table-address","resizable": "enabled", "id": "address", "maxWidth": "15%"}]'
+                                    class="demo-table-container">
+                                <template slot="maskSSNTemplate" data-oj-as="cell">
+                                    <oj-bind-text value="[[maskSSN(cell.data)]]"></oj-bind-text>
+                                </template>
+                            </oj-table>
+                        </div>
+                    </div>
+                </div>
+
+                <div slot="openaccount">
+                    <div class="oj-flex-item oj-xl-9 oj-lg-8 oj-md-8 oj-sm-8">
+                        <p class="h3-black" style="padding-left: 10px; line-height: 32px"
+                           data-bind="text: 'Open User Bank Account'"></p>
+                    </div>
+                    <div class="oj-flex">
+                        <oj-dialog id="openBankAccountModalDialog" aria-describedby="desc">
+                            <div slot="body">
+
+                                <div id="openBankAccount-train-container">
+                                    <h3 class="oj-helper-text-align-center">Open Bank Account</h3>
+                                    <oj-train
+                                            id="openBankAccountTrain"
+                                            class="oj-train-stretch oj-sm-margin-4x-horizontal"
+                                            on-selected-step-changed="[[openBankAccountUpdateLabelText]]"
+                                            on-oj-before-select="[[openBankAccountValidate]]"
+                                            selected-step="{{openBankAccountSelectedStepValue}}"
+                                            steps="[[openBankAccountStepArray]]">
+                                    </oj-train>
+
+                                    <oj-label label-id="openBankAccountgrouplabelid">
+                                        <oj-bind-text value="[[openBankAccountSelectedStepFormLabel()]]"></oj-bind-text>
+                                    </oj-label>
+
+                                    <oj-validation-group id="openBankAccountTracker" role="group"
+                                                         aria-labelledby="openBankAccountgrouplabelid">
+                                        <oj-bind-if
+                                                test="[[openBankAccountSelectedStepValue() === 'openBankAccountDetails']]">
+                                            <oj-form-layout id="openBankAccountDetails"
+                                                            readonly="[[isOpenBankAccountFormReadonly()]]">
+                                                <oj-input-text
+                                                        required
+                                                        id="openBankAccountFirstName"
+                                                        value="{{openBankAccountFirstName}}"
+                                                        autocomplete="off"
+                                                        label-hint="Enter First name">
+                                                </oj-input-text>
+                                                <oj-input-text
+                                                        required
+                                                        id="openBankAccountLastName"
+                                                        value="{{openBankAccountLastName}}"
+                                                        autocomplete="off"
+                                                        label-hint="Enter Last name">
+                                                </oj-input-text>
+                                                <oj-input-text
+                                                        id="openBankAccountMiddleName"
+                                                        value="{{openBankAccountMiddleName}}"
+                                                        autocomplete="off"
+                                                        label-hint="Enter Middle name">
+                                                </oj-input-text>
+                                                <oj-input-text
+                                                        required
+                                                        id="openBankAccountSSN"
+                                                        value="{{openBankAccountSSN}}"
+                                                        autocomplete="off"
+                                                        label-hint="Enter Social Security Number"
+                                                        validators="[[[ssnRegExpValidator]]]">
+                                                </oj-input-text>
+                                                <oj-input-text
+                                                        required
+                                                        id="openBankAccountPhoneNumber"
+                                                        value="{{openBankAccountPhoneNumber}}"
+                                                        autocomplete="off"
+                                                        label-hint="Enter Phone Number"
+                                                        validators="[[[phoneNumberRegExpValidator]]]">
+                                                </oj-input-text>
+                                                <oj-input-text
+                                                        required
+                                                        id="openBankAccountAddress"
+                                                        value="{{openBankAccountAddress}}"
+                                                        autocomplete="off"
+                                                        label-hint="Enter Address">
+                                                </oj-input-text>
+                                                <!--<oj-input-text
+                                                        required
+                                                        id="openBankAccountBranchId"
+                                                        value="{{openBankAccountBranchId}}"
+                                                        autocomplete="off"
+                                                        label-hint="Enter Branch Id">
+                                                </oj-input-text>-->
+                                                <oj-select-single
+                                                        required
+                                                        id="openBankAccountBranchId"
+                                                        label-hint="Bank branch"
+                                                        label-edge="inside"
+                                                        data="[[branchesListDP]]"
+                                                        value="{{openBankAccountBranchId}}"
+                                                        on-oj-value-action="[[onValueChangeActionForBranchSelection]]">
+                                                </oj-select-single>
+                                            </oj-form-layout>
+                                        </oj-bind-if>
+                                    </oj-validation-group>
+
+                                    <oj-bind-if
+                                            test="[[openBankAccountSelectedStepValue() === 'openBankAccountConfirmation']]">
+
+                                        <div class="oj-flex-item oj-sm-12 oj-md-12 oj-lg-12 oj-xl-12 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal">
+                                            <oj-form-layout id="openBankAccountDetails" label-edge="start"
+                                                            max-columns="1" direction="column">
+                                                <oj-label for="openBankAccountFullName">User Full Name</oj-label>
+                                                <oj-input-text id="openBankAccountFullName" readonly=true
+                                                               value="{{openBankAccountFullName}}"></oj-input-text>
+                                                <oj-label for="openBankAccountSSN">Social Security Number</oj-label>
+                                                <oj-input-text id="openBankAccountSSN" readonly=true
+                                                               value="{{openBankAccountSSN}}"></oj-input-text>
+                                                <oj-label for="openBankAccountPhoneNumber">Phone Number</oj-label>
+                                                <oj-input-text id="openBankAccountPhoneNumber" readonly=true
+                                                               value="{{openBankAccountPhoneNumber}}"></oj-input-text>
+                                                <oj-label for="openBankAccountAddress">Address</oj-label>
+                                                <oj-input-text id="openBankAccountAddress" readonly=true
+                                                               value="{{openBankAccountAddress}}"></oj-input-text>
+                                                <oj-label for="openBankAccountBranchId">Branch</oj-label>
+                                                <oj-input-text id="openBankAccountBranchId" readonly=true
+                                                               value="{{openBankAccountBranchDisplay}}"></oj-input-text>
+                                            </oj-form-layout>
+                                        </div>
+
+                                        <div class="oj-flex-bar oj-sm-margin-4x-vertical">
+                                            <oj-button
+                                                    id="confirmopenBankAccountBtn"
+                                                    class="oj-flex-bar-end"
+                                                    chroming="callToAction"
+                                                    on-oj-action="[[confirmOpenBankAccount]]"
+                                                    :style.display="[[openAccountConfirmButtonDisplay]]">
+                                                Confirm
+                                            </oj-button>
+                                            <oj-bind-if test="[[openAccountProgressAnimation]]">
+                                                <div class="oj-flex-bar-end">
+                                                    <oj-progress-bar class="oj-sm-margin-4x-bottom trading-progress-bar-width" value="-1"></oj-progress-bar>
+                                                </div>
+                                            </oj-bind-if>
+                                        </div>
+                                    </oj-bind-if>
+                                    <oj-bind-if
+                                            test="[[openBankAccountSelectedStepValue() === 'openBankAccountSummary']]">
+                                        <div class="oj-flex-item oj-sm-12 oj-md-12 oj-lg-12 oj-xl-12 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal">
+                                            <oj-form-layout id="openBankAccountSummary" label-edge="start"
+                                                            max-columns="1" direction="column">
+                                                <oj-label for="openBankAccountFullName">User Full Name</oj-label>
+                                                <oj-input-text id="openBankAccountFullName" readonly=true
+                                                               value="{{openBankAccountFullName}} {{openBankAccountMiddleName}} {{openBankAccountLastName}}"></oj-input-text>
+                                                <oj-label for="openBankAccountSSN">Social Security Number</oj-label>
+                                                <oj-input-text id="openBankAccountSSN" readonly=true
+                                                               value="{{openBankAccountSSN}}"></oj-input-text>
+                                                <oj-label for="openBankAccountPhoneNumber">Phone Number</oj-label>
+                                                <oj-input-text id="openBankAccountPhoneNumber" readonly=true
+                                                               value="{{openBankAccountPhoneNumber}}"></oj-input-text>
+                                                <oj-label for="openBankAccountAddress">Address</oj-label>
+                                                <oj-input-text id="openBankAccountAddress" readonly=true
+                                                               value="{{openBankAccountAddress}}"></oj-input-text>
+                                                <oj-label for="openBankAccountBranchId">Branch</oj-label>
+                                                <oj-input-text id="openBankAccountBranchId" readonly=true
+                                                               value="{{openBankAccountBranchDisplay}}"></oj-input-text>
+                                                <oj-label for="openBankAccountTransactionId">Transaction Id</oj-label>
+                                                <oj-input-text id="openBankAccountTransactionId" readonly=true
+                                                               value="{{openBankAccountTransactionId}}"></oj-input-text>
+                                                <oj-label for="openBankAccountMessage">Result</oj-label>
+                                                <oj-text-area id="openBankAccountMessage" readonly=true rows="3"
+                                                              value="{{openBankAccountMessage}}"></oj-text-area>
+                                            </oj-form-layout>
+                                        </div>
+                                    </oj-bind-if>
+                                </div>
+                            </div>
+                            <div slot="footer">
+                                <oj-button id="openBankAccountCancelButton" on-oj-action="[[openBankAccountCancelWiz]]" label="[[openBankAccountCloseCancelButton]]">
+                                </oj-button>
+                            </div>
+                        </oj-dialog>
+                        <div class="oj-flex-item oj-sm-6 oj-md-6 oj-lg-10 oj-xl-10 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal oj-xl-padding-4x-vertical">
+                            <p>To Open/Create user bank account click on Create Bank Account button.
+                                </br></br>
+                                <oj-button id="openBankAccountButtonOpener" on-oj-action="[[openBankAccountWiz]]">Create
+                                    Bank Account
+                                </oj-button>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div slot="closeaccount">
+                    <div class="oj-flex-item oj-xl-9 oj-lg-8 oj-md-8 oj-sm-8">
+                        <p class="h3-black" style="padding-left: 10px; line-height: 32px">Close User Bank Account</p>
+                    </div>
+
+                    <oj-dialog id="closeAccountModalDialog" dialog-title="Close Account" aria-describedby="desc">
+                        <div slot="body">
+                            <p id="desc">
+                                Please enter the User Bank acccount Id which needs to be closed
+                            </p>
+                        </div>
+                        <div slot="body">
+                            <oj-validation-group id="closeAccountTracker" role="group"
+                                                 aria-labelledby="closeAccountlabelid">
+                                <oj-input-text
+                                        required
+                                        value="{{closeBankAccountAccountId}}"
+                                        label-hint="Close Bank Account Id">
+                                </oj-input-text>
+                            </oj-validation-group>
+                        </div>
+                        <div slot="body" class="oj-helper-text-align-center">
+                            <oj-bind-if test="[[showCloseAccountProgressAnimation]]">
+                                <div class="oj-flex-bar-center">
+                                    <oj-progress-bar class="oj-sm-margin-4x-bottom close-account-progress-bar-width" value="-1"></oj-progress-bar>
+                                </div>
+                            </oj-bind-if>
+                            <oj-bind-text value="[[closeBankAccountResponseMessage]]"></oj-bind-text>
+                        </div>
+                        <div slot="body" class="oj-helper-text-align-left">
+                            <p style="font-size: small">
+                                <oj-bind-text value="[[closeBankAccountResponseTransactionId]]"></oj-bind-text>
+                            </p>
+                        </div>
+                        <div slot="footer">
+                            <oj-button id="closeBankAccountokButton"
+                                       on-oj-action="[[closeBankAccountAction]]"
+                                       :style.display="[[closeAccountButtonDisplay]]">
+                                Close Account
+                            </oj-button>
+                            <oj-button id="cancelCancelBankAccountokButton" on-oj-action="[[cancelCancelBankAccount]]" label="[[closeBankAccountCloseCancelButton]]">
+                            </oj-button>
+                        </div>
+                    </oj-dialog>
+
+                    <div class="oj-flex-item oj-sm-6 oj-md-6 oj-lg-10 oj-xl-10 oj-panel oj-bg-neutral-30 oj-sm-margin-4x-vertical oj-sm-margin-4x-horizontal oj-xl-padding-4x-vertical">
+                        <p>To Close user bank account click on Close Bank Account button.
+                            </br></br>
+                            <oj-button id="closeBankAccountButtonOpener" on-oj-action="[[closeBankAccountModalOpen]]">
+                                Close Bank Account
+                            </oj-button>
+                        </p>
+                    </div>
+
+                </div>
+
+                <div slot="branchdetails">
+                    <div class="oj-flex-item oj-xl-9 oj-lg-8 oj-md-8 oj-sm-8">
+                        <p class="h3-black" style="padding-left: 10px; line-height: 32px"
+                           data-bind="text: 'Branch Details'"></p>
+                    </div>
+
+                    <div class="oj-flex">
+                        <oj-table
+                                id="branchDetailsTable"
+                                aria-label="BranchDetails Table"
+                                accessibility.row-header="branchId"
+                                data="[[branchDetailsTableDataprovider]]"
+                                dnd='{"reorder": {"columns": "enabled"}}'
+                                scroll-policy="loadMoreOnScroll"
+                                scroll-policy-options='{"fetchSize": 5}'
+                                columns='[
+                                {"headerText": "Branch Id", "field": "branchId","resizable": "enabled","id": "branchId"},
+                                {"headerText": "Branch Name", "field": "branchName","resizable": "enabled","id": "branchName"},
+                                {"headerText": "Contact Number", "field": "phoneNumber","resizable": "enabled","id": "phoneNumber"},
+                                {"headerText": "Address", "field": "address", "headerClassName": "oj-sm-only-hide","className": "oj-sm-only-hide branch-table-address","resizable": "enabled", "id": "address"},
+                                {"headerText": "Service URL", "field": "serviceURL","resizable": "enabled","id": "serviceURL"}]'
+                                class="demo-table-container">
+                        </oj-table>
+                    </div>
+
+                </div>
+
+                <div slot="transactions">
+                    <div class="oj-flex-item oj-xl-9 oj-lg-8 oj-md-8 oj-sm-8">
+                        <p class="h3-black" style="padding-left: 10px; line-height: 32px"
+                           data-bind="text: 'Transaction Details'"></p>
+                    </div>
+                    <div class="oj-flex">
+                        <oj-table
+                                id="bankTransactionsTable"
+                                aria-label="Transactions Table"
+                                accessibility.row-header="accountId"
+                                data="[[bankTransactionsTableDataprovider]]"
+                                dnd='{"reorder": {"columns": "enabled"}}'
+                                scroll-policy="loadMoreOnScroll"
+                                scroll-policy-options='{"fetchSize": 5}'
+                                columns='[{"headerText": "Transaction Time","field": "transactionTime","headerClassName": "oj-sm-only-hide","className": "oj-sm-only-hide","resizable": "enabled","id": "transactionTime", "template": "transactionTimeCellTemplate"},
+                                {"headerText": "Account Id", "field": "accountId","resizable": "enabled","id": "accountId"},
+                                {"headerText": "Branch Id", "field": "branchId","resizable": "enabled","id": "branchId"},
+                                {"headerText": "Transaction Type", "field": "transactionType","resizable": "enabled","id": "transactionType"},
+                                {"headerText": "Description", "field": "description", "headerClassName": "oj-sm-only-hide","className": "oj-sm-only-hide transaction-table-remarks","resizable": "enabled", "id": "description"},
+                                {"headerText": "Amount", "field": "amount","resizable": "enabled","id": "amount", "template": "amountUnitCellTemplate"}]'
+                                class="transaction-table-container">
+                            <template slot="transactionTimeCellTemplate" data-oj-as="cell">
+                                <oj-bind-text value="[[dateTimeConverter.format(cell.data)]]"></oj-bind-text>
+                            </template>
+                            <template slot="amountUnitCellTemplate" data-oj-as="cell">
+                                <oj-bind-text value="[[amountUnitConverter.format(cell.data)]]"></oj-bind-text>
+                            </template>
+                        </oj-table>
+                    </div>
+                </div>
+            </oj-switcher>
+
+        </div>
+    </div>
+</div>

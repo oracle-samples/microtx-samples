@@ -1,0 +1,9 @@
+{
+  "name": "select-common",
+  "version": "1.0.0",
+  "jetVersion": "^13.0.0",
+  "type": "resource",
+  "displayName": "Select Common",
+  "description": "Contains common hooks and util used by the select-* components.",
+  "pack": "oj-c"
+}

@@ -1,0 +1,436 @@
+# Copyright (c) 2023, Oracle and/or its affiliates. **
+
+# The Universal Permissive License (UPL), Version 1.0 **
+
+# Subject to the condition set forth below, permission is hereby granted to any person obtaining a copy of this software, associated documentation and/or data
+# (collectively the "Software"), free of charge and under any and all copyright rights in the Software, and any and all patent rights owned or freely licensable by each
+# licensor hereunder covering either the unmodified Software as contributed to or provided by such licensor, or (ii) the Larger Works (as defined below), to deal in both
+# ** (a) the Software, and (b) any piece of software and/or hardware listed in the lrgrwrks.txt file if one is included with the Software (each a "Larger Work" to which
+# the Software is contributed by such licensors), **
+# without restriction, including without limitation the rights to copy, create derivative works of, display, perform, and distribute the Software and make, use, sell,
+# offer for sale, import, export, have made, and have sold the Software and the Larger Work(s), and to sublicense the foregoing rights on either these or other terms. **
+
+# This license is subject to the following condition: The above copyright notice and either this complete permission notice or at a minimum a reference to the UPL must be
+# included in all copies or substantial portions of the Software. **
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+##################################################################################################
+# user-banking
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-banking
+  labels:
+    app: user-banking
+    service: user-banking
+spec:
+  ports:
+    - port: 9090
+      name: http
+  selector:
+    app: user-banking
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: user-banking
+  labels:
+    account: user-banking
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-banking
+  labels:
+    app: user-banking
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-banking
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: user-banking
+        version: v1
+    spec:
+      containers:
+        - name: user-banking
+          image: {{ .Values.bankapp.UserBanking.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9090
+          env:
+            - name: SERVICE_NAME
+              value: user-banking
+            - name: core-banking.endpoint
+              value: http://core-banking:9091
+            - name: stock-broker.endpoint
+              value: http://stock-broker:9092
+            - name: spring.security.oauth2.client.registration.oidcclient.client-id
+              value: {{ .Values.bankapp.UserBanking.security.clientId }}
+            - name: spring.security.oauth2.client.registration.oidcclient.client-secret
+              value: {{ .Values.bankapp.UserBanking.security.clientSecret }}
+            - name: spring.security.oauth2.client.provider.oidc-provider.issuer-uri
+              value: {{ .Values.bankapp.UserBanking.security.issuerURL }}
+            - name: spring.security.oauth2.client.resourceserver.jwt.issuer-uri
+              value: {{ .Values.bankapp.UserBanking.security.issuerURL }}
+            - name: logout.redirect.uri
+              value: {{ .Values.bankapp.UserBanking.security.logoutRedirectURL }}
+      imagePullSecrets:
+        - name: regcred
+---
+
+##################################################################################################
+# core-banking
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: core-banking
+  labels:
+    app: core-banking
+    service: core-banking
+spec:
+  ports:
+    - port: 9091
+      name: http
+  selector:
+    app: core-banking
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: core-banking
+  labels:
+    account: core-banking
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core-banking
+  labels:
+    app: core-banking
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: core-banking
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: core-banking
+        version: v1
+    spec:
+      containers:
+        - name: core-banking
+          image: {{ .Values.bankapp.CoreBanking.image }}
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          ports:
+            - containerPort: 9091
+          env:
+            - name: SERVICE_NAME
+              value: core-banking
+            - name: SPRING_MICROTX_COORDINATOR_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: SPRING_MICROTX_PARTICIPANT_URL
+              value: http://core-banking:9091
+            - name: SPRING_MICROTX_XA_RESOURCE_MANAGER_ID
+              value: {{ .Values.bankapp.CoreBanking.resourceManagerId }}
+            - name: SPRING_MICROTX_PROPAGATION_ACTIVE
+              value: {{ .Values.bankapp.CoreBanking.propagateTraceHeader | quote }}
+            - name: ORACLE_TMM_TCS_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: ORACLE_TMM_CALLBACK_URL
+              value: http://core-banking:9091
+            - name: stockBrokerEndpoint
+              value: http://stock-broker:9092
+            - name: ORACLE_TMM_XA_RMID
+              value: {{ .Values.bankapp.CoreBanking.resourceManagerId }}
+            - name: ORACLE_TMM_TCS_CONN_POOL_SIZE
+              value: "100"
+            - name: ORACLE_TMM_PROPAGATE_TRACE_HEADERS
+              value: {{ .Values.bankapp.CoreBanking.propagateTraceHeader | quote }}
+            - name: bank-datasource.url
+              value: {{ .Values.bankapp.CoreBanking.databaseUrl }}
+            - name: bank-datasource.user
+              value: {{ .Values.bankapp.CoreBanking.databaseUser }}
+            - name: bank-datasource.password
+              value: {{ .Values.bankapp.CoreBanking.databasePassword }}
+      imagePullSecrets:
+        - name: regcred
+---
+
+##################################################################################################
+# stock-broker
+##################################################################################################
+
+{{- if .Values.bankapp.StockBroker.deploymentEnabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: stock-broker
+  labels:
+    app: stock-broker
+    service: stock-broker
+spec:
+  ports:
+    - port: 9092
+      name: http
+  selector:
+    app: stock-broker
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: stock-broker
+  labels:
+    account: stock-broker
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stock-broker
+  labels:
+    app: stock-broker
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stock-broker
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: stock-broker
+        version: v1
+    spec:
+      containers:
+        - name: stock-broker
+          image: {{ .Values.bankapp.StockBroker.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9092
+          env:
+            - name: SERVICE_NAME
+              value: stock-broker
+            - name: SPRING_MICROTX_COORDINATOR_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: SPRING_MICROTX_PARTICIPANT_URL
+              value: http://stock-broker:9092
+            - name: SPRING_MICROTX_XA_RESOURCE_MANAGER_ID
+              value: {{ .Values.bankapp.StockBroker.resourceManagerId }}
+            - name: SPRING_MICROTX_PROPAGATION_ACTIVE
+              value: {{ .Values.bankapp.StockBroker.propagateTraceHeader | quote }}
+            - name: ORACLE_TMM_TCS_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: ORACLE_TMM_CALLBACK_URL
+              value: http://stock-broker:9092
+            - name: coreBankEndpoint
+              value: http://core-banking:9091
+            - name: ORACLE_TMM_XA_RMID
+              value: {{ .Values.bankapp.StockBroker.resourceManagerId }}
+            - name: ORACLE_TMM_TCS_CONN_POOL_SIZE
+              value: "15"
+            - name: ORACLE_TMM_PROPAGATE_TRACE_HEADERS
+              value: {{ .Values.bankapp.StockBroker.propagateTraceHeader | quote }}
+            - name: stockbroker-datasource.url
+              value: {{ .Values.bankapp.StockBroker.databaseUrl }}
+            - name: stockbroker-datasource.user
+              value: {{ .Values.bankapp.StockBroker.databaseUser }}
+            - name: stockbroker-datasource.password
+              value: {{ .Values.bankapp.StockBroker.databasePassword }}
+      imagePullSecrets:
+        - name: regcred
+---
+{{- end }}
+
+##################################################################################################
+# arizona-branch-bank
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: arizona-branch-bank
+  labels:
+    app: arizona-branch-bank
+    service: arizona-branch-bank
+spec:
+  ports:
+    - port: 9095
+      name: http
+  selector:
+    app: arizona-branch-bank
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: arizona-branch-bank
+  labels:
+    account: arizona-branch-bank
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: arizona-branch-bank
+  labels:
+    app: arizona-branch-bank
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: arizona-branch-bank
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: arizona-branch-bank
+        version: v1
+    spec:
+      containers:
+        - name: arizona-branch-bank
+          image: {{ .Values.bankapp.ArizonaBranchBank.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9095
+          env:
+            - name: SERVICE_NAME
+              value: arizona-branch-bank
+            - name: SPRING_MICROTX_COORDINATOR_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: SPRING_MICROTX_PARTICIPANT_URL
+              value: http://arizona-branch-bank:9095
+            - name: SPRING_MICROTX_XA_RESOURCE_MANAGER_ID
+              value: {{ .Values.bankapp.ArizonaBranchBank.resourceManagerId }}
+            - name: SPRING_MICROTX_PROPAGATION_ACTIVE
+              value: {{ .Values.bankapp.ArizonaBranchBank.propagateTraceHeader | quote }}
+            - name: ORACLE_TMM_TCS_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: ORACLE_TMM_CALLBACK_URL
+              value: http://arizona-branch-bank:9095
+            - name: coreBankEndpoint
+              value: http://core-banking:9091
+            - name: ORACLE_TMM_XA_RMID
+              value: {{ .Values.bankapp.ArizonaBranchBank.resourceManagerId }}
+            - name: ORACLE_TMM_TCS_CONN_POOL_SIZE
+              value: "15"
+            - name: ORACLE_TMM_PROPAGATE_TRACE_HEADERS
+              value: {{ .Values.bankapp.ArizonaBranchBank.propagateTraceHeader | quote }}
+            - name: branch-datasource.url
+              value: {{ .Values.bankapp.ArizonaBranchBank.databaseUrl }}
+            - name: branch-datasource.user
+              value: {{ .Values.bankapp.ArizonaBranchBank.databaseUser }}
+            - name: branch-datasource.password
+              value: {{ .Values.bankapp.ArizonaBranchBank.databasePassword }}
+      imagePullSecrets:
+        - name: regcred
+---
+
+##################################################################################################
+# losangeles-branch-bank
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: losangeles-branch-bank
+  labels:
+    app: losangeles-branch-bank
+    service: losangeles-branch-bank
+spec:
+  ports:
+    - port: 9096
+      name: http
+  selector:
+    app: losangeles-branch-bank
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: losangeles-branch-bank
+  labels:
+    account: losangeles-branch-bank
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: losangeles-branch-bank
+  labels:
+    app: losangeles-branch-bank
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: losangeles-branch-bank
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: losangeles-branch-bank
+        version: v1
+    spec:
+      containers:
+        - name: losangeles-branch-bank
+          image: {{ .Values.bankapp.LosAngelesBranchBank.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9096
+          env:
+            - name: SERVICE_NAME
+              value: losangeles-branch-bank
+            - name: server.port
+              value: "9096"
+            - name: SPRING_MICROTX_COORDINATOR_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: SPRING_MICROTX_PARTICIPANT_URL
+              value: http://losangeles-branch-bank:9096
+            - name: SPRING_MICROTX_XA_RESOURCE_MANAGER_ID
+              value: {{ .Values.bankapp.LosAngelesBranchBank.resourceManagerId }}
+            - name: SPRING_MICROTX_PROPAGATION_ACTIVE
+              value: {{ .Values.bankapp.LosAngelesBranchBank.propagateTraceHeader | quote }}
+            - name: ORACLE_TMM_TCS_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: ORACLE_TMM_CALLBACK_URL
+              value: http://losangeles-branch-bank:9096
+            - name: coreBankEndpoint
+              value: http://core-banking:9091
+            - name: ORACLE_TMM_XA_RMID
+              value: {{ .Values.bankapp.LosAngelesBranchBank.resourceManagerId }}
+            - name: ORACLE_TMM_TCS_CONN_POOL_SIZE
+              value: "15"
+            - name: ORACLE_TMM_PROPAGATE_TRACE_HEADERS
+              value: {{ .Values.bankapp.LosAngelesBranchBank.propagateTraceHeader | quote }}
+            - name: branch-datasource.url
+              value: {{ .Values.bankapp.LosAngelesBranchBank.databaseUrl }}
+            - name: branch-datasource.user
+              value: {{ .Values.bankapp.LosAngelesBranchBank.databaseUser }}
+            - name: branch-datasource.password
+              value: {{ .Values.bankapp.LosAngelesBranchBank.databasePassword }}
+      imagePullSecrets:
+        - name: regcred
+---

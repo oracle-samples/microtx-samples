@@ -1,0 +1,2 @@
+define(["exports","@testing-library/preact"],function(e,t){"use strict";e.getContents=async(e,t="gridcell")=>e.findAllByRole(t),e.getItems=async(e,t="row")=>e.findAllByRole(t),e.getRoot=async(e,t="grid")=>e.findByRole(t),e.mouseCheckboxSelection=(e,o)=>{const c=e.querySelector("[type=checkbox]");if(!c)throw new Error("checkbox not found!");t.fireEvent.click(c,o)},e.mouseItemSelection=(e,o)=>{t.fireEvent.click(e,o)}});
+//# sourceMappingURL=testHelpers-1d3e6d7d.js.map

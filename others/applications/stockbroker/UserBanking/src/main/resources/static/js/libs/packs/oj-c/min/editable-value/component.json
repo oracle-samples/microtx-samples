@@ -1,0 +1,9 @@
+{
+  "name": "editable-value",
+  "version": "1.0.0",
+  "jetVersion": "^13.0.0",
+  "type": "resource",
+  "displayName": "Editable Value",
+  "description": "The common resources including hooks and utils that will be used by the form components.",
+  "pack": "oj-c"
+}

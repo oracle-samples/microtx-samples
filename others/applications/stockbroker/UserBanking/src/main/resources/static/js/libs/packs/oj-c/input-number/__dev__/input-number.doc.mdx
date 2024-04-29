@@ -1,0 +1,31 @@
+import { ArgsTable, Canvas, Meta, Story } from '@storybook/addon-docs';
+import 'oj-c/input-number';
+
+<Meta title="InputNumber" component="oj-c-input-number" />
+
+# Input Number
+
+The `oj-c-input-number` component enhances a browser input type="text" element by formatting numbers
+and allowing you to step up and down.
+
+## Import
+
+```js
+//To typecheck the element APIs, import as below.
+import { CInputNumberElement } from 'oj-c/input-number';
+
+//For the transpiled javascript to load the element's module, import as below
+import 'oj-c/input-number';
+```
+
+## Usage
+
+Here's how to implement a basic `oj-c-input-number`.
+
+<Canvas>
+  <Story id="form-inputnumber--basic" name="Basic" height={150} />
+</Canvas>
+
+## Props
+
+<ArgsTable of="oj-c-input-number" />

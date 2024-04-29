@@ -1,0 +1,9 @@
+{
+  "name": "hooks",
+  "version": "1.0.0",
+  "jetVersion": "^13.0.0",
+  "type": "resource",
+  "displayName": "A user friendly, translatable name of the pack.",
+  "description": "A translatable high-level description for the pack.",
+  "pack": "oj-c"
+}

@@ -1,0 +1,2 @@
+define(["exports","preact/jsx-runtime",'module',"./utils/UNSAFE_classNames","./classNames-e842f86a"],function(s,e,a,n,r){"use strict";const t={base:"ds8ldl",banner:"_1k5x69d",inline:"_51r2wc",toast:"weaexk"};s.MessageSummary=function({text:s,variant:a="banner"}){const n=r.classNames(["banner"===a&&"oj-c-messagebanner-summary",t.base,t[a]]);return e.jsx("div",Object.assign({role:"heading",class:n},{children:s}))}});
+//# sourceMappingURL=MessageSummary-c8e827f6.js.map
