@@ -22,7 +22,6 @@ package com.oracle.mtm.sample;
 
 import oracle.tmm.common.TrmConfig;
 import oracle.tmm.jta.common.DataSourceInfo;
-import oracle.tmm.jta.common.TrmXAResourceType;
 import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 import oracle.ucp.jdbc.PoolXADataSource;
@@ -40,7 +39,8 @@ import java.sql.SQLException;
 @ApplicationScoped
 public class Configuration {
 
-    private PoolXADataSource dataSource;
+    private PoolXADataSource xaDataSource;
+    private PoolDataSource dataSource;
 
     private PoolDataSource creditDataSource;
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -80,27 +80,49 @@ public class Configuration {
     String creditRmid;
 
     private void init(@Observes @Initialized(ApplicationScoped.class) Object event) {
-        initialiseDataSource();
+        initializeDatasource();
+        initialiseXADataSources();
     }
 
+
+
+    /**
+     * Initialize the DataSource for non xa operation
+     *
+     */
+    private void initializeDatasource(){
+        try {
+            this.dataSource = PoolDataSourceFactory.getPoolDataSource();
+            this.dataSource.setURL(url);
+            this.dataSource.setUser(user);
+            this.dataSource.setPassword(password);
+            this.dataSource.setConnectionFactoryClassName("oracle.jdbc.pool.OracleDataSource");
+            this.dataSource.setMaxPoolSize(15);
+        } catch (SQLException e) {
+            logger.error("Failed to initialise  database");
+        }
+    }
     /**
      * Initializes the datasource into the TMM library that manages the lifecycle of the XA transaction
      *
      */
-    private void initialiseDataSource() {
+    private void initialiseXADataSources() {
+
         try {
+            /**
+             * Initialize the Xa DataSource
+             */
 
             DataSourceInfo departmentDataSourceInfo = new DataSourceInfo(rmid);
-            departmentDataSourceInfo.setDataSourceName("departmentDataSource");
+            departmentDataSourceInfo.setDataSourceName("departmentXADataSource");
 
-
-            this.dataSource = PoolDataSourceFactory.getPoolXADataSource();
-            this.dataSource.setURL(url);
-            this.dataSource.setUser(user);
-            this.dataSource.setPassword(password);
-            this.dataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
-            this.dataSource.setMaxPoolSize(15);
-            TrmConfig.initXaDataSource(this.dataSource,departmentDataSourceInfo);
+            this.xaDataSource = PoolDataSourceFactory.getPoolXADataSource();
+            this.xaDataSource.setURL(url);
+            this.xaDataSource.setUser(user);
+            this.xaDataSource.setPassword(password);
+            this.xaDataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
+            this.xaDataSource.setMaxPoolSize(15);
+            TrmConfig.initXaDataSource(this.xaDataSource,departmentDataSourceInfo);
 
         } catch (SQLException e) {
             logger.error("Failed to initialise "+ rmid +" database");
@@ -108,9 +130,12 @@ public class Configuration {
 
         try {
 
+            /**
+             * Initialize the Non Xa DataSource
+             */
             DataSourceInfo creditDataSouceInfo = new DataSourceInfo(creditRmid);
             creditDataSouceInfo.setLLRSupport();
-            creditDataSouceInfo.setDataSourceName("creditDataSource");
+            creditDataSouceInfo.setDataSourceName("creditXADataSource");
 
             this.creditDataSource = PoolDataSourceFactory.getPoolDataSource();
             this.creditDataSource.setURL(creditUrl);
@@ -124,7 +149,7 @@ public class Configuration {
         }
     }
 
-    public PoolXADataSource getDatasource() {
+    public PoolDataSource getDatasource() {
         return dataSource;
     }
 }

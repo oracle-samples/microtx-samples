@@ -50,9 +50,6 @@ public class AccountsResource {
     @Inject
     IAccountsService accountService;
 
-    @Inject
-    Configuration config;
-
     private ObjectMapper mapper = new ObjectMapper();
 
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.annotation.RequestScope;
 
+import javax.sql.XAConnection;
 import javax.sql.XADataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -61,9 +62,11 @@ public class TransferFeeService {
     public Fee feeDetails(String accountId) throws SQLException {
         Fee fee = null;
         Connection connection = null;
+        XAConnection xaConnection = null;
         PreparedStatement statement = null;
         try {
-            connection = dataSource.getXAConnection().getConnection();
+            xaConnection = dataSource.getXAConnection();
+            connection = xaConnection.getConnection();
             if (connection == null) {
                 return null;
             }
@@ -82,6 +85,9 @@ public class TransferFeeService {
             }
             if(connection != null){
                 connection.close();
+            }
+            if(xaConnection!=null){
+                xaConnection.close();
             }
         }
         return fee;

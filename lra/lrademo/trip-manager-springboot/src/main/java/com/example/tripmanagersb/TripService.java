@@ -33,14 +33,14 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class TripService {
     private static final Logger LOG = LoggerFactory.getLogger(TripService.class);
 
-    private Map<String, Booking> bookings = new HashMap<>();
+    private Map<String, Booking> bookings = new ConcurrentHashMap<>();
 
     public void saveProvisionalBooking(Booking booking) throws BookingException {
         bookings.putIfAbsent(booking.getId(), booking);

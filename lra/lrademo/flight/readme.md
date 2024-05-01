@@ -6,10 +6,10 @@ Default TRM LRA coordinator URL is "http://localhost:9000/api/v1/lra-coordinator
 
 Download the NodeJs Lib file from the official MicroTx Distribution package : https://www.oracle.com/in/database/transaction-manager-for-microservices/
 
-Copy `tmmlib-node-23.4.1.tgz` file from `otmm-23.4.1/lib/nodejs` to the flight folder.
+Copy `tmmlib-node-23.4.2.tgz` file from `otmm-23.4.2/lib/nodejs` to the flight folder.
 
 ```
-cp installation_directory/otmm-23.4.1/lib/nodejs/tmmlib-node-23.4.1.tgz ./
+cp installation_directory/otmm-23.4.2/lib/nodejs/tmmlib-node-23.4.2.tgz ./
 ```
 
 To install this dependency use:

@@ -34,4 +34,16 @@
             <property name="hibernate.hbm2ddl.auto" value="update" />
         </properties>
     </persistence-unit>
+    <persistence-unit name="mydeptds" >
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <properties>
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect" />
+            <property name="hibernate.archive.autodetection" value="class" />
+            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.format_sql" value="true" />
+            <property name="hibernate.hbm2ddl.auto" value="update" />
+            <!-- Configuring The Database Connection Details -->
+        </properties>
+    </persistence-unit>
 </persistence>

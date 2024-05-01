@@ -21,6 +21,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 package com.oracle.mtm.sample;
 
 import oracle.tmm.common.TrmConfig;
+import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
 import oracle.ucp.jdbc.PoolXADataSource;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -43,10 +44,13 @@ import java.util.Map;
 @ApplicationScoped
 public class Configuration {
 
-    private PoolXADataSource dataSource;
-    final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private PoolXADataSource xaDataSource;
+
+    private EntityManagerFactory xaEntityManagerFactory;
 
     private EntityManagerFactory entityManagerFactory;
+
+    private PoolDataSource dataSource;
 
     @Inject
     @ConfigProperty(name = "departmentDataSource.url")
@@ -58,37 +62,45 @@ public class Configuration {
     @ConfigProperty(name = "departmentDataSource.password")
     String password;
 
+    final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
 
     private void init(@Observes @Initialized(ApplicationScoped.class) Object event) {
+        initialiseXADataSource();
+        createXAEntityManagerFactory();
         initialiseDataSource();
         createEntityManagerFactory();
     }
 
     /**
-     * Initializes the datasource into the TMM library that manages the lifecycle of the XA transaction
-     *
+     * Initializes the XA datasource for XA transactions
      */
-    private void initialiseDataSource() {
+    private void initialiseXADataSource() {
         try {
-            this.dataSource = PoolDataSourceFactory.getPoolXADataSource();
-            this.dataSource.setURL(url);
-            this.dataSource.setUser(user);
-            this.dataSource.setPassword(password);
-            this.dataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
-            this.dataSource.setMaxPoolSize(15);
+            this.xaDataSource = PoolDataSourceFactory.getPoolXADataSource();
+            this.xaDataSource.setURL(url);
+            this.xaDataSource.setUser(user);
+            this.xaDataSource.setPassword(password);
+            this.xaDataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
+            this.xaDataSource.setInitialPoolSize(10);
+            this.xaDataSource.setMinPoolSize(5);
+            this.xaDataSource.setMaxPoolSize(10);
         } catch (SQLException e) {
             logger.error("Failed to initialise database");
         }
     }
 
-    public PoolXADataSource getDatasource() {
-        return dataSource;
+    public PoolXADataSource getXADatasource() {
+        return xaDataSource;
     }
 
-    public void createEntityManagerFactory(){
+    /**
+     * Creates EntityManagerFactory with XA datasource and initializes into the MicroTx TMM library that manages the lifecycle of the XA transaction
+     */
+    public void createXAEntityManagerFactory(){
         Map<String, Object> props = new HashMap<String, Object>();
 
-        props.put("hibernate.connection.datasource", getDatasource());
+        props.put("hibernate.connection.datasource", getXADatasource());
         props.put("hibernate.show_sql", "true");
         props.put("hibernate.dialect", "org.hibernate.dialect.Oracle12cDialect");
         props.put("hibernate.hbm2ddl.auto", "none");
@@ -100,17 +112,60 @@ public class Configuration {
         props.put("jakarta.persistence.jdbc.user", user);
         props.put("jakarta.persistence.jdbc.password", password);
 
-        this.entityManagerFactory = Persistence.createEntityManagerFactory("mydeptxads", props);
+        this.xaEntityManagerFactory = Persistence.createEntityManagerFactory("mydeptxads", props);
 
-        TrmConfig.initEntityManagerFactory(this.entityManagerFactory); // Initialize TMM Library
+        // Initialize entityManagerFactory with MicroTx TMM Library
+        TrmConfig.initEntityManagerFactory(this.xaEntityManagerFactory);
+    }
+
+    /**
+     * Initializes simple non XA datasource for simple (non-transactional) database operations
+     */
+    private void initialiseDataSource() {
+        try {
+            this.dataSource = PoolDataSourceFactory.getPoolDataSource();
+            this.dataSource.setURL(url);
+            this.dataSource.setUser(user);
+            this.dataSource.setPassword(password);
+            this.dataSource.setConnectionFactoryClassName("oracle.jdbc.pool.OracleDataSource");
+            this.dataSource.setInitialPoolSize(10);
+            this.dataSource.setMinPoolSize(5);
+            this.dataSource.setMaxPoolSize(10);
+        } catch (SQLException e) {
+            logger.error("Failed to initialise database");
+        }
+    }
+
+    public PoolDataSource getDatasource() {
+        return dataSource;
+    }
+
+    /**
+     * Creates EntityManagerFactory with plain datasource for non-transactional database operations
+     */
+    public void createEntityManagerFactory(){
+        Map<String, Object> props = new HashMap<String, Object>();
+
+        props.put("hibernate.connection.datasource", getDatasource());
+        props.put("hibernate.show_sql", "true");
+        props.put("hibernate.dialect", "org.hibernate.dialect.Oracle12cDialect");
+        props.put("hibernate.hbm2ddl.auto", "none");
+        props.put("hibernate.format_sql", "true");
+        props.put("jakarta.persistence.transactionType", "RESOURCE_LOCAL");
+        props.put("jakarta.persistence.jdbc.driver", "oracle.jdbc.OracleDriver");
+        props.put("jakarta.persistence.jdbc.url", url);
+        props.put("jakarta.persistence.jdbc.user", user);
+        props.put("jakarta.persistence.jdbc.password", password);
+
+        props.put("hibernate.ucp.oracle.url", url);
+        props.put("hibernate.ucp.username", user);
+        props.put("hibernate.ucp.password", password);
+
+        this.entityManagerFactory = Persistence.createEntityManagerFactory("mydeptds", props);
     }
 
     public EntityManagerFactory getEntityManagerFactory() {
         return this.entityManagerFactory;
-    }
-
-    public Logger getLogger() {
-        return logger;
     }
 
     /**

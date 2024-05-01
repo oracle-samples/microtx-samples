@@ -22,8 +22,6 @@ FROM maven:3.8.3-openjdk-17 as build
 
 WORKDIR /app
 
-# Copy the MTM libraries
-COPY lib/* /root/.m2/repository/com/oracle/microtx/microtx-spring-boot-starter/23.4.1/
 COPY pom.xml .
 COPY src src
 RUN mvn package -DskipTests

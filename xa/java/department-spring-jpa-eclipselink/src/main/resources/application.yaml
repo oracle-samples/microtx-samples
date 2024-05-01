@@ -45,7 +45,7 @@ departmentDataSource:
   password: "xxxxxx"
   # Properties for using Universal Connection Pool (UCP)
   # Note: These properties require JDBC version 21.0.0.0
-  oracleucp:
+  xaOracleucp:
     driver-class-name: oracle.jdbc.OracleDriver
     type: oracle.ucp.jdbc.PoolXADataSource
     connection-factory-class-name: oracle.jdbc.xa.client.OracleXADataSource
@@ -55,5 +55,13 @@ departmentDataSource:
     min-pool-size: 10
     max-pool-size: 30
     data-source-name: deptxadatasource
+
+  oracleucp:
+    driver-class-name: oracle.jdbc.OracleDriver
+    type: oracle.ucp.jdbc.PoolDataSource
+    connection-factory-class-name: oracle.jdbc.pool.OracleDataSource
+    sql-for-validate-connection: select * from dual
+    connection-pool-name: connectionPoolName3
+    data-source-name: deptdatasource
 
 #spring.jpa.open-in-view: false

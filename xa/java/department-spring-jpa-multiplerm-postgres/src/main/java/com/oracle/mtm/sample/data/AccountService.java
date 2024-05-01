@@ -57,8 +57,8 @@ public class AccountService implements IAccountService {
     public AccountService(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         try {
-            entityManager =  (EntityManager) applicationContext.getBean("microTxEntityManager", "departmentDataSource");
-            creditEntityManager =  (EntityManager) applicationContext.getBean("microTxEntityManager", "creditDataSource");
+            entityManager =  (EntityManager) applicationContext.getBean("microTxEntityManager", "departmentXADataSource");
+            creditEntityManager =  (EntityManager) applicationContext.getBean("microTxEntityManager", "creditXADataSource");
         } catch (ClassCastException ex) {
             LOG.info(ex.getMessage());
         }

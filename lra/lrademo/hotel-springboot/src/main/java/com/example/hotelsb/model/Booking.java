@@ -126,7 +126,7 @@ public class Booking {
         return true;
     }
     public enum BookingStatus {
-        CONFIRMED, CANCELLED, PROVISIONAL, CONFIRMING, CANCEL_REQUESTED, FAILED;
+        CONFIRMED, CANCELLED, PROVISIONAL, CONFIRMING, CANCEL_REQUESTED, FAILED
     }
 
     @Override

@@ -30,6 +30,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 
+import javax.sql.XAConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -63,9 +64,11 @@ public class AccountService implements IAccountService {
     public Account accountDetails(String accountId) throws SQLException {
         Account account = null;
         Connection connection = null;
+        XAConnection xaConnection = null;
         PreparedStatement statement = null;
         try {
-            connection = dataSource.getXAConnection().getConnection();
+            xaConnection = dataSource.getXAConnection();
+            connection = xaConnection.getConnection();
             if (connection == null) {
                 return null;
             }
@@ -85,6 +88,9 @@ public class AccountService implements IAccountService {
             }
             if(connection != null){
                 connection.close();
+            }
+            if(xaConnection!=null){
+                xaConnection.close();
             }
         }
         return account;

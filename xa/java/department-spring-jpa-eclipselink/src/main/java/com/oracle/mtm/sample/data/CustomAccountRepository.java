@@ -22,11 +22,14 @@ package com.oracle.mtm.sample.data;
 
 import jakarta.persistence.*;
 import com.oracle.mtm.sample.entity.Account;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class CustomAccountRepository {
-    @PersistenceContext(unitName="mydeptxads")
+    @Autowired
+    @Qualifier("localEntityManagerFactory")
     private EntityManager entityManager;
 
     public Account findByAccountId(String accountId) {
