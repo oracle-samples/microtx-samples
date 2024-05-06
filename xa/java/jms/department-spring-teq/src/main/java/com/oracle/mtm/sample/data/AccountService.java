@@ -195,8 +195,8 @@ public class AccountService implements IAccountService {
     @Override
     public void publishEvent(String msg) throws JMSException, SQLException {
         Topic topic = ((AQjmsSession) xaTopicSession.getTopicSession()).getTopic(username, topicName);
-        try (AQjmsTopicPublisher publisher = (AQjmsTopicPublisher) ((AQjmsSession) xaTopicSession).createPublisher(topic)) {
-            AQjmsTextMessage message = (AQjmsTextMessage) xaTopicSession.createTextMessage(msg);
+        try (AQjmsTopicPublisher publisher = (AQjmsTopicPublisher) ((AQjmsSession) xaTopicSession.getTopicSession()).createPublisher(topic)) {
+            AQjmsTextMessage message = (AQjmsTextMessage) ((AQjmsSession)xaTopicSession.getTopicSession()).createTextMessage(msg);
             publisher.publish(message, new AQjmsAgent[]{new AQjmsAgent("my_subscription", null)});
             logger.info("Message published:" + msg);
         }
