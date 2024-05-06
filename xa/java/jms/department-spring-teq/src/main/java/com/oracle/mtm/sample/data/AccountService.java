@@ -20,55 +20,55 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 package com.oracle.mtm.sample.data;
 
-import java.lang.invoke.MethodHandles;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.*;
 
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Inject;
+import com.oracle.mtm.sample.resource.AccountsResource;
 import jakarta.jms.JMSException;
 import jakarta.jms.Topic;
 import jakarta.jms.XATopicSession;
-
-import com.oracle.mtm.sample.Configuration;
-import com.oracle.mtm.sample.entity.Account;
-
 import oracle.jakarta.jms.AQjmsAgent;
 import oracle.jakarta.jms.AQjmsSession;
 import oracle.jakarta.jms.AQjmsTextMessage;
 import oracle.jakarta.jms.AQjmsTopicPublisher;
-import oracle.tmm.jta.common.MicroTxXATopicSession;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+import com.oracle.mtm.sample.entity.Account;
+import org.springframework.web.context.annotation.RequestScope;
+
+import javax.sql.XAConnection;
+import javax.sql.XADataSource;
 
 /**
- * Service that connects to the accounts database and provides methods to interact with the accounts
+ * Service that connects to the accounts database and provides methods to interact with the account
  */
-@RequestScoped
-public class AccountsService implements IAccountsService {
 
-    final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+@Component
+@RequestScope
+public class AccountService implements IAccountService {
+    private static final Logger LOG = LoggerFactory.getLogger(AccountService.class);
 
-    /**
-     * The Database Connection injected by the TMM Library. Use this connection object to execute SQLs (DMLs) within the application code.
-     */
-    @Inject
-    @MicroTxXATopicSession
+    @Autowired
+    @Qualifier("microTxXATopicSession")
+    @Lazy
     private XATopicSession xaTopicSession;
 
-    @Inject
-    private Configuration config;
+    @Autowired
+    @Qualifier("ucpXADataSource")
+    XADataSource dataSource;
 
-    @Inject
-    @ConfigProperty(name = "departmentDataSource.user")
-    String user;
+    @Value("${departmentDataSource.user}")
+    private String username;
 
-    @Inject
-    @ConfigProperty(name = "jms.topicName")
-    String topicName;
+    @Value("${jms.topicName}")
+    private String topicName;
+
+    private static final Logger logger = LoggerFactory.getLogger(AccountService.class);
 
     /**
      * Get account details persisted in the database
@@ -79,29 +79,35 @@ public class AccountsService implements IAccountsService {
     @Override
     public Account accountDetails(String accountId) throws SQLException {
         Account account = null;
-        PreparedStatement statement = null;
+        XAConnection xaConnection= null;
         Connection connection = null;
+        PreparedStatement statement = null;
         try {
-            connection =  config.getDatasource().getConnection();
+            xaConnection = dataSource.getXAConnection();
+            connection = xaConnection.getConnection();
             if (connection == null) {
                 return null;
             }
             String query = "SELECT * FROM accounts where account_id=?";
             statement = connection.prepareStatement(query);
             statement.setString(1, accountId);
+
             ResultSet dataSet = statement.executeQuery();
             if (dataSet.next()) {
                 account = new Account(dataSet.getString("account_id"), dataSet.getString("name"), dataSet.getDouble("amount"));
             }
         } catch (SQLException e) {
-            logger.error(e.getLocalizedMessage());
+            LOG.error(e.getLocalizedMessage());
             throw e;
-        }finally {
+        } finally {
             if(statement!=null){
                 statement.close();
             }
             if(connection != null){
                 connection.close();
+            }
+            if(xaConnection != null){
+                xaConnection.close();
             }
         }
         return account;
@@ -111,7 +117,7 @@ public class AccountsService implements IAccountsService {
      * Withdraw amount from an account
      * @param accountId Account identity
      * @param amount The amount to be withdrawn from the account
-     * @return boolean to indicate if the withdrawal was successful
+     * @return If the withdrawal was successful
      * @throws SQLException
      */
     @Override
@@ -119,44 +125,46 @@ public class AccountsService implements IAccountsService {
         String query = "UPDATE accounts SET amount=amount-? where account_id=?";
         Connection connection = null;
         try {
-            connection = ((AQjmsSession) xaTopicSession).getDBConnection();
+            connection = ((AQjmsSession) xaTopicSession.getTopicSession()).getDBConnection();
         } catch (JMSException e) {
             throw new RuntimeException(e);
         }
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setDouble(1, amount);
-        statement.setString(2, accountId);
-        boolean res = statement.executeUpdate() > 0;
+        try(PreparedStatement statement = connection.prepareStatement(query);) {
+            statement.setDouble(1, amount);
+            statement.setString(2, accountId);
+            boolean res =  statement.executeUpdate() > 0;
 
-        publishEvent("Withdrawn: $" + amount + " from account: " + accountId);
+            publishEvent("Withdrawn: $" + amount + " from account: " + accountId);
 
-        return res;
+            return res;
+        }
     }
 
     /**
      * Deposit amount to an account
      * @param accountId Account identity
      * @param amount The amount to be deposited into the account
-     * @return boolean to indicate if the deposit was successful
+     * @return If the deposit was successful
      * @throws SQLException
      */
     @Override
     public boolean deposit(String accountId, double amount) throws SQLException, JMSException {
-        String query ="UPDATE accounts SET amount=amount+? where account_id=?";
+        String query = "UPDATE accounts SET amount=amount+? where account_id=?";
         Connection connection = null;
         try {
-            connection = ((AQjmsSession) xaTopicSession).getDBConnection();
+            connection = ((AQjmsSession) xaTopicSession.getTopicSession()).getDBConnection();
         } catch (JMSException e) {
             throw new RuntimeException(e);
         }
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setDouble(1, amount);
-        statement.setString(2, accountId);
-        boolean res = statement.executeUpdate() > 0;
+        try(PreparedStatement statement = connection.prepareStatement(query);) {
+            statement.setDouble(1, amount);
+            statement.setString(2, accountId);
+            boolean res = statement.executeUpdate() > 0;
 
-        publishEvent("Deposited: $" + amount + " in account: " + accountId);
+            publishEvent("Deposited: $" + amount + " in account: " + accountId);
 
-        return res;
+            return res;
+        }
     }
 
     /**
@@ -167,26 +175,26 @@ public class AccountsService implements IAccountsService {
      */
     @Override
     public double getBalance(String accountId) throws SQLException {
-        String query ="SELECT amount FROM accounts where account_id=?";
+        String query = "SELECT amount FROM accounts where account_id=?";
         Connection connection = null;
         try {
-            connection = ((AQjmsSession) xaTopicSession).getDBConnection();
+            connection = ((AQjmsSession) xaTopicSession.getTopicSession()).getDBConnection();
         } catch (JMSException e) {
             throw new RuntimeException(e);
         }
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setString(1, accountId);
-        ResultSet dataSet = statement.executeQuery();
-        if (dataSet.next()) {
-            return Double.parseDouble(dataSet.getString("amount"));
+        try(PreparedStatement statement = connection.prepareStatement(query);) {
+            statement.setString(1, accountId);
+            ResultSet dataSet = statement.executeQuery();
+            if (dataSet.next()) {
+                return Double.parseDouble(dataSet.getString("amount"));
+            }
         }
-        statement.close();
         throw new IllegalArgumentException("Account not found");
     }
 
     @Override
     public void publishEvent(String msg) throws JMSException, SQLException {
-        Topic topic = ((AQjmsSession) xaTopicSession).getTopic(user, topicName);
+        Topic topic = ((AQjmsSession) xaTopicSession.getTopicSession()).getTopic(username, topicName);
         try (AQjmsTopicPublisher publisher = (AQjmsTopicPublisher) ((AQjmsSession) xaTopicSession).createPublisher(topic)) {
             AQjmsTextMessage message = (AQjmsTextMessage) xaTopicSession.createTextMessage(msg);
             publisher.publish(message, new AQjmsAgent[]{new AQjmsAgent("my_subscription", null)});

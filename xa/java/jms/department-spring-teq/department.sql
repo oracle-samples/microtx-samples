@@ -18,51 +18,19 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-package com.oracle.mtm.sample.data;
 
-import com.oracle.mtm.sample.entity.Account;
-
-import jakarta.jms.JMSException;
-import java.sql.SQLException;
-
-/**
- * Interface for account database service
- */
-public interface IAccountsService {
-
-    /**
-     * Get account details persisted in the database
-     * @param accountId Account identity
-     * @return Returns the account details associated with the account
-     * @throws SQLException
-     */
-    Account accountDetails(String accountId) throws SQLException;
-
-    /**
-     * Withdraw amount from an account
-     * @param accountId Account identity
-     * @param amount The amount to be withdrawn from the account
-     * @return boolean to indicate if the withdrawal was successful
-     * @throws SQLException
-     */
-    boolean withdraw(String accountId, double amount) throws SQLException, JMSException;
-
-    /**
-     * Deposit amount to an account
-     * @param accountId Account identity
-     * @param amount The amount to be deposited into the account
-     * @return boolean to indicate if the deposit was successful
-     * @throws SQLException
-     */
-    boolean deposit(String accountId, double amount) throws SQLException, JMSException;
-
-    /**
-     * Get balance amount from the account
-     * @param accountId Account identity
-     * @return Returns the balance associated with the account
-     * @throws SQLException
-     */
-    double getBalance(String accountId) throws SQLException;
-
-    void publishEvent(String message) throws JMSException, SQLException;
-}
+CREATE USER department_spring IDENTIFIED BY <password> QUOTA UNLIMITED ON DATA;
+GRANT CREATE SESSION TO department_spring;
+ALTER SESSION SET CURRENT_SCHEMA=department_spring;
+create table accounts
+(
+    account_id VARCHAR(10) not null,
+    name VARCHAR(60) not null,
+    amount decimal(10,2) not null,
+    PRIMARY KEY (account_id)
+);
+insert into accounts values('account1', 'account1', 1000.00);
+insert into accounts values('account2', 'account2', 2000.00);
+insert into accounts values('account3', 'account3', 3000.00);
+insert into accounts values('account4', 'account4', 4000.00);
+insert into accounts values('account5', 'account5', 5000.00);

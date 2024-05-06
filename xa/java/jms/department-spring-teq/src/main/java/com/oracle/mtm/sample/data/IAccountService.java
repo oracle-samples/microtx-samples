@@ -21,14 +21,15 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 package com.oracle.mtm.sample.data;
 
 import com.oracle.mtm.sample.entity.Account;
-
 import jakarta.jms.JMSException;
+
+import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
  * Interface for account database service
  */
-public interface IAccountsService {
+public interface IAccountService {
 
     /**
      * Get account details persisted in the database
@@ -42,7 +43,7 @@ public interface IAccountsService {
      * Withdraw amount from an account
      * @param accountId Account identity
      * @param amount The amount to be withdrawn from the account
-     * @return boolean to indicate if the withdrawal was successful
+     * @return If the withdrawal was successful
      * @throws SQLException
      */
     boolean withdraw(String accountId, double amount) throws SQLException, JMSException;
@@ -51,7 +52,7 @@ public interface IAccountsService {
      * Deposit amount to an account
      * @param accountId Account identity
      * @param amount The amount to be deposited into the account
-     * @return boolean to indicate if the deposit was successful
+     * @return If the deposit was successful
      * @throws SQLException
      */
     boolean deposit(String accountId, double amount) throws SQLException, JMSException;

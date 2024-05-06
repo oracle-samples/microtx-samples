@@ -18,51 +18,55 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-package com.oracle.mtm.sample.data;
+package com.oracle.mtm.sample.entity;
 
-import com.oracle.mtm.sample.entity.Account;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-import jakarta.jms.JMSException;
-import java.sql.SQLException;
+@Schema(name = "Account")
+public class Account {
+    @Schema(required = true, description = "Account identity")
+    String accountId;
+    @Schema(required = true, description = "Account name")
+    String name;
+    @Schema(required = true, description = "Amount associated with the account")
+    double amount;
 
-/**
- * Interface for account database service
- */
-public interface IAccountsService {
+    public Account(String accountId, String name, double amount) {
+        this.accountId = accountId;
+        this.name = name;
+        this.amount = amount;
+    }
 
-    /**
-     * Get account details persisted in the database
-     * @param accountId Account identity
-     * @return Returns the account details associated with the account
-     * @throws SQLException
-     */
-    Account accountDetails(String accountId) throws SQLException;
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
+    }
 
-    /**
-     * Withdraw amount from an account
-     * @param accountId Account identity
-     * @param amount The amount to be withdrawn from the account
-     * @return boolean to indicate if the withdrawal was successful
-     * @throws SQLException
-     */
-    boolean withdraw(String accountId, double amount) throws SQLException, JMSException;
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    /**
-     * Deposit amount to an account
-     * @param accountId Account identity
-     * @param amount The amount to be deposited into the account
-     * @return boolean to indicate if the deposit was successful
-     * @throws SQLException
-     */
-    boolean deposit(String accountId, double amount) throws SQLException, JMSException;
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
 
-    /**
-     * Get balance amount from the account
-     * @param accountId Account identity
-     * @return Returns the balance associated with the account
-     * @throws SQLException
-     */
-    double getBalance(String accountId) throws SQLException;
+    public String getAccountId() {
+        return accountId;
+    }
 
-    void publishEvent(String message) throws JMSException, SQLException;
+    public String getName() {
+        return name;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    @Override
+    public String toString() {
+        return "Account{" +
+                "accountId='" + accountId + '\'' +
+                ", name='" + name + '\'' +
+                ", amount=" + amount +
+                '}';
+    }
 }
