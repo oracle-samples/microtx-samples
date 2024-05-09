@@ -18,7 +18,7 @@
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 apiVersion: v2
 name: sampleappstccnode
-description: A Helm chart for MTRM Participants
+description: A Helm chart for MicroTx Participants
 
 # A chart can be either an 'application' or a 'library' chart.
 #

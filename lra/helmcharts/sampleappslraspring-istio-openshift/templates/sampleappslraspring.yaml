@@ -16,6 +16,8 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
 # PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ 
+ 
 ##################################################################################################
 # Hotel
 ##################################################################################################
@@ -28,7 +30,7 @@ metadata:
     service: hotel
 spec:
   ports:
-    - port: 8082
+    - port: 8080
       name: http
       targetPort: 8082
   selector:
@@ -64,7 +66,7 @@ spec:
       containers:
         - name: hotel
           image: {{ .Values.sampleappslra.hotel.image }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8082
           resources:
@@ -77,11 +79,7 @@ spec:
             - name: SPRING_MICROTX_LRA_COORDINATOR_URL
               value: http://otmm-tcs:9000/api/v1/lra-coordinator
             - name: SPRING_MICROTX_LRA_PARTICIPANT_URL
-              value: http://hotel.{{ .Values.sampleappslra.hotel.namespace }}.svc.cluster.local:8082
-            - name: MP_LRA_COORDINATOR_URL
-              value: {{ .Values.sampleappslra.lraCoordinatorUrl }}
-            - name: MP_LRA_PARTICIPANT_URL
-              value: http://hotel.{{ .Values.sampleappslra.hotel.namespace }}.svc.cluster.local:8082
+              value: http://hotel:8080
             - name: SERVICE_NAME
               value: hotel
       {{- if .Values.sampleappslra.hotel.imagePullSecret }}
@@ -101,7 +99,7 @@ metadata:
     service: flight
 spec:
   ports:
-    - port: 8083
+    - port: 8080
       name: http
       targetPort: 8083
   selector:
@@ -137,7 +135,7 @@ spec:
       containers:
         - name: flight
           image: {{ .Values.sampleappslra.flight.image }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8083
           resources:
@@ -145,18 +143,16 @@ spec:
               memory: "500Mi"
               cpu: "250m"
           env:
-            - name: LRA_COORDINATOR_URL
-              value: {{ .Values.sampleappslra.lraCoordinatorUrl }}
             - name: ORACLE_TMM_TCS_URL
-              value: {{ .Values.sampleappslra.lraCoordinatorUrl }}
+              value: http://otmm-tcs:9000/api/v1/lra-coordinator
             - name: SPRING_MICROTX_LRA_COORDINATOR_URL
               value: http://otmm-tcs:9000/api/v1/lra-coordinator
             - name: SPRING_MICROTX_LRA_PARTICIPANT_URL
-              value: http://flight.{{ .Values.sampleappslra.flight.namespace }}.svc.cluster.local:8083
+              value: http://flight:8080
+            - name: ORACLE_TMM_CALLBACK_URL
+              value: http://flight:8080
             - name: SERVICE_NAME
               value: flight
-            - name: ORACLE_TMM_CALLBACK_URL
-              value: http://flight.{{ .Values.sampleappslra.flight.namespace }}.svc.cluster.local:8083
       {{- if .Values.sampleappslra.flight.imagePullSecret }}
       imagePullSecrets:
         - name: {{ .Values.sampleappslra.flight.imagePullSecret }}
@@ -174,7 +170,7 @@ metadata:
     service: trip-manager
 spec:
   ports:
-    - port: 8081
+    - port: 8080
       name: http
       targetPort: 8081
   selector:
@@ -210,7 +206,7 @@ spec:
       containers:
         - name: trip-manager
           image: {{ .Values.sampleappslra.tripmanager.image }}
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8081
           resources:
@@ -223,17 +219,13 @@ spec:
             - name: SPRING_MICROTX_LRA_COORDINATOR_URL
               value: http://otmm-tcs:9000/api/v1/lra-coordinator
             - name: SPRING_MICROTX_LRA_PARTICIPANT_URL
-              value: http://trip-manager.{{ .Values.sampleappslra.tripmanager.namespace }}.svc.cluster.local:8081
-            - name: MP_LRA_COORDINATOR_URL
-              value: {{ .Values.sampleappslra.lraCoordinatorUrl }}
-            - name: MP_LRA_PARTICIPANT_URL
-              value: http://trip-manager.{{ .Values.sampleappslra.tripmanager.namespace }}.svc.cluster.local:8081
+              value: http://trip-manager:8080
             - name: SERVICE_NAME
               value: trip-manager
             - name: HOTEL_SERVICE_URL
-              value: http://hotel.{{ .Values.sampleappslra.hotel.namespace }}.svc.cluster.local:8082/hotelService/api/hotel
+              value: http://hotel:8080/hotelService/api/hotel
             - name: FLIGHT_SERVICE_URL
-              value: http://flight.{{ .Values.sampleappslra.flight.namespace }}.svc.cluster.local:8083/flightService/api/flight
+              value: http://flight:8080/flightService/api/flight
       {{- if .Values.sampleappslra.tripmanager.imagePullSecret }}
       imagePullSecrets:
         - name: {{ .Values.sampleappslra.tripmanager.imagePullSecret }}

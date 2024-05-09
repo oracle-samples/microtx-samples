@@ -20,7 +20,7 @@
  
 apiVersion: v2
 name: sampleappslra
-description: A Helm chart for MTRM Participants
+description: A Helm chart for MicroTx Participants
 
 # A chart can be either an 'application' or a 'library' chart.
 #

@@ -13,7 +13,7 @@
 
 apiVersion: v2
 name: transfer-transaction-promotion
-description: A Helm chart for MTRM Participants with Transaction Promotion enabled
+description: A Helm chart for MicroTx Participants with Transaction Promotion enabled
 
 # A chart can be either an 'application' or a 'library' chart.
 #
