@@ -16,28 +16,40 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
 # PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ 
+ 
+# Default values for sampleappslra.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
 
-apiVersion: v2
-name: sampleappslra
-description: A Helm chart for deploying MicroTx LRA Sample App in Kubernetes
-
-# A chart can be either an 'application' or a 'library' chart.
-#
-# Application charts are a collection of templates that can be packaged into versioned archives
-# to be deployed.
-#
-# Library charts provide useful utilities or functions for the chart developer. They're included as
-# a dependency of application charts to inject those utilities and functions into the rendering
-# pipeline. Library charts do not define any templates and therefore cannot be deployed.
-type: application
-
-# This is the chart version. This version number should be incremented each time you make changes
-# to the chart and its templates, including the app version.
-# Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 1.0.1
-
-# This is the version number of the application being deployed. This version number should be
-# incremented each time you make changes to the application. Versions are not expected to
-# follow Semantic Versioning. They should reflect the version the application is using.
-# It is recommended to use it with quotes.
-appVersion: "1.0.1"
+sampleappslra:
+  tripmanager:
+    name: trip-manager
+    host: trip-manager
+    version: v1
+    # Container image, example : image-registry.openshift-image-registry.svc:5000/otmm/lra-trip-manager-sb:1.0
+    image: lra-trip-manager-sb:1.0
+    imagePullSecret: 
+    gatewayUriPrefix: /trip-service
+    rewriteUriPrefix: /trip-service
+    destinationHost: trip-manager
+  flight:
+    name: flight
+    host: flight
+    version: v1
+    # Container image, example : image-registry.openshift-image-registry.svc:5000/otmm/lra-flight-sb:1.0
+    image: lra-flight-sb:1.0 
+    imagePullSecret: 
+    gatewayUriPrefix: /flightService
+    rewriteUriPrefix: /flightService
+    destinationHost: flight
+  hotel:
+    name: hotel
+    host: hotel
+    version: v1
+    # Container image, example : image-registry.openshift-image-registry.svc:5000/otmm/lra-sb-hotel:1.0
+    image: lra-sb-hotel:1.0
+    imagePullSecret: 
+    gatewayUriPrefix: /hotelService
+    rewriteUriPrefix: /hotelService
+    destinationHost: hotel
