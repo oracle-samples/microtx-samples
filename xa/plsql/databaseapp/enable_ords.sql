@@ -20,7 +20,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 
 /**
-* Enable web-access to the user by loggig in as sysdba user and running below SQL function
+* Enable web-access to the user by logging in as sysdba user and running below SQL function
 * <schema-name> is the database schema name in all-uppercase.
 * <schema-alias> is an alias for the schema name that will appear in the URL the user will use to access SQL Developer Web.
 **/

@@ -14,11 +14,11 @@ Sample applications are microservices that demonstrate how you can develop your 
 
 This source repository contains code of the sample applications for MicroTx. Each sub-folder contains the sample application source code and a YAML file which contains the configuration details.
 
-## Directory | Description
+Directory | Description
 ------------ | -------------
 [`docker/`](docker/) | YAML file where you must provide details to configure and deploy the sample applications in Docker Swarm environments.
 [`lra/`](lra/) | Source files for the Trip Booking application, which consists of four microservices, and uses the Long Running Action (LRA) transaction protocol. This application demonstrates how you can use MicroTx to manage LRA transactions.
-[`nested/cinema-booking/`](nested/cinema-booking/) | Source files for the application that you can use to Book a Seat in a Cinema. This application demonstrates how XA transactions are nested within an LRA transaction. 
+[`lra/nested/cinema-booking/`](nested/cinema-booking/) | Source files for the application that you can use to Book a Seat in a Cinema. This application demonstrates how XA transactions are nested within an LRA transaction. 
 [`tcc/`](tcc/) | Source files for a Travel Agent application, which consists of several microservices, and uses the TCC transaction protocol. This application demonstrates how you can use MicroTx to manage TCC transactions.
 [`xa/`](xa/) | Source files for a Banking application, which consists of Teller microservice and two Departments, and uses the XA transaction protocol. This application demonstrates how you can use MicroTx to manage XA transactions.
 

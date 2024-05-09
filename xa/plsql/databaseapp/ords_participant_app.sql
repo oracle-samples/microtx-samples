@@ -28,17 +28,18 @@ CREATE TABLE accounts
     amount decimal(10,2) not null,
     PRIMARY KEY (account_id)
 );
-insert into accounts values('account1', 'account1', 1000.00);
-insert into accounts values('account2', 'account2', 2000.00);
-insert into accounts values('account3', 'account3', 3000.00);
-insert into accounts values('account4', 'account4', 4000.00);
-insert into accounts values('account5', 'account5', 5000.00);
+insert into accounts (account_id, name, amount) values('account1', 'account1', 1000.00);
+insert into accounts (account_id, name, amount) values('account2', 'account2', 2000.00);
+insert into accounts (account_id, name, amount) values('account3', 'account3', 3000.00);
+insert into accounts (account_id, name, amount) values('account4', 'account4', 4000.00);
+insert into accounts (account_id, name, amount) values('account5', 'account5', 5000.00);
 /
 
 CREATE OR REPLACE PROCEDURE doDeposit (
     p_amount     IN  accounts.amount%TYPE,
     p_account_id     IN  accounts.account_id%TYPE
 )
+AUTHID CURRENT_USER
 AS
 BEGIN
     UPDATE accounts
@@ -46,8 +47,8 @@ BEGIN
     WHERE account_id  = p_account_id;
 EXCEPTION
     WHEN OTHERS THEN
-        HTP.print(SQLERRM);
-END;
+        HTP.print('Error: ' || SQLERRM || ' = Backtrace: ' || dbms_utility.format_error_backtrace);
+END doDeposit;
 /
 
 
@@ -55,6 +56,7 @@ CREATE OR REPLACE PROCEDURE doWithdraw (
     p_amount     IN  accounts.amount%TYPE,
     p_account_id     IN  accounts.account_id%TYPE
 )
+AUTHID CURRENT_USER
 AS
 BEGIN
     UPDATE accounts
@@ -62,16 +64,13 @@ BEGIN
     WHERE account_id  = p_account_id;
 EXCEPTION
     WHEN OTHERS THEN
-        HTP.print(SQLERRM);
-END;
+        HTP.print('Error: ' || SQLERRM || ' = Backtrace: ' || dbms_utility.format_error_backtrace);
+END doWithdraw;
 /
 
 DECLARE
-
     restModuleName VARCHAR2(256):= 'accounts'; --provide a name for the REST Service Module
     restModuleBasePath VARCHAR2(256):= 'accounts'; --provide a path for the REST Service Base Path
-
-
 BEGIN
     ORDS.define_module(
             p_module_name    => restModuleName,
@@ -131,7 +130,7 @@ BEGIN
                             END IF;
                         exception
                             when others then
-                                HTP.p(''ERROR Code: '' || SQLCODE || '' : ERROR Message: '' || SQLERRM);
+                                HTP.p(''ERROR Code: '' || SQLCODE || '' : ERROR Message: '' || SQLERRM || '' = Backtrace: '' || dbms_utility.format_error_backtrace);
                                 :status_code := 500;
 
                          END;',
@@ -186,7 +185,7 @@ BEGIN
 
                         exception
                             when others then
-                                HTP.p(''ERROR Code: '' || SQLCODE || '' : ERROR Message: '' || SQLERRM);
+                                HTP.p(''ERROR Code: '' || SQLCODE || '' : ERROR Message: '' ||  || '' = Backtrace: '' || dbms_utility.format_error_backtrace);
                                 :status_code := 500;
 
                          END;',
@@ -236,7 +235,7 @@ BEGIN
                     :status_code := 200;
                  exception
                      when others then
-                         HTP.p(''ERROR Code: '' || SQLCODE || '' : ERROR Message: '' || SQLERRM);
+                         HTP.p(''ERROR Code: '' || SQLCODE || '' : ERROR Message: '' || SQLERRM || '' = Backtrace: '' || dbms_utility.format_error_backtrace);
                          :status_code := 500;
 
                  END;');

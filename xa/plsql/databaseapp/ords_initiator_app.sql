@@ -115,7 +115,7 @@ BEGIN
                                 IF tmm_exceptions.is_microtx_exception(SQLCODE) THEN
                                     HTP.p(''ERROR Code: '' || SQLCODE || '' : ERROR Message: '' || tmm_exceptions.get_error_message_by_code(SQLCODE));
                                 ELSE
-                                    HTP.p(''App ERROR Code: '' || SQLCODE || '' : ERROR Message: '' || SQLERRM);
+                                    HTP.p(''App ERROR Code: '' || SQLCODE || '' : ERROR Message: '' || SQLERRM || '' = Backtrace: '' || dbms_utility.format_error_backtrace);
                                 END IF;
                                 -- Based on application logic, transaction can be rolledback on exception
                                 -- tmm_rollback_tx(l_microTxTransaction, l_forwardHeaders);
@@ -153,7 +153,7 @@ BEGIN
                      APEX_JSON.initialize_clob_output;
                      APEX_JSON.open_object; -- {
 
-                     SELECT account_id, sum(reward_amount) INTO l_account_id, l_total_reward_amount
+                     SELECT account_id, sum(reward_amount) INTO l_account_id, l_total_reward_amount 
                      FROM fund_transfer_reward WHERE account_id = :accountId
                      GROUP BY account_id;
 
@@ -172,7 +172,7 @@ BEGIN
                     :status_code := 200;
                  exception
                      when others then
-                         HTP.p(''ERROR Code: '' || SQLCODE || '' : ERROR Message: '' || SQLERRM);
+                         HTP.p(''ERROR Code: '' || SQLCODE || '' : ERROR Message: '' || SQLERRM || '' = Backtrace: '' || dbms_utility.format_error_backtrace);
                          :status_code := 500;
 
                  END;');
@@ -194,9 +194,9 @@ END;
 * Create table for persisting fund transfer rewards
 **/
 CREATE TABLE fund_transfer_reward (
-                                      transfer_date  TIMESTAMP DEFAULT sysdate,
-                                      account_id     VARCHAR2(64),
-                                      reward_amount  DECIMAL(18, 2)
+    transfer_date  TIMESTAMP DEFAULT ON NULL sysdate,
+    account_id     VARCHAR2(64),
+    reward_amount  DECIMAL(18, 2)
 );
 
 /**
@@ -207,54 +207,55 @@ CREATE TABLE fund_transfer_reward (
 * @return HTTP Response from the service
 */
 CREATE OR REPLACE FUNCTION callWithdrawParticipant (
-    p_account_id  IN  VARCHAR,
-    p_amount     IN  VARCHAR,
-    l_microTxTransaction MicroTxTransaction,
-    l_forwardHeaders ForwardHeaders DEFAULT NULL
-) RETURN BOOLEAN
+    p_account_id  IN  VARCHAR2,
+    p_amount     IN  VARCHAR2,
+    l_microTxTransaction IN MicroTxTransaction,
+    l_forwardHeaders IN ForwardHeaders DEFAULT NULL
+) RETURN BOOLEAN 
+AUTHID CURRENT_USER
 AS
-    l_withdraw_endpoint VARCHAR(128) := 'http://host.docker.internal:8081';
-    l_withdraw_url VARCHAR(255);
-    l_withdraw_response CLOB;
+   l_withdraw_endpoint VARCHAR2(128) := 'http://host.docker.internal:8081';
+   l_withdraw_url VARCHAR2(255);
+   l_withdraw_response CLOB;
 BEGIN
     -- Withdraw URL http://host.docker.internal:8081/accounts/<account-id>/withdraw?amount=<withdraw-amount>
     l_withdraw_url := utl_lms.format_message('%s/accounts/%s/withdraw?amount=%d', l_withdraw_endpoint, p_account_id, p_amount);
 
-
+    
     apex_web_service.set_request_headers (
         -- Set link header, this is mandatory for external requests which involves distributed transaction
-            p_name_01 => 'Link',
-            p_value_01 => getTmmLinkHeader(l_microTxTransaction),
+        p_name_01 => 'Link',
+        p_value_01 => getTmmLinkHeader(l_microTxTransaction),
 
         -- forward request headers to participant
-            p_name_02 => 'Authorization',
-            p_value_02 => l_forwardHeaders.authorizationToken,
-            p_name_03 => 'oracle-tmm-tx-token',
-            p_value_03 => l_forwardHeaders.tmmTxToken,
-            p_name_04 => 'x-request-id',
-            p_value_04 => l_forwardHeaders.requestId,
+        p_name_02 => 'Authorization',
+        p_value_02 => l_forwardHeaders.authorizationToken,
+        p_name_03 => 'oracle-tmm-tx-token',
+        p_value_03 => l_forwardHeaders.tmmTxToken,
+        p_name_04 => 'x-request-id',
+        p_value_04 => l_forwardHeaders.requestId,
         -- optional Transaction Id for affinity
-            p_name_05 => 'x-request-id',
-            p_value_05 => l_microTxTransaction.gtrid
+        p_name_05 => 'x-request-id',
+        p_value_05 => l_microTxTransaction.gtrid
     );
 
     l_withdraw_response := apex_web_service.make_rest_request(
-            p_url         => l_withdraw_url,
-            p_http_method => 'POST',
-            p_body => ''
-                           );
+        p_url         => l_withdraw_url,
+        p_http_method => 'POST',
+        p_body => ''
+    );
     IF apex_web_service.g_status_code = 200 THEN
-        microtx_log('Withdraw operation successful');
-        RETURN TRUE;
+       microtx_log('Withdraw operation successful');
+       RETURN TRUE;
     ELSE
-        microtx_log('Withdraw failed with HTTP response ' || apex_web_service.g_status_code || ' : ' || l_withdraw_response);
-        RETURN FALSE;
+       microtx_log('Withdraw failed with HTTP response ' || apex_web_service.g_status_code || ' : ' || l_withdraw_response);
+       RETURN FALSE;
     END IF;
 EXCEPTION
     WHEN OTHERS THEN
-        microtx_log('Withdraw failed ' || SQLERRM);
+        microtx_log('Withdraw failed ' || SQLERRM || ' = Backtrace: ' || dbms_utility.format_error_backtrace);
         RETURN FALSE;
-END;
+END callWithdrawParticipant;
 /
 
 /**
@@ -265,68 +266,71 @@ END;
 * @return HTTP Response from the service
 */
 CREATE OR REPLACE FUNCTION callDepositParticipant (
-    p_account_id  IN  VARCHAR,
-    p_amount     IN  VARCHAR,
-    l_microTxTransaction MicroTxTransaction,
-    l_forwardHeaders ForwardHeaders DEFAULT NULL
-) RETURN BOOLEAN
+    p_account_id  IN  VARCHAR2,
+    p_amount     IN  VARCHAR2,
+    l_microTxTransaction IN MicroTxTransaction,
+    l_forwardHeaders IN ForwardHeaders DEFAULT NULL
+) RETURN BOOLEAN 
+AUTHID CURRENT_USER
 AS
-    l_withdraw_endpoint VARCHAR(128) := 'http://host.docker.internal:8082';
-    l_deposit_url VARCHAR(255);
-    l_deposit_response CLOB;
+   l_withdraw_endpoint VARCHAR2(128) := 'http://host.docker.internal:8082';
+   l_deposit_url VARCHAR2(255);
+   l_deposit_response CLOB;
 BEGIN
     -- Deposit URL http://host.docker.internal:8082/accounts/<account-id>/deposit?amount=<withdraw-amount>
     l_deposit_url := utl_lms.format_message('%s/accounts/%s/deposit?amount=%d', l_withdraw_endpoint, p_account_id, p_amount);
 
     apex_web_service.set_request_headers (
         -- Set link header, this is mandatory for external requests which involves distributed transaction
-            p_name_01 => 'Link',
-            p_value_01 => getTmmLinkHeader(l_microTxTransaction),
+        p_name_01 => 'Link',
+        p_value_01 => getTmmLinkHeader(l_microTxTransaction),
 
         -- forward request headers to participant
-            p_name_02 => 'Authorization',
-            p_value_02 => l_forwardHeaders.authorizationToken,
-            p_name_03 => 'oracle-tmm-tx-token',
-            p_value_03 => l_forwardHeaders.tmmTxToken,
-            p_name_04 => 'x-request-id',
-            p_value_04 => l_forwardHeaders.requestId,
+        p_name_02 => 'Authorization',
+        p_value_02 => l_forwardHeaders.authorizationToken,
+        p_name_03 => 'oracle-tmm-tx-token',
+        p_value_03 => l_forwardHeaders.tmmTxToken,
+        p_name_04 => 'x-request-id',
+        p_value_04 => l_forwardHeaders.requestId,
         -- optional Transaction Id for affinity
-            p_name_05 => 'x-request-id',
-            p_value_05 => l_microTxTransaction.gtrid
+        p_name_05 => 'x-request-id',
+        p_value_05 => l_microTxTransaction.gtrid
     );
 
     l_deposit_response := apex_web_service.make_rest_request(
-            p_url         => l_deposit_url,
-            p_http_method => 'POST',
-            p_body => ''
-                          );
+        p_url         => l_deposit_url,
+        p_http_method => 'POST',
+        p_body => ''
+    );
     IF apex_web_service.g_status_code = 200 THEN
-        microtx_log('Deposit operation successful');
-        RETURN TRUE;
+       microtx_log('Deposit operation successful');
+       RETURN TRUE;
     ELSE
-        microtx_log('Deposit failed with HTTP response ' || apex_web_service.g_status_code || ' : ' || l_deposit_response);
-        RETURN FALSE;
+       microtx_log('Deposit failed with HTTP response ' || apex_web_service.g_status_code || ' : ' || l_deposit_response);
+       RETURN FALSE;
     END IF;
 EXCEPTION
     WHEN OTHERS THEN
-        microtx_log('Deposit failed ' || SQLERRM);
+        microtx_log('Deposit failed ' || SQLERRM || ' = Backtrace: ' || dbms_utility.format_error_backtrace);
         RETURN FALSE;
-END;
+END callDepositParticipant;
 /
 
 /**
-  Credit points to sender account on every transfer.
+  Credit points to sender account on every transfer. 
   For every transfer, the sender receives a 5% reward on the transfer amount.
 **/
 CREATE OR REPLACE PROCEDURE creditFundTransferRewards (
     p_account_id  IN  VARCHAR2,
     p_amount     IN  VARCHAR2
 )
-    IS
-    c_reward_percentage constant NUMBER := 5;
-    l_reward_amount FLOAT;
+AUTHID CURRENT_USER
+IS
+   c_reward_percentage constant NUMBER := 5;
+   l_reward_amount FLOAT;
 BEGIN
-    l_reward_amount := (TO_NUMBER(p_amount) * c_reward_percentage) / 100;
-    INSERT INTO fund_transfer_reward(account_id, reward_amount)
-    VALUES (p_account_id, l_reward_amount);
-END;
+   l_reward_amount := (TO_NUMBER(p_amount DEFAULT 0 ON CONVERSION ERROR) * c_reward_percentage) / 100;
+   INSERT INTO fund_transfer_reward(account_id, reward_amount) 
+   VALUES (p_account_id, l_reward_amount);
+END creditFundTransferRewards;
+/
