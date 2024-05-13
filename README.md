@@ -14,7 +14,7 @@ Sample applications are microservices that demonstrate how you can develop your 
 
 This source repository contains code of the sample applications for MicroTx. Each sub-folder contains the sample application source code and a YAML file which contains the configuration details.
 
-## Directory | Description
+Directory | Description
 ------------ | -------------
 [`docker/`](docker/) | YAML file where you must provide details to configure and deploy the sample applications in Docker Swarm environments.
 [`lra/`](lra/) | Source files for the Trip Booking application, which consists of four microservices, and uses the Long Running Action (LRA) transaction protocol. This application demonstrates how you can use MicroTx to manage LRA transactions.
