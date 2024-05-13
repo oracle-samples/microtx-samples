@@ -48,26 +48,19 @@ public class AccountsService implements IAccountsService {
     @TrmNonXASQLConnection
     private Provider<Connection> connection;
 
-    @Inject
-    private Configuration config;
 
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Override
     public Account accountDetails(String accountId) throws SQLException {
-        if (connection == null) {
-            throw new SQLException();
-        }
         Account account = null;
         PreparedStatement statement = null;
-        Connection connection = null;
         try {
-            connection = config.getDatasource().getConnection();
-            if (connection == null) {
+            if (connection.get() == null) {
                 return null;
             }
             String query = "SELECT * FROM accounts where account_id=?";
-            statement = connection.prepareStatement(query);
+            statement = connection.get().prepareStatement(query);
             statement.setString(1, accountId);
             ResultSet dataSet = statement.executeQuery();
             if (dataSet.next()) {
@@ -79,9 +72,6 @@ public class AccountsService implements IAccountsService {
         }finally {
             if(statement!=null){
                 statement.close();
-            }
-            if(connection != null){
-                connection.close();
             }
         }
         return account;
