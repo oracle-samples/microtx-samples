@@ -53,9 +53,6 @@ public class AccountsService implements IAccountsService {
     @TrmSQLConnection
     private Connection connection;
 
-    @Inject
-    private Configuration config;
-
     /**
      * Get account details persisted in the database
      * @param accountId Account identity
@@ -66,9 +63,7 @@ public class AccountsService implements IAccountsService {
     public Account accountDetails(String accountId) throws SQLException {
         Account account = null;
         PreparedStatement statement = null;
-        Connection connection = null;
         try {
-            connection =  config.getDatasource().getConnection();
             if (connection == null) {
                 return null;
             }
@@ -85,9 +80,6 @@ public class AccountsService implements IAccountsService {
         }finally {
             if(statement!=null){
                 statement.close();
-            }
-            if(connection != null){
-                connection.close();
             }
         }
         return account;
