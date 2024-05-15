@@ -20,9 +20,9 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 import { NextFunction, Request, Response, Router } from 'express';
 const axios = require('axios').default;
-import { asyncHandler } from "tmmlib-node/util/asynchandler";
-import { TrmUserTransaction } from "tmmlib-node/xa/xatxn";
-import { TmsClientUtil, TrmConfig } from "tmmlib-node/util/trmutils";
+import { asyncHandler } from "@oracle/microtx/util/asynchandler";
+import { TrmUserTransaction } from "@oracle/microtx/xa/xatxn";
+import { TmsClientUtil, TrmConfig } from "@oracle/microtx/util/trmutils";
 
 // Init Router
 const accountsSvcRouter = Router();

@@ -21,8 +21,8 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 import { Request, Response, Router } from 'express';
 import { Buffer } from 'buffer';
-import { getLRAId, LRA, LRAConfig, LRAType, ParticipantStatus } from "tmmlib-node/lra/lra";
-import { TrmConfig } from 'tmmlib-node/util/trmutils';
+import { getLRAId, LRA, LRAConfig, LRAType, ParticipantStatus } from "@oracle/microtx/lra/lra";
+import { TrmConfig } from '@oracle/microtx/util/trmutils';
 import { Booking, BookingStatus, getConfirmedBookingsCount, setMaxConfirmedBooking } from "../booking";
 import { bookingMap, MAX_CONFIRMED_BOOKING  } from '../booking';
 

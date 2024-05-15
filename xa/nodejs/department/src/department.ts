@@ -19,10 +19,10 @@ PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIG
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 import { Request, Response, Router } from 'express';
-import { XATransactionMethod, XAConfig, XADataSource, TrmXAResource } from "tmmlib-node/xa/xa";
-import { TrmConfig } from "tmmlib-node/util/trmutils";
-import { asyncHandler } from "tmmlib-node/util/asynchandler";
-import { OracleXADataSource } from "tmmlib-node/xa/oraxa";
+import { XATransactionMethod, XAConfig, XADataSource, TrmXAResource } from "@oracle/microtx/xa/xa";
+import { TrmConfig } from "@oracle/microtx/util/trmutils";
+import { asyncHandler } from "@oracle/microtx/util/asynchandler";
+import { OracleXADataSource } from "@oracle/microtx/xa/oraxa";
 import oracledb from 'oracledb';
 
 // Init Router
