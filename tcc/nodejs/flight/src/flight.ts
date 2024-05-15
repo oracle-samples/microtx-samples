@@ -20,8 +20,8 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 import { Request, Response, Router } from 'express';
 import asyncHandler from "express-async-handler";
-import { HttpMethod, TrmConfig } from "tmmlib-node/util/trmutils";
-import { GetTCCId, TCCConfig } from "tmmlib-node/tcc/tcc"
+import { HttpMethod, TrmConfig } from "@oracle/microtx/util/trmutils";
+import { GetTCCId, TCCConfig } from "@oracle/microtx/tcc/tcc"
 import { port } from "../server"
 import { randomUUID } from 'crypto';
 
