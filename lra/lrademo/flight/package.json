@@ -5,7 +5,7 @@
   "main": "server.js",
   "dependencies": {
     "express": "^4.18.2",
-    "tmmlib-node": "file:tmmlib-node-1.0.0.tgz",
+    "@oracle/microtx": "file:oracle-microtx-1.0.0.tgz",
     "typescript": "^5.1.3"
   },
   "devDependencies": {

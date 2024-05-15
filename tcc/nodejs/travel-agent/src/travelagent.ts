@@ -22,8 +22,8 @@ import { randomUUID } from 'crypto';
 import { NextFunction, request, Request, Response, Router } from 'express';
 const axios = require('axios').default;
 import asyncHandler from 'express-async-handler';
-import { TCCConfig, ConfirmTCC, CancelTCC, TccParticipant , ConfirmTCCByParticipants , CancelTCCByParticipants } from 'tmmlib-node/tcc/tcc';
-import { HttpMethod, TrmConfig } from 'tmmlib-node/util/trmutils';
+import { TCCConfig, ConfirmTCC, CancelTCC, TccParticipant , ConfirmTCCByParticipants , CancelTCCByParticipants } from '@oracle/microtx/tcc/tcc';
+import { HttpMethod, TrmConfig } from '@oracle/microtx/util/trmutils';
 
 // Init Router
 const travelAgentSvcRouter = Router();
