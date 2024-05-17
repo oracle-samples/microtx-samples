@@ -83,6 +83,11 @@
             <artifactId>osdt_cert</artifactId>
             <version>21.13.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.oracle.database.saga</groupId>
+            <artifactId>saga-external-coordinator-api</artifactId>
+            <version>23.4.0</version>
+        </dependency>
 
         <!--        If this app is running on ARM based Mac, uncomment this.-->
 
