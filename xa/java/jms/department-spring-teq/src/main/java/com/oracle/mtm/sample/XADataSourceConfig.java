@@ -72,7 +72,7 @@ public class XADataSourceConfig {
     @Value("${departmentDataSource.oracleucp.connection-factory-class-name}")
     private String connectionFactoryClassName;
 
-    @Value("${jms.topicName}")
+    @Value("${departmentDataSource.jms.topicName}")
     private String topicName;
 
     private static final Logger logger = LoggerFactory.getLogger(AccountsResource.class);

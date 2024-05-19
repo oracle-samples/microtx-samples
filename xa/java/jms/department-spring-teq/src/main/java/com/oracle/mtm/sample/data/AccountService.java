@@ -65,7 +65,7 @@ public class AccountService implements IAccountService {
     @Value("${departmentDataSource.user}")
     private String username;
 
-    @Value("${jms.topicName}")
+    @Value("${departmentDataSource.jms.topicName}")
     private String topicName;
 
     private static final Logger logger = LoggerFactory.getLogger(AccountService.class);

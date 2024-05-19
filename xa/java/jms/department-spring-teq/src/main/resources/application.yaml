@@ -55,5 +55,5 @@ departmentDataSource:
       min-pool-size: 10
       max-pool-size: 30
       data-source-name: deptxadatasource
-jms:
-  topicName: "<topic_name>"
+    jms:
+      topicName: "<topic_name>"

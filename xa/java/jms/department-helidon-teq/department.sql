@@ -20,8 +20,8 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 
 CREATE USER department_teq IDENTIFIED BY <password> QUOTA UNLIMITED ON DATA;
-GRANT CREATE SESSION TO department_helidon;
-ALTER SESSION SET CURRENT_SCHEMA=department_helidon;
+GRANT CREATE SESSION TO department_teq;
+ALTER SESSION SET CURRENT_SCHEMA=department_teq;
 create table accounts
 (
     account_id VARCHAR(10) not null,
@@ -37,7 +37,8 @@ insert into accounts values('account5', 'account5', 5000.00);
 
 
 -- Oracle transaction event Queue(TEQ) related grants
-GRANT EXECUTE ON dbms_aq TO department_teq
+GRANT EXECUTE ON DBMS_AQ TO department_teq
+GRANT EXECUTE ON DBMS_AQIN to department_teq;
 
 EXECUTE DBMS_AQADM.CREATE_SHARDED_QUEUE (queue_name  => 'department_teq.<queue_name>', multiple_consumers => true);
 EXECUTE dbms_aqadm.grant_queue_privilege('ALL', 'department_teq.<queue_name>', 'department_teq');
