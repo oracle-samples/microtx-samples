@@ -22,5 +22,6 @@ departmentDataSource:
   url: "jdbc:oracle:thin:@tcps://<host>:<port>/<service_name>?wallet_location=Database_Wallet"
   user: "user"
   password: "xxxxxx"
-jms:
-  topicName: "<topic_name>"
+  rmid: "4F58D282-0DE1-453C-B872-291FDBF49RRR"
+  jms:
+    topicName: "<topic_name>"
