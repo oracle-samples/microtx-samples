@@ -67,7 +67,7 @@ public class AccountsService implements IAccountsService {
     String user;
 
     @Inject
-    @ConfigProperty(name = "jms.topicName")
+    @ConfigProperty(name = "departmentDataSource.jms.topicName")
     String topicName;
 
     /**

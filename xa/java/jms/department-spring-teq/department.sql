@@ -36,7 +36,8 @@ insert into accounts values('account4', 'account4', 4000.00);
 insert into accounts values('account5', 'account5', 5000.00);
 
 -- Oracle transaction event Queue(TEQ) related grants
-GRANT EXECUTE ON dbms_aq TO department_spring
+GRANT EXECUTE ON DBMS_AQ TO department_spring
+GRANT EXECUTE ON DBMS_AQIN to department_spring;
 
 EXECUTE DBMS_AQADM.CREATE_SHARDED_QUEUE (queue_name  => 'department_spring.<queue_name>', multiple_consumers => true);
 EXECUTE dbms_aqadm.grant_queue_privilege('ALL', 'department_spring.<queue_name>', 'department_spring');
