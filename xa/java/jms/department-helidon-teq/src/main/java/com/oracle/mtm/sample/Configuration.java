@@ -66,7 +66,11 @@ public class Configuration {
     String password;
 
     @Inject
-    @ConfigProperty(name = "jms.topicName")
+    @ConfigProperty(name = "departmentDataSource.rmid")
+    String rmid;
+
+    @Inject
+    @ConfigProperty(name = "departmentDataSource.jms.topicName")
     String topicName;
 
     private void init(@Observes @Initialized(ApplicationScoped.class) Object event) {
@@ -126,7 +130,7 @@ public class Configuration {
             this.xaDataSource.setPassword(password);
             this.xaDataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
             this.xaDataSource.setMaxPoolSize(15);
-            DataSourceInfo dataSourceInfo = new DataSourceInfo(MicroTxConfig.getResourceManagerId());
+            DataSourceInfo dataSourceInfo = new DataSourceInfo(rmid);
             dataSourceInfo.setJms(true);
             TrmConfig.initXaDataSource(this.xaDataSource, dataSourceInfo);
         } catch (SQLException e) {
