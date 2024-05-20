@@ -75,11 +75,11 @@ spec:
             - name: SERVICE_NAME
               value: hotel
             - name: DEPARTMENTDATASOURCE_URL
-              value: {{ .Values.sampleapps.hotel.connectString }}
+              value: {{ .Values.sampleappslra.hotel.connectString }}
             - name: DEPARTMENTDATASOURCE_USER
-              value: {{ .Values.sampleapps.hotel.databaseUser }}
+              value: {{ .Values.sampleappslra.hotel.databaseUser }}
             - name: DEPARTMENTDATASOURCE_PASSWORD
-              value: {{ .Values.sampleapps.hotel.databasePassword }}
+              value: {{ .Values.sampleappslra.hotel.databasePassword }}
             # Springboot properties
             - name: SPRING_MICROTX_LRA_COORDINATOR_URL
               value: http://otmm-tcs:9000/api/v1/lra-coordinator
@@ -152,11 +152,11 @@ spec:
             - name: SERVICE_NAME
               value: flight
             - name: DEPARTMENTDATASOURCE_URL
-              value: {{ .Values.sampleapps.flight.connectString }}
+              value: {{ .Values.sampleappslra.flight.connectString }}
             - name: DEPARTMENTDATASOURCE_USER
-              value: {{ .Values.sampleapps.flight.databaseUser }}
+              value: {{ .Values.sampleappslra.flight.databaseUser }}
             - name: DEPARTMENTDATASOURCE_PASSWORD
-              value: {{ .Values.sampleapps.flight.databasePassword }}
+              value: {{ .Values.sampleappslra.flight.databasePassword }}
             # Springboot properties
             - name: SPRING_MICROTX_LRA_COORDINATOR_URL
               value: http://otmm-tcs:9000/api/v1/lra-coordinator
@@ -233,11 +233,11 @@ spec:
             - name: FLIGHT_SERVICE_URL
               value: http://flight:8080/flightService/api/flight
             - name: DEPARTMENTDATASOURCE_URL
-              value: {{ .Values.sampleapps.tripmanager.connectString }}
+              value: {{ .Values.sampleappslra.tripmanager.connectString }}
             - name: DEPARTMENTDATASOURCE_USER
-              value: {{ .Values.sampleapps.tripmanager.databaseUser }}
+              value: {{ .Values.sampleappslra.tripmanager.databaseUser }}
             - name: DEPARTMENTDATASOURCE_PASSWORD
-              value: {{ .Values.sampleapps.tripmanager.databasePassword }}
+              value: {{ .Values.sampleappslra.tripmanager.databasePassword }}
             # Springboot properties
             - name: SPRING_MICROTX_LRA_COORDINATOR_URL
               value: http://otmm-tcs:9000/api/v1/lra-coordinator
