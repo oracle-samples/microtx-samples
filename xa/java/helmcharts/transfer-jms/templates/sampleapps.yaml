@@ -1,0 +1,243 @@
+# Copyright (c) 2023, Oracle and/or its affiliates. **
+
+# The Universal Permissive License (UPL), Version 1.0 **
+
+# Subject to the condition set forth below, permission is hereby granted to any person obtaining a copy of this software, associated documentation and/or data
+# (collectively the "Software"), free of charge and under any and all copyright rights in the Software, and any and all patent rights owned or freely licensable by each
+# licensor hereunder covering either the unmodified Software as contributed to or provided by such licensor, or (ii) the Larger Works (as defined below), to deal in both
+# ** (a) the Software, and (b) any piece of software and/or hardware listed in the lrgrwrks.txt file if one is included with the Software (each a "Larger Work" to which
+# the Software is contributed by such licensors), **
+# without restriction, including without limitation the rights to copy, create derivative works of, display, perform, and distribute the Software and make, use, sell,
+# offer for sale, import, export, have made, and have sold the Software and the Larger Work(s), and to sublicense the foregoing rights on either these or other terms. **
+
+# This license is subject to the following condition: The above copyright notice and either this complete permission notice or at a minimum a reference to the UPL must be
+# included in all copies or substantial portions of the Software. **
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+##################################################################################################
+# dept1
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: dept1
+  labels:
+    app: dept1
+    service: dept1
+spec:
+  ports:
+    - port: 8081
+      name: http
+  selector:
+    app: dept1
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dept1
+  labels:
+    account: dept1
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dept1
+  labels:
+    app: dept1
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dept1
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: dept1
+        version: v1
+    spec:
+      containers:
+        - name: dept1
+          image: {{ .Values.sampleapps.dept1.image }}
+          imagePullPolicy: {{ .Values.sampleapps.dept1.imagePullPolicy }}
+          ports:
+            - containerPort: 8081
+          env:
+            - name: ORACLE_TMM_TCS_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: ORACLE_TMM_CALLBACK_URL
+              value: http://dept1:8081
+            - name: SERVICE_NAME
+              value: dept1
+            - name: DEPARTMENTDATASOURCE_URL
+              value: {{ .Values.sampleapps.dept1.connectString }}
+            - name: DEPARTMENTDATASOURCE_USER
+              value: {{ .Values.sampleapps.dept1.databaseUser }}
+            - name: DEPARTMENTDATASOURCE_PASSWORD
+              value: {{ .Values.sampleapps.dept1.databasePassword }}
+            - name: ORACLE_TMM_PROPAGATE_TRACE_HEADERS
+              value: {{ .Values.sampleapps.dept1.propagateTraceHeader | quote }}
+            - name: ORACLE_TMM_XA_RMID
+              value: {{ .Values.sampleapps.dept1.resourceManagerId }}
+            - name: DEPARTMENTDATASOURCE_JMS_TOPICNAME
+              value: {{ .Values.sampleapps.dept1.jmsTopicName }}
+      imagePullSecrets:
+        - name: {{ .Values.sampleapps.dept1.imagePullSecret }}
+---
+
+##################################################################################################
+# dept2
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: dept2
+  labels:
+    app: dept2
+    service: dept2
+spec:
+  ports:
+    - port: 8082
+      name: http
+  selector:
+    app: dept2
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dept2
+  labels:
+    account: dept2
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dept2
+  labels:
+    app: dept2
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dept2
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: dept2
+        version: v1
+    spec:
+      containers:
+        - name: dept2
+          image: {{ .Values.sampleapps.dept2.image }}
+          imagePullPolicy: {{ .Values.sampleapps.dept2.imagePullPolicy }}
+          ports:
+            - containerPort: 8082
+          env:
+            - name: SPRING_MICROTX_COORDINATOR_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: SPRING_MICROTX_PARTICIPANT_URL
+              value: http://dept2:8082
+            - name: SPRING_MICROTX_PROPAGATION_ACTIVE
+              value: {{ .Values.sampleapps.dept2.propagateTraceHeader| quote }}
+            - name: SPRING_MICROTX_XA_RESOURCE_MANAGER_ID
+              value: {{ .Values.sampleapps.dept2.resourceManagerId }}
+            - name: SERVICE_NAME
+              value: dept2
+            - name: DEPARTMENTDATASOURCE_URL
+              value: {{ .Values.sampleapps.dept2.connectString }}
+            - name: DEPARTMENTDATASOURCE_USER
+              value: {{ .Values.sampleapps.dept2.databaseUser }}
+            - name: DEPARTMENTDATASOURCE_PASSWORD
+              value: {{ .Values.sampleapps.dept2.databasePassword }}
+            - name: DEPARTMENTDATASOURCE_JMS_TOPICNAME
+              value: {{ .Values.sampleapps.dept2.jmsTopicName }}
+            #### Copying the values to older env variables for backward compatibility  
+            - name: ORACLE_TMM_TCS_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: ORACLE_TMM_CALLBACK_URL
+              value: http://dept2:8082
+            - name: ORACLE_TMM_PROPAGATE_TRACE_HEADERS
+              value: {{ .Values.sampleapps.dept2.propagateTraceHeader| quote }}
+            - name: ORACLE_TMM_XA_RMID
+              value: {{ .Values.sampleapps.dept2.resourceManagerId }}
+      imagePullSecrets:
+        - name: {{ .Values.sampleapps.dept2.imagePullSecret }}
+---
+
+##################################################################################################
+# Teller
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: teller
+  labels:
+    app: teller
+    service: teller
+spec:
+  ports:
+    - port: 8080
+      name: http
+  selector:
+    app: teller
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: teller
+  labels:
+    account: teller
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teller
+  labels:
+    app: teller
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: teller
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: teller
+        version: v1
+    spec:
+      containers:
+        - name: teller
+          image: {{ .Values.sampleapps.teller.image }}
+          imagePullPolicy: {{ .Values.sampleapps.teller.imagePullPolicy }}
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ORACLE_TMM_TCS_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: DEPARTMENTONEENDPOINT
+              value: http://dept1:8081
+            - name: DEPARTMENTTWOENDPOINT
+              value: http://dept2:8082
+            - name: SERVICE_NAME
+              value: teller
+            - name: ORACLE_TMM_PROPAGATE_TRACE_HEADERS
+              value: {{ .Values.sampleapps.teller.propagateTraceHeader| quote }}
+      imagePullSecrets:
+        - name: {{ .Values.sampleapps.teller.imagePullSecret }}
+---

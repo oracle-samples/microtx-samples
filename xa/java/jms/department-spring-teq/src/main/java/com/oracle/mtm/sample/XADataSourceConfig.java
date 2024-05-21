@@ -52,9 +52,6 @@ public class XADataSourceConfig {
     @Value("${departmentDataSource.password}")
     private String password;
 
-    @Value("${departmentDataSource.rmid}")
-    private String rmid;
-
     @Value("${departmentDataSource.oracleucp.min-pool-size}")
     private String minPoolSize;
     @Value("${departmentDataSource.oracleucp.initial-pool-size:10}")
@@ -71,6 +68,9 @@ public class XADataSourceConfig {
 
     @Value("${departmentDataSource.oracleucp.connection-factory-class-name}")
     private String connectionFactoryClassName;
+
+    @Value("${spring.microtx.xa-resource-manager-id}")
+    private String resourceManagerId;
 
     @Value("${departmentDataSource.jms.topicName}")
     private String topicName;
@@ -137,7 +137,7 @@ public class XADataSourceConfig {
             ((PoolXADataSource) pds).setDataSourceName(dataSourceName);
             ((PoolXADataSource) pds).setConnectionPoolName(connectionPoolName);
 
-            MicroTxConfig.initXaDataSource((XADataSource) pds, rmid);
+            MicroTxConfig.initXaDataSource((XADataSource) pds, resourceManagerId);
             logger.info("XADataSourceConfig: XADataSource created");
         } catch (SQLException ex) {
             logger.error("Error connecting to the database: " + ex.getMessage());
