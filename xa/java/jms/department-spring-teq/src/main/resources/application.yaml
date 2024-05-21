@@ -42,7 +42,6 @@ departmentDataSource:
     url: "jdbc:oracle:thin:@tcps://<host>:<port>/<service_name>?wallet_location=Database_Wallet"
     user: "dbuser"
     password: "xxxxxx"
-    rmid: "174A5FF2-D8B1-47B0-AF09-DA5AFECA2F61"
     # Properties for using Universal Connection Pool (UCP)
     # Note: These properties require JDBC version 21.0.0.0
     oracleucp:
