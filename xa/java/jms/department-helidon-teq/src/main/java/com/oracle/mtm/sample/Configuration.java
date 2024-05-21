@@ -20,7 +20,6 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 package com.oracle.mtm.sample;
 
-import com.oracle.microtx.common.MicroTxConfig;
 import oracle.jakarta.jms.AQjmsFactory;
 import oracle.jakarta.jms.AQjmsSession;
 import oracle.jakarta.jms.AQjmsTextMessage;
@@ -64,10 +63,6 @@ public class Configuration {
     @Inject
     @ConfigProperty(name = "departmentDataSource.password")
     String password;
-
-    @Inject
-    @ConfigProperty(name = "departmentDataSource.rmid")
-    String rmid;
 
     @Inject
     @ConfigProperty(name = "departmentDataSource.jms.topicName")
@@ -130,7 +125,7 @@ public class Configuration {
             this.xaDataSource.setPassword(password);
             this.xaDataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
             this.xaDataSource.setMaxPoolSize(15);
-            DataSourceInfo dataSourceInfo = new DataSourceInfo(rmid);
+            DataSourceInfo dataSourceInfo = new DataSourceInfo(TrmConfig.getResourceManagerId());
             dataSourceInfo.setJms(true);
             TrmConfig.initXaDataSource(this.xaDataSource, dataSourceInfo);
         } catch (SQLException e) {
@@ -138,7 +133,7 @@ public class Configuration {
         }
 
         try {
-            this.dataSource = PoolDataSourceFactory.getPoolXADataSource();
+            this.dataSource = PoolDataSourceFactory.getPoolDataSource();
             this.dataSource.setURL(url);
             this.dataSource.setUser(user);
             this.dataSource.setPassword(password);
