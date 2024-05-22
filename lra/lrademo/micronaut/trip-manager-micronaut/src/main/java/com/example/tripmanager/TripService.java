@@ -44,9 +44,16 @@ public class TripService {
     private static final Logger LOG = LoggerFactory.getLogger(TripService.class);
 
     private Map<String, Booking> bookings = new ConcurrentHashMap<>();
+    private int TOTAL_PARTICIPANTS = 2;
 
     public void saveProvisionalBooking(Booking booking) throws BookingException {
         bookings.putIfAbsent(booking.getId(), booking);
+
+        if (booking.getDetails().length != TOTAL_PARTICIPANTS) {
+            LOG.info(String.format("Cancelling booking id %s (%s) status: %s", booking.getId(), booking.getName(), booking.getStatus()));
+            booking.setStatus(Booking.BookingStatus.CANCELLED);
+            throw new BookingException(HttpStatus.INTERNAL_SERVER_ERROR.getCode(), String.format("Associate booking failed: %s", booking.getName()));
+        }
 
         //check if any associate booking is a failed booking
         for (Booking associatedBooking : booking.getDetails()) {
