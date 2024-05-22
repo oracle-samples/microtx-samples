@@ -85,7 +85,7 @@ public class TripManagerResource {
             LOG.info("Calling LRA participants Hotel booking and Flight booking sequentially");
             Booking flightBooking = null;
             Booking hotelBooking = bookHotel(hotelName, bookingId);
-            if (hotelBooking.getStatus() != Booking.BookingStatus.FAILED) {
+            if (hotelBooking != null && hotelBooking.getStatus() != Booking.BookingStatus.FAILED) {
                 flightBooking = bookFlight(flightNumber, bookingId);
             }
             tripBooking = new Booking(bookingId, "Trip", "Trip", hotelBooking, flightBooking);
@@ -94,8 +94,9 @@ public class TripManagerResource {
             return (oracleTmmTxToken != null) ? HttpResponse.ok().header(ORACLE_TMM_TX_TOKEN, oracleTmmTxToken).body(tripBooking) :
                     HttpResponse.ok().body(tripBooking);
         } catch (BookingException e) {
+            LOG.error("Booking failed", e);
             return (oracleTmmTxToken != null) ? HttpResponse.serverError().header(ORACLE_TMM_TX_TOKEN, oracleTmmTxToken)
-                    .body(tripBooking) : HttpResponse.serverError().body(tripBooking);
+                    .body(tripBooking) : HttpResponse.serverError().body(e.getMessage());
         }
     }
 
