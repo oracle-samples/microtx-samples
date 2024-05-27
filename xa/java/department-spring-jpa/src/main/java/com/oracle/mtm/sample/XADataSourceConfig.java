@@ -84,9 +84,6 @@ public class XADataSourceConfig {
 
 
 
-
-
-
     @Bean(name = "ucpXADataSource")
     @Primary
     public DataSource getXADataSource() {
@@ -113,44 +110,21 @@ public class XADataSourceConfig {
         return pds;
     }
 
-    public DataSource getDataSource() {
-        DataSource pds = null;
-        try {
-            pds = PoolDataSourceFactory.getPoolDataSource();
-
-            ((PoolDataSource) pds).setConnectionFactoryClassName(connectionFactoryClassName);
-            ((PoolDataSource) pds).setURL(url);
-            ((PoolDataSource) pds).setUser(username);
-            ((PoolDataSource) pds).setPassword(password);
-            ((PoolDataSource) pds).setMinPoolSize(Integer.valueOf(minPoolSize));
-            ((PoolDataSource) pds).setInitialPoolSize(Integer.valueOf(initialPoolSize));
-            ((PoolDataSource) pds).setMaxPoolSize(Integer.valueOf(maxPoolSize));
-
-            ((PoolDataSource) pds).setDataSourceName(dataSourceName);
-            ((PoolDataSource) pds).setConnectionPoolName(connectionPoolName);
-
-        } catch (SQLException ex) {
-            System.err.println("Error connecting to the database: " + ex.getMessage());
-        }
-        return pds;
-    }
 
 
     @Bean(name = "entityManagerFactory")
     @Primary
     public EntityManagerFactory createXAEntityManagerFactory() throws SQLException {
         LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
-
         entityManagerFactoryBean.setDataSource(getXADataSource());
         entityManagerFactoryBean.setPackagesToScan(new String[] { "com.oracle.mtm.sample.entity" });
         entityManagerFactoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-
         entityManagerFactoryBean.setPersistenceProviderClass(HibernatePersistenceProvider.class);
         entityManagerFactoryBean.setPersistenceUnitName("mydeptxads");
         Properties properties = new Properties();
         properties.setProperty( "jakarta.persistence.transactionType", "RESOURCE_LOCAL"); // change this to resource_local
         properties.put("hibernate.show_sql", "true");
-        properties.put("hibernate.dialect", "org.hibernate.dialect.Oracle12cDialect");
+        properties.put("hibernate.dialect", "org.hibernate.dialect.OracleDialect");
         properties.put("hibernate.format_sql", "true");
         properties.put("hbm2ddl.auto", "validate");
         properties.put("hibernate.connection.provider_class", "com.oracle.microtx.jpa.HibernateXADataSourceConnectionProvider");
@@ -162,29 +136,4 @@ public class XADataSourceConfig {
         return emf;
     }
 
-    @Bean(name = "localEntityManagerFactory")
-    public EntityManagerFactory createEntityManagerFactory() throws SQLException {
-        LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
-
-        entityManagerFactoryBean.setDataSource(getDataSource());
-        entityManagerFactoryBean.setPackagesToScan(new String[] { "com.oracle.mtm.sample.entity" });
-        entityManagerFactoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-
-        entityManagerFactoryBean.setPersistenceProviderClass(HibernatePersistenceProvider.class);
-        entityManagerFactoryBean.setPersistenceUnitName("mydeptds");
-        Properties properties = new Properties();
-        properties.setProperty( "jakarta.persistence.transactionType", "RESOURCE_LOCAL"); // change this to resource_local
-        properties.put("hibernate.show_sql", "true");
-        properties.put("hibernate.dialect", "org.hibernate.dialect.Oracle12cDialect");
-        properties.put("hibernate.format_sql", "true");
-        properties.put("hbm2ddl.auto", "validate");
-
-        properties.put("hibernate.ucp.oracle.url", url);
-        properties.put("hibernate.ucp.username", username);
-        properties.put("hibernate.ucp.password", password);
-        entityManagerFactoryBean.setJpaProperties(properties);
-        entityManagerFactoryBean.afterPropertiesSet();
-        EntityManagerFactory emf =  (EntityManagerFactory) entityManagerFactoryBean.getObject();
-        return emf;
-    }
 }

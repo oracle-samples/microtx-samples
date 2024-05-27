@@ -47,7 +47,18 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.hibernate.orm</groupId>
+					<artifactId>hibernate-core</artifactId>
+				</exclusion>
+			</exclusions>
 			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>6.2.9.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.microtx</groupId>
@@ -67,27 +78,27 @@
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
 			<artifactId>ojdbc8</artifactId>
-			<version>21.3.0.0</version>
+			<version>21.9.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
 			<artifactId>ucp</artifactId>
-			<version>21.3.0.0</version>
+			<version>21.9.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.database.security</groupId>
 			<artifactId>oraclepki</artifactId>
-			<version>21.3.0.0</version>
+			<version>21.9.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.database.security</groupId>
 			<artifactId>osdt_core</artifactId>
-			<version>21.3.0.0</version>
+			<version>21.9.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.database.security</groupId>
 			<artifactId>osdt_cert</artifactId>
-			<version>21.3.0.0</version>
+			<version>21.9.0.0</version>
 		</dependency>
 	</dependencies>
 
