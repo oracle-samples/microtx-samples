@@ -21,6 +21,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 package com.oracle.mtm.sample.data;
 
 import com.oracle.mtm.sample.entity.Account;
+import jakarta.persistence.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +44,6 @@ public class AccountService implements IAccountService {
 
     private static final Logger LOG = LoggerFactory.getLogger(AccountService.class);
 
-    @Autowired
-    CustomAccountRepository customAccountRepository;
 
     @Autowired
     @Qualifier("microTxEntityManager")
@@ -53,13 +52,20 @@ public class AccountService implements IAccountService {
 
     @Override
     public Account accountDetails(String accountId) throws SQLException {
-        Account account = customAccountRepository.findByAccountId(accountId);
+        Account account = findByAccountId(accountId,entityManager);
+        return account;
+    }
+
+    public Account findByAccountId(String accountId, EntityManager em) {
+        Query query = em.createNativeQuery("SELECT * FROM accounts where account_id= :account_id", Account.class);
+        query.setParameter("account_id", accountId);
+        Account account = (Account) query.getSingleResult();
         return account;
     }
 
     @Override
     public boolean withdraw(String accountId, double amount) throws SQLException {
-        Account account = customAccountRepository.findByAccountId(accountId, entityManager);
+        Account account = findByAccountId(accountId, entityManager);
         if (account != null) {
             LOG.info("Current Balance: " + account.getAmount());
             account.setAmount(account.getAmount() - amount);
@@ -73,7 +79,7 @@ public class AccountService implements IAccountService {
 
     @Override
     public boolean deposit(String accountId, double amount) throws SQLException {
-        Account account = customAccountRepository.findByAccountId(accountId, entityManager);
+        Account account = findByAccountId(accountId, entityManager);
         if (account != null) {
             LOG.info("Current Balance: " + account.getAmount());
             account.setAmount(account.getAmount() + amount);
@@ -87,7 +93,7 @@ public class AccountService implements IAccountService {
 
     @Override
     public double getBalance(String accountId) throws SQLException {
-        Account account = customAccountRepository.findByAccountId(accountId, entityManager);
+        Account account = findByAccountId(accountId, entityManager);
         if (account != null) {
             return account.getAmount();
         }
