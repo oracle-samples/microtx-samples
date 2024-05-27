@@ -200,6 +200,9 @@ public class HotelResource {
 
     @RequestMapping(value = "/maxbookings", method = RequestMethod.PUT)
     public ResponseEntity<?> setMaxBookingCount(@RequestParam(value = "count", required = false, defaultValue = "3") Integer maxBookingCount) {
+        if (maxBookingCount < 0 || maxBookingCount > 300) {
+            return ResponseEntity.badRequest().body("Please set the max booking count value in the range of 0 to 300");
+        }
         try (Connection connection = dataSource.getConnection()) {
             hotelService.setMaxBooking(maxBookingCount, connection);
             LOG.info("Set Max Hotel Booking Count: " + maxBookingCount);

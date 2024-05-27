@@ -28,9 +28,7 @@ import org.springframework.stereotype.Service;
 import com.example.hotelsb.model.Booking;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,8 +66,30 @@ public class HotelService {
     }
 
     public void setMaxBooking(int count, Connection connection) {
+        int exisCnt = -1;
+        String query = "SELECT * FROM hotels where id=?";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, 1);
+            ResultSet dataSet = statement.executeQuery();
+            if (dataSet.next()) {
+                exisCnt = dataSet.getInt("seats");
+            }
+        } catch (SQLException ex) {
+            LOG.error("Error while setting max booking value", ex);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        }
+
         try (Statement s = connection.createStatement()) {
-            s.executeUpdate("UPDATE hotels SET seats = " + Integer.valueOf(count) + " WHERE id = 1");
+            if (exisCnt  == -1) {
+                query = "insert into hotels (id, seats) values (1, " + Integer.valueOf(count) + " )";
+                s.execute(query);
+            } else if (exisCnt > count) {
+                query = "UPDATE hotels SET seats = seats  - " + Integer.valueOf(exisCnt - count) + " WHERE id = 1";
+                s.execute(query);
+            } else if (exisCnt < count) {
+                query = "UPDATE hotels SET seats = seats  + " + Integer.valueOf(count - exisCnt ) + " WHERE id = 1";
+                s.execute(query);
+            }
         } catch (SQLException ex) {
             LOG.error("Error while setting max booking value", ex);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
