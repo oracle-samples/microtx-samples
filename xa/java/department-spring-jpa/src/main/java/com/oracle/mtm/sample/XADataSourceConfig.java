@@ -81,12 +81,6 @@ public class XADataSourceConfig {
     @Value("${departmentDataSource.oracleucp.data-source-name}")
     private String dataSourceName;
 
-
-
-
-
-
-
     @Bean(name = "ucpXADataSource")
     @Primary
     public DataSource getXADataSource() {
@@ -141,7 +135,7 @@ public class XADataSourceConfig {
     public EntityManagerFactory createXAEntityManagerFactory() throws SQLException {
         LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
 
-        entityManagerFactoryBean.setDataSource(getXADataSource());
+        //entityManagerFactoryBean.setDataSource(getXADataSource());
         entityManagerFactoryBean.setPackagesToScan(new String[] { "com.oracle.mtm.sample.entity" });
         entityManagerFactoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
@@ -150,10 +144,12 @@ public class XADataSourceConfig {
         Properties properties = new Properties();
         properties.setProperty( "jakarta.persistence.transactionType", "RESOURCE_LOCAL"); // change this to resource_local
         properties.put("hibernate.show_sql", "true");
-        properties.put("hibernate.dialect", "org.hibernate.dialect.Oracle12cDialect");
+        properties.put("hibernate.dialect", "org.hibernate.dialect.OracleDialect");
         properties.put("hibernate.format_sql", "true");
         properties.put("hbm2ddl.auto", "validate");
         properties.put("hibernate.connection.provider_class", "com.oracle.microtx.jpa.HibernateXADataSourceConnectionProvider");
+        properties.put("hibernate.microtx.datasource", getXADataSource());
+        
         entityManagerFactoryBean.setJpaProperties(properties);
         entityManagerFactoryBean.afterPropertiesSet();
         EntityManagerFactory emf = (EntityManagerFactory) entityManagerFactoryBean.getObject();
@@ -175,7 +171,7 @@ public class XADataSourceConfig {
         Properties properties = new Properties();
         properties.setProperty( "jakarta.persistence.transactionType", "RESOURCE_LOCAL"); // change this to resource_local
         properties.put("hibernate.show_sql", "true");
-        properties.put("hibernate.dialect", "org.hibernate.dialect.Oracle12cDialect");
+        properties.put("hibernate.dialect", "org.hibernate.dialect.OracleDialect");
         properties.put("hibernate.format_sql", "true");
         properties.put("hbm2ddl.auto", "validate");
 
