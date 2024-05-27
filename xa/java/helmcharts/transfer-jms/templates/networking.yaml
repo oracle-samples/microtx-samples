@@ -16,11 +16,57 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
 # PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+##################################################################################################
+# OTMM-Gateway Virtual Service - Routes the requests coming at the ingress-gateway for sampleapps
+##################################################################################################
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: otmm-sampleapps
+spec:
+  gateways:
+    - otmm-gateway
+  hosts:
+    - "*"
+  http:
+  {{- range $key, $val := .Values.sampleapps }}
+  -
+    match:
+      -
+        uri:
+          prefix: {{ $val.gatewayUriPrefix }}
+    rewrite:
+      uri: {{ $val.rewriteUriPrefix }}
+    route:
+      -
+        destination:
+          host: {{ $val.host }}
+          subset: {{ $val.version }}
+  {{- end }}
 
-#Modify the below to provide database connection details for your database
-departmentDataSource:
-  url: "jdbc:oracle:thin:@tcps://<host>:<port>/<service_name>?wallet_location=Database_Wallet"
-  user: "user"
-  password: "xxxxxx"
-  jms:
-    topicName: "<topic_name>"
+---
+
+##################################################################################################
+# Destination rule for sampleapps
+##################################################################################################
+  {{- range $key, $val := .Values.sampleapps }}
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ $val.name }}
+spec:
+  host: {{ $val.host }}
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+  {{- if $val.sessionAffinity }}
+    loadBalancer:
+      consistentHash:
+        httpHeaderName: oracle-tmm-txn-id
+  {{- end }}
+  subsets:
+    - name: {{ $val.version }}
+      labels:
+        version: {{ $val.version }}
+---
+{{- end }}
