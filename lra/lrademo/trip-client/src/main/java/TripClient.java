@@ -134,8 +134,13 @@ public class TripClient {
 
         response = tripClient.getTrip(booking.getId(), accessToken, refreshToken);
 
-        System.out.printf("%nFinal Trip Booking Info:%n\t%s%n", response);
-        Arrays.stream(response.getDetails()).forEach(b -> System.out.printf("\tAssociated Booking: %s%n", b));
+
+        if (response != null) {
+            System.out.printf("%nFinal Trip Booking Info:%n\t%s%n", response);
+            Arrays.stream(response.getDetails()).forEach(b -> System.out.printf("\tAssociated Booking: %s%n", b));
+        } else {
+            System.out.printf("%nBooking information not found%n");
+        }
     }
 
     private static void showAnimation(boolean confirm) throws IOException, InterruptedException {
