@@ -29,6 +29,7 @@ import io.micronaut.http.MediaType;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.exceptions.HttpStatusException;
 import io.micronaut.http.uri.UriBuilder;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,10 +42,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Singleton
 public class TripService {
-    private static final Logger LOG = LoggerFactory.getLogger(TripService.class);
+
+    @Inject
+    HttpClient httpClient;
 
     private Map<String, Booking> bookings = new ConcurrentHashMap<>();
     private int TOTAL_PARTICIPANTS = 2;
+
+    private static final Logger LOG = LoggerFactory.getLogger(TripService.class);
 
     public void saveProvisionalBooking(Booking booking) throws BookingException {
         bookings.putIfAbsent(booking.getId(), booking);
@@ -94,14 +99,13 @@ public class TripService {
         }
     }
 
-    private static void mergeAssociateBookingDetails(UriBuilder target, Booking booking) {
+    private void mergeAssociateBookingDetails(UriBuilder target, Booking booking) {
 
         URI uri = target
                 .path("/")
                 .path(booking.getId())
                 .build();
 
-        HttpClient httpClient = HttpClient.create(null);
         HttpRequest<?> request = HttpRequest.GET(uri)
                 .accept(MediaType.APPLICATION_JSON_TYPE)
                 .contentType(MediaType.APPLICATION_JSON_TYPE);
