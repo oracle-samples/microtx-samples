@@ -25,13 +25,13 @@ import io.micronaut.http.HttpStatus;
 import jakarta.inject.Singleton;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 @Singleton
 public class HotelService {
-    private Map<String, Booking> bookings = new HashMap<>();
+    private Map<String, Booking> bookings = new ConcurrentHashMap<>();
     public static int MAX_BOOKING = 3;
 
     public Booking book(String bookingId, String hotel) {
