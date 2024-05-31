@@ -196,8 +196,4 @@ public class TripManagerResource {
     private UriBuilder getFlightTarget(){
         return UriBuilder.of(URI.create(flightServiceUri));
     }
-
-    private HttpClient getClient() {
-        return HttpClient.create(null);
-    }
 }
