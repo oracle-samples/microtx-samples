@@ -44,15 +44,15 @@ public class AccountsService implements IAccountsService {
 
     @Inject
     @TrmEntityManager
-    private EntityManager entityManager;
+    private Provider<EntityManager> entityManager;
 
     @Inject
-    private Provider<EntityManager> localEntityManager;
+    private EntityManager localEntityManager;
 
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public Account findByAccountId(String accountId) throws SQLException {
-        EntityManager em = localEntityManager.get();
+        EntityManager em = localEntityManager;
         try {
             Query query = em.createNativeQuery("SELECT * FROM accounts where account_id= ?", Account.class);
             query.setParameter(1, accountId);
@@ -80,13 +80,13 @@ public class AccountsService implements IAccountsService {
 
     @Override
     public boolean withdraw(String accountId, double amount) throws SQLException {
-        Account account = findByAccountId(accountId, entityManager);
+        Account account = findByAccountId(accountId, entityManager.get());
         if (account != null) {
             logger.info("Current Balance: " + account.getAmount());
             account.setAmount(account.getAmount() - amount);
 
-            account = entityManager.merge(account);
-            entityManager.flush();
+            account = entityManager.get().merge(account);
+            entityManager.get().flush();
             logger.info("New Balance: " + account.getAmount());
             return true;
         }
@@ -95,12 +95,12 @@ public class AccountsService implements IAccountsService {
 
     @Override
     public boolean deposit(String accountId, double amount) throws SQLException {
-        Account account = findByAccountId(accountId, entityManager);
+        Account account = findByAccountId(accountId, entityManager.get());
         if (account != null) {
             logger.info("Current Balance: " + account.getAmount());
             account.setAmount(account.getAmount() + amount);
-            account = entityManager.merge(account);
-            entityManager.flush();
+            account = entityManager.get().merge(account);
+            entityManager.get().flush();
             logger.info("New Balance: " + account.getAmount());
             return true;
         }
@@ -110,7 +110,7 @@ public class AccountsService implements IAccountsService {
 
     @Override
     public double getBalance(String accountId) throws SQLException {
-        Account account = findByAccountId(accountId, entityManager);
+        Account account = findByAccountId(accountId, entityManager.get());
         if (account != null) {
             return account.getAmount();
         }
