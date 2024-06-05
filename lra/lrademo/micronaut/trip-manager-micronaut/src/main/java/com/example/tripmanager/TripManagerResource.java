@@ -36,6 +36,8 @@ import io.micronaut.http.annotation.*;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.uri.UriBuilder;
 import io.micronaut.runtime.http.scope.RequestScope;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +50,7 @@ import static com.oracle.microtx.lra.annotation.LRA.*;
 
 @Controller("/trip-service/api")
 @RequestScope
+@ExecuteOn(TaskExecutors.BLOCKING)
 @Introspected
 public class TripManagerResource {
     private static final String ORACLE_TMM_TX_TOKEN = "Oracle-Tmm-Tx-Token";
@@ -61,10 +64,6 @@ public class TripManagerResource {
     @Property(name = "flight.service.url")
     private String flightServiceUri;
 
-    /**
-     * RestTemplate must be autowired because then only the client Interceptor will be able to intercept
-     * Interceptors are specific to the restTemplate
-     */
     @Inject
     HttpClient httpClient;
 
@@ -161,6 +160,7 @@ public class TripManagerResource {
             LOG.info(String.format("Hotel booking %s with booking Id : %s", (hotelBooking.getStatus() == Booking.BookingStatus.FAILED ? "FAILED" : "SUCCESSFUL"), hotelBooking.getId()));
         } catch (Exception ex) {
             LOG.error("Hotel booking FAILED with error", ex);
+            throw ex;
         }
         assert hotelBooking != null;
         return hotelBooking;
@@ -184,6 +184,7 @@ public class TripManagerResource {
             LOG.info(String.format("Flight booking %s with booking Id : %s", (flightBooking.getStatus() == Booking.BookingStatus.FAILED ? "FAILED" : "SUCCESSFUL"), flightBooking.getId()));
         } catch (Exception ex) {
             LOG.error("Flight booking FAILED with error", ex);
+            throw ex;
         }
         assert flightBooking != null;
         return flightBooking;
