@@ -57,7 +57,7 @@ To run the Transaction manager and a sample application, you need:
 
 ### Load the Transaction Manager image into the registry
 
-The installation bundle contains the `tcs-docker-swarm.yaml` file, the configuration file of the transaction coordinator, which contains the deployment configuration details for Transaction Manager for Microservices. This file is located in the `installation_directory/otmm-RELEASE/otmm/image` folder.
+The installation bundle contains the `tcs-docker-swarm.yaml` file, the configuration file of the transaction coordinator, which contains the deployment configuration details for Transaction Manager for Microservices. This file is located in the `installation_directory/otmm-RELEASE/otmm/docker-swarm` folder.
 
 To make it easy for you to quickly set up Transaction Manager for Microservices and run sample applications, this configuration file does not contain data store, authentication, and authorization details. So you don't have to edit this file to provide details to connect to an external data store or any authentication details
 
@@ -149,7 +149,12 @@ A simple stack file is provided to run and manage the sample application along w
 cat samples/lra/docker-compose/tmm-stack-compose.yaml
 ```
 
-2. Run the following commands to install the LRA sample application stack.
+2. Copy the tcs-docker-swarm.yaml file  from `installation_directory/otmm-RELEASE/otmm/docker-swarm/` to  `samples/lra/docker-compose`.
+
+```bash
+cp installation_directory/otmm-RELEASE/otmm/docker-swarm/tcs-docker-swarm.yaml  sample_app_directory/samples/lra/docker-compose
+```
+3. Run the following commands to install the LRA sample application stack.
 
    ```bash
    cd samples/lra/docker-compose
