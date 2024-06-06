@@ -63,6 +63,10 @@ services:
       ORACLE_TMM_TCS_URL: "http://otmm-tcs:9000/api/v1"
       HOTEL_BOOKING_APP_URL: "http://tcc-hotel:8081/api"
       FLIGHT_BOOKING_APP_URL: "http://tcc-flight:8082/api"
+      # Springboot properties
+      SPRING_MICROTX_COORDINATOR_URL: "http://otmm-tcs:9000/api/v1"
+      PARTICIPANTS_HOTEL_BOOKING_APP_URL: "http://tcc-hotel:8081/api"
+      PARTICIPANTS_FLIGHT_BOOKING_APP_URL: "http://tcc-flight:8082/api"
       SERVICE_NAME: tcc-travel-agent
 
   tcc-flight:
@@ -74,6 +78,8 @@ services:
     environment:
       ORACLE_TMM_TCS_URL: "http://otmm-tcs:9000/api/v1"
       BOOKING_BASE_URL: "http://tcc-flight:8082/api/bookings"
+      # Springboot properties
+      SPRING_MICROTX_COORDINATOR_URL: "http://otmm-tcs:9000/api/v1"
       SERVICE_NAME: tcc-flight
 
   tcc-hotel:
@@ -85,5 +91,6 @@ services:
     environment:
       ORACLE_TMM_TCS_URL: "http://otmm-tcs:9000/api/v1"
       BOOKING_BASE_URL: "http://tcc-hotel:8081/api/bookings"
+      # Springboot properties
+      SPRING_MICROTX_COORDINATOR_URL: "http://otmm-tcs:9000/api/v1"
       SERVICE_NAME: tcc-hotel
-
