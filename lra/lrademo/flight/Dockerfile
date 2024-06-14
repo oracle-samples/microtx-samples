@@ -25,7 +25,7 @@ WORKDIR /usr/src/app
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available (npm@5+)
 COPY package*.json ./
-COPY oracle-microtx-1.0.0.tgz ./
+COPY oracle-microtx-24.2.1.tgz ./
 RUN npm install
 RUN npm install -g npm@8.1.2
 # If you are building your code for production
