@@ -298,6 +298,9 @@ public class TripClient {
 
     private String getOracleTmmTxToken(HttpURLConnection connection) {
         List<String> headerValue = connection.getHeaderFields().getOrDefault(ORACLE_TMM_TX_TOKEN, null);
+        if(headerValue==null){
+            headerValue = connection.getHeaderFields().getOrDefault(ORACLE_TMM_TX_TOKEN.toLowerCase(), null);
+        }
         return headerValue!=null && headerValue.size() > 0 ? headerValue.get(0) : null;
     }
 }
