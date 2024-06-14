@@ -30,7 +30,7 @@
     </parent>
     <groupId>com.oracle</groupId>
     <artifactId>hotel-booking-springboot</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>24.2.1</version>
     <name>hotelSpringBooking</name>
     <description>hotelSpringBooking</description>
     <properties>
@@ -44,7 +44,7 @@
         <dependency>
             <groupId>com.oracle.microtx</groupId>
             <artifactId>microtx-spring-boot-starter</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>24.2.1</version>
         </dependency>
     </dependencies>
 
