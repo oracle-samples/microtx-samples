@@ -20,11 +20,11 @@
         <appender-ref ref="ConsoleMTX" />
     </logger>
 
-    <logger name="exception-logger" level="debug" additivity="false">
+    <logger name="exception-logger" level="info" additivity="false">
         <appender-ref ref="STDOUT" />
     </logger>
 
-    <logger name="io.micronaut" level="debug" additivity="false">
+    <logger name="io.micronaut" level="info" additivity="false">
         <appender-ref ref="STDOUT" />
     </logger>
 
