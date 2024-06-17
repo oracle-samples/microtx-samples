@@ -227,6 +227,9 @@ public class TripManagerResource {
     private String getOracleTmmTxToken(ContainerRequestContext reqContext) {
         PropagatedHeaders propagatedHeaders = (PropagatedHeaders) reqContext.getProperty(PropagatedHeaders.class.getName());
         List<String> headerValue = propagatedHeaders.toMap().getOrDefault(ORACLE_TMM_TX_TOKEN, null);
+        if(headerValue==null){
+            headerValue = propagatedHeaders.toMap().getOrDefault(ORACLE_TMM_TX_TOKEN.toLowerCase(), null);
+        }
         return headerValue != null && headerValue.size() > 0 ? headerValue.get(0) : null;
     }
 }
