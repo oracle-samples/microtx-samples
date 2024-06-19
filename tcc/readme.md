@@ -31,10 +31,11 @@ Each sub-folder in this source repository contains the application source code a
 
 **Note:** When you run the Travel Agent application, build all the three microservices in either Node.js or Java. Don't try to run the Flight Booking service in Java and the Hotel Booking service in Node.js.
 
-Directory | Description
------------- | -------------
-[`java/`](java/) | Java source code and YAML files for the Travel Agent application.
-[`nodejs/`](nodejs/) | Node.js source code and YAML files for the Travel Agent application.
+| Directory                           | Description                                                                                                            |
+|-------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| [`docker-compose`](docker-compose/) | YAML file where you must provide details to configure and deploy the sample applications in Docker Swarm environments. |
+| [`java/`](java/)                    | Java source code and YAML files for the Travel Agent application.                                                      |
+| [`nodejs/`](nodejs/)                | Node.js source code and YAML files for the Travel Agent application.                                                   |                                                   
 
 # Configure the MicroTx Client Library Properties
 
