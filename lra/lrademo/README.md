@@ -92,7 +92,7 @@ The Trip Client microservice is a helper microservice which interacts with the T
    **Example**
 
    ```
-   export TRIP_SERVICE_URL=http://lcoalhost:8081/trip-service/api/trip
+   export TRIP_SERVICE_URL=http://localhost:8081/trip-service/api/trip
    ```
 
    Where, `8081` is the port number on which the Trip Manager service is running.
