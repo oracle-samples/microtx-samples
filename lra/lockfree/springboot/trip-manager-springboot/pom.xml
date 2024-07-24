@@ -31,9 +31,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.example</groupId>
-    <artifactId>trip-manager-sb</artifactId>
+    <artifactId>lockfree-trip-manager-sb</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>trip-manager-sb</name>
+    <name>lockfree-trip-manager-sb</name>
     <description>trip-manager-sb</description>
     <properties>
         <java.version>17</java.version>

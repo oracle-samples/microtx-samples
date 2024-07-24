@@ -31,9 +31,9 @@
         <relativePath></relativePath>
     </parent>
     <groupId>com.oracle.tmm.sample</groupId>
-    <artifactId>teller</artifactId>
+    <artifactId>weblogic-teller</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>teller</name>
+    <name>weblogic-teller</name>
     <description>Demo helidon project for Microservice Transaction Management initiator application</description>
 
     <properties>

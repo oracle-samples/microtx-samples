@@ -31,7 +31,7 @@
         <relativePath></relativePath>
     </parent>
     <groupId>com.oracle.mtm</groupId>
-    <artifactId>department-helidon-jpa-eclipselink</artifactId>
+    <artifactId>department-helidon-jpa-eclipselink-multiplerm</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>department-helidon-jpa-eclipselink-multiplerm</name>
     <description>Demo helidon project for Microservice Transaction Management participant application</description>
