@@ -30,9 +30,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.oracle.mtm.sample</groupId>
-	<artifactId>department-spring</artifactId>
+	<artifactId>department-spring-jpa</artifactId>
 	<version>1.0-SNAPSHOT</version>
-	<name>department-spring</name>
+	<name>department-spring-jpa</name>
 	<description>Demo springboot project for Microservice Transaction Management participant application</description>
 	<properties>
 		<java.version>17</java.version>
