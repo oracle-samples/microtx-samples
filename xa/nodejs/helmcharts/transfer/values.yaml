@@ -45,6 +45,8 @@ sampleapps:
     connectString: <Fill in the connect string>
     databaseUser: <Fill in the database user>
     databasePassword: <Fill in the database password>
+    walletLocation: <Fill in the wallet location>
+    walletPassword: <Fill in the wallet password>
     propagateTraceHeader: true
     oracleTrmXaRmid: 77e75891-27f4-49cf-a488-7e6fece865b7
   dept2:
@@ -61,5 +63,7 @@ sampleapps:
     connectString: <Fill in the connect string>
     databaseUser: <Fill in the database user>
     databasePassword: <Fill in the database password>
+    walletLocation: <Fill in the wallet location>
+    walletPassword: <Fill in the wallet password>
     propagateTraceHeader: true
     oracleTrmXaRmid: 17ff43bb-6a4d-4833-a189-56ef023158d3
