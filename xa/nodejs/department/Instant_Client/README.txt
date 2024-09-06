@@ -1,1 +1,0 @@
-**Download the Instant client Basic Package with version 21.5 or above from https://www.oracle.com/in/database/technologies/instant-client/linux-x86-64-downloads.html. Unzip the content under this folder
