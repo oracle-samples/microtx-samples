@@ -41,13 +41,24 @@ CREATE OR REPLACE PROCEDURE doDeposit (
 )
 AUTHID CURRENT_USER
 AS
+  v_count   NUMBER;
 BEGIN
+    
+    SELECT COUNT(*)
+    INTO v_count
+    FROM accounts
+    WHERE account_id = p_account_id;
+
+    IF v_count = 0 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Account does not exist');
+    END IF;
+
     UPDATE accounts
     SET amount    = amount + p_amount
     WHERE account_id  = p_account_id;
 EXCEPTION
     WHEN OTHERS THEN
-        HTP.print('Error: ' || SQLERRM || ' = Backtrace: ' || dbms_utility.format_error_backtrace);
+        RAISE_APPLICATION_ERROR(-20002, 'Error: ' || SQLERRM);
 END doDeposit;
 /
 
@@ -58,13 +69,24 @@ CREATE OR REPLACE PROCEDURE doWithdraw (
 )
 AUTHID CURRENT_USER
 AS
+  v_count   NUMBER;
 BEGIN
+
+    SELECT COUNT(*)
+    INTO v_count
+    FROM accounts
+    WHERE account_id = p_account_id;
+
+    IF v_count = 0 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Account does not exist');
+    END IF;
+
     UPDATE accounts
     SET amount    = amount - p_amount
     WHERE account_id  = p_account_id;
 EXCEPTION
     WHEN OTHERS THEN
-        HTP.print('Error: ' || SQLERRM || ' = Backtrace: ' || dbms_utility.format_error_backtrace);
+        RAISE_APPLICATION_ERROR(-20002, 'Error: ' || SQLERRM);
 END doWithdraw;
 /
 
