@@ -26,6 +26,7 @@ sampleappslra:
     gatewayUriPrefix: /trip-service
     rewriteUriPrefix: /trip-service
     destinationHost: trip-manager
+    sessionAffinity: false
     # example for connect string:
     # jdbc:oracle:thin:@tcps://<host>:<port>/<service_name>?wallet_location=Database_Wallet
     connectString: <Fill in the connect string dept1>
@@ -40,6 +41,7 @@ sampleappslra:
     gatewayUriPrefix: /flightService
     rewriteUriPrefix: /flightService
     destinationHost: flight
+    sessionAffinity: false
     # example for connect string:
     # jdbc:oracle:thin:@tcps://<host>:<port>/<service_name>?wallet_location=Database_Wallet
     connectString: <Fill in the connect string dept1>
@@ -54,6 +56,7 @@ sampleappslra:
     gatewayUriPrefix: /hotelService
     rewriteUriPrefix: /hotelService
     destinationHost: hotel
+    sessionAffinity: false
     # example for connect string:
     # jdbc:oracle:thin:@tcps://<host>:<port>/<service_name>?wallet_location=Database_Wallet
     connectString: <Fill in the connect string dept1>
