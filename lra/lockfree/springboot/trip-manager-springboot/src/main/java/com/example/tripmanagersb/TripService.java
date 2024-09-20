@@ -24,6 +24,8 @@ package com.example.tripmanagersb;
 import com.example.tripmanagersb.model.Booking;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -40,6 +42,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class TripService {
     private static final Logger LOG = LoggerFactory.getLogger(TripService.class);
+
+    @Autowired
+    @Qualifier("MicroTxLRA")
+    RestTemplate restTemplate;
 
     private Map<String, Booking> bookings = new ConcurrentHashMap<>();
 
@@ -85,7 +91,7 @@ public class TripService {
         }
     }
 
-    private static void mergeAssociateBookingDetails(UriComponentsBuilder target, Booking booking) {
+    private void mergeAssociateBookingDetails(UriComponentsBuilder target, Booking booking) {
 
         URI uri = target
                 .path("/")
@@ -93,7 +99,6 @@ public class TripService {
                 .build()
                 .toUri();
 
-        RestTemplate restTemplate = new RestTemplate();
 
         Booking responseBooking = restTemplate.getForEntity(uri, Booking.class).getBody();
 //        associated service must be listening on this path /bookingId

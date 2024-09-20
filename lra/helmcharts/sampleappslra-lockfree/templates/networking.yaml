@@ -59,6 +59,11 @@ spec:
   trafficPolicy:
     tls:
       mode: ISTIO_MUTUAL
+  {{- if $val.sessionAffinity }}
+    loadBalancer:
+      consistentHash:
+        httpHeaderName: oracle-tmm-txn-id
+  {{- end }}
   subsets:
     - name: {{ $val.version }}
       labels:

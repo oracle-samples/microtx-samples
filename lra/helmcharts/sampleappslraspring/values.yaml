@@ -32,6 +32,7 @@ sampleappslra:
     gatewayUriPrefix: /trip-service
     rewriteUriPrefix: /trip-service
     destinationHost: trip-manager
+    sessionAffinity: false
   flight:
     name: flight
     host: flight
@@ -41,6 +42,7 @@ sampleappslra:
     gatewayUriPrefix: /flightService
     rewriteUriPrefix: /flightService
     destinationHost: flight
+    sessionAffinity: false
   hotel:
     name: hotel
     host: hotel
@@ -50,3 +52,4 @@ sampleappslra:
     gatewayUriPrefix: /hotelService
     rewriteUriPrefix: /hotelService
     destinationHost: hotel
+    sessionAffinity: false
