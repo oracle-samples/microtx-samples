@@ -20,6 +20,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 package com.example.tripmanagersb.service;
 
+import com.example.tripmanagersb.feignclient.FlightFeignClient;
 import com.example.tripmanagersb.model.Booking;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,9 @@ public class BookingServiceImpl implements BookingService {
     @Autowired
     @Qualifier("MicroTxLRA")
     private RestTemplate restTemplate;
+
+    @Autowired
+    FlightFeignClient flightFeignClient;
 
     @Value("${hotel.service.url}")
     private String hotelServiceUri;
@@ -76,12 +80,7 @@ public class BookingServiceImpl implements BookingService {
         Booking flightBooking = null;
         LOG.debug("Calling Flight Service to book flight with booking Id : " + id);
 
-        URI flightUri = getFlightTarget()
-                .queryParam("flightNumber", flightNumber)
-                .build()
-                .toUri();
-
-        flightBooking = restTemplate.postForEntity(flightUri, null, Booking.class).getBody();
+        flightBooking = flightFeignClient.bookFlight(flightNumber);
 
         assert flightBooking != null;
         LOG.info(String.format("Flight booking %s with booking Id : %s", (flightBooking.getStatus() == Booking.BookingStatus.FAILED ? "FAILED" : "SUCCESSFUL"), flightBooking.getId()));

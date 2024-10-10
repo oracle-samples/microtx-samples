@@ -21,6 +21,8 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
  
 package com.example.tripmanagersb;
 
+import com.example.tripmanagersb.feignclient.FlightFeignClient;
+import com.example.tripmanagersb.feignclient.HotelFeignClient;
 import com.example.tripmanagersb.model.Booking;
 import com.example.tripmanagersb.model.BookingResponse;
 import com.oracle.microtx.springboot.lra.annotation.AfterLRA;
@@ -65,6 +67,9 @@ public class TripManagerResource {
     @Autowired
     @Qualifier("MicroTxLRA")
     RestTemplate restTemplate;
+
+    @Autowired
+    FlightFeignClient flightFeignClient;
 
     private static final Logger LOG = LoggerFactory.getLogger(TripManagerResource.class);
 
@@ -157,12 +162,7 @@ public class TripManagerResource {
     private Booking bookFlight(String flightNumber, String id) {
         LOG.info("Calling Flight Service to book flight with booking Id : " + id);
 
-        URI flightUri = getFlightTarget()
-                .queryParam("flightNumber", flightNumber)
-                .build()
-                .toUri();
-
-        Booking flightBooking = restTemplate.postForEntity(flightUri, null, Booking.class).getBody();
+        Booking flightBooking = flightFeignClient.bookFlight(flightNumber);
 
         assert flightBooking != null;
         LOG.info(String.format("Flight booking %s with booking Id : %s", (flightBooking.getStatus() == Booking.BookingStatus.FAILED ? "FAILED" : "SUCCESSFUL"), flightBooking.getId()));
