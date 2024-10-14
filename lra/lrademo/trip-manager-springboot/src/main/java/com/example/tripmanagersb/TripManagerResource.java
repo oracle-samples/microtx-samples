@@ -162,6 +162,16 @@ public class TripManagerResource {
     private Booking bookFlight(String flightNumber, String id) {
         LOG.info("Calling Flight Service to book flight with booking Id : " + id);
 
+        /***
+         // Uncomment this to use restTemplate in place of feign client
+        URI flightUri = getFlightTarget()
+                .queryParam("flightNumber", flightNumber)
+                .build()
+                .toUri();
+
+        flightBooking = restTemplate.postForEntity(flightUri, null, Booking.class).getBody();
+        ***/
+
         Booking flightBooking = flightFeignClient.bookFlight(flightNumber);
 
         assert flightBooking != null;
