@@ -185,7 +185,7 @@ BEGIN
                             ELSE
                                 :status_code := 400; --bad request
                             END IF;
-                            microtx_log(''''Withdraw complete'''');
+                            microtx_log(''Withdraw complete'');
                         exception
                             when others then
                                 microtx_log(''Withdraw failed '' || SQLERRM);
