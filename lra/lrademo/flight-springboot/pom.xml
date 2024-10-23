@@ -31,7 +31,7 @@
     </parent>
     <groupId>com.example</groupId>
     <artifactId>flight-sb</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>24.2.2</version>
     <name>flight-sb</name>
     <description>flight-sb</description>
     <properties>
@@ -55,7 +55,7 @@
         <dependency>
             <groupId>com.oracle.microtx.lra</groupId>
             <artifactId>microtx-lra-spring-boot-starter</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>24.2.2</version>
         </dependency>
 
         <!--        If this app is running on ARM based Mac, uncomment this.-->

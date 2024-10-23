@@ -6,10 +6,10 @@ TMM TCC nodejs flight sample
 
 Download the NodeJs Lib file from the official MicroTx Distribution package : https://www.oracle.com/in/database/transaction-manager-for-microservices/
 
-Copy `tmmlib-node-1.0.0.tgz` file from `<distribution-package-dir>/lib/nodejs` to the flight folder.
+Copy `oracle-microtx-24.2.2.tgz` file from `<distribution-package-dir>/lib/nodejs` to the flight folder.
 
 ```
-cp <distribution-package-dir>/lib/nodejs/tmmlib-node-1.0.0.tgz ./
+cp <distribution-package-dir>/lib/nodejs/oracle-microtx-24.2.2.tgz ./
 ```
 
 To install this dependency use:

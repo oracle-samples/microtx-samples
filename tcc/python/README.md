@@ -42,7 +42,7 @@ Run the following commands to set up a virtual environment.
     ```
     cd samples/tcc/python/travel-agent-py
     pip install -r requirements.txt
-    pip install tmmpy-24.2.1-py3-none-any.whl
+    pip install tmmpy-24.2.2-py3-none-any.whl
     ```
 
 ## Run the Microservices in the Virtual Environment

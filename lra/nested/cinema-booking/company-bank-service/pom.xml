@@ -32,7 +32,7 @@
     </parent>
     <groupId>com.oracle.mtm</groupId>
     <artifactId>company-bank-service</artifactId>
-    <version>24.2.1</version>
+    <version>24.2.2</version>
     <name>Company Bank Service</name>
     <description>Demo helidon project for Microservice Transaction Management participant application</description>
     <properties>
@@ -55,7 +55,7 @@
         <dependency>
             <groupId>com.oracle.microtx</groupId>
             <artifactId>TmmLib</artifactId>
-            <version>24.2.1</version>
+            <version>24.2.2</version>
         </dependency>
 
         <dependency>

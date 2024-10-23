@@ -32,7 +32,7 @@
     </parent>
     <groupId>com.oracle.mtm</groupId>
     <artifactId>teller-with-promotion</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>24.2.2</version>
     <name>initiator as participant with promotion </name>
     <description>Demo helidon project for Microservice Transaction Management XA initiator as participant with promotion feature</description>
     <properties>
@@ -55,7 +55,7 @@
         <dependency>
             <groupId>com.oracle.microtx</groupId>
             <artifactId>TmmLib-jakarta</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>24.2.2</version>
         </dependency>
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>

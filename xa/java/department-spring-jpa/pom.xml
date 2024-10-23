@@ -31,7 +31,7 @@
 	</parent>
 	<groupId>com.oracle.mtm.sample</groupId>
 	<artifactId>department-spring</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>24.2.2</version>
 	<name>department-spring</name>
 	<description>Demo springboot project for Microservice Transaction Management participant application</description>
 	<properties>
@@ -47,12 +47,23 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.hibernate.orm</groupId>
+					<artifactId>hibernate-core</artifactId>
+				</exclusion>
+			</exclusions>
 			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>6.2.9.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.microtx</groupId>
 			<artifactId>microtx-spring-boot-starter-hibernate</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>24.2.2</version>
 		</dependency>
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
@@ -88,11 +99,6 @@
 			<groupId>com.oracle.database.security</groupId>
 			<artifactId>osdt_cert</artifactId>
 			<version>21.9.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.xml.bind</groupId>
-			<artifactId>jaxb-api</artifactId>
-			<version>2.3.0</version>
 		</dependency>
 	</dependencies>
 

@@ -32,7 +32,7 @@
     </parent>
     <groupId>com.oracle.tmm.sample</groupId>
     <artifactId>teller</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>24.2.2</version>
     <name>teller</name>
     <description>Demo helidon project for Microservice Transaction Management initiator application</description>
 
@@ -57,7 +57,7 @@
         <dependency>
             <groupId>com.oracle.microtx</groupId>
             <artifactId>TmmLib-jakarta</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>24.2.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
