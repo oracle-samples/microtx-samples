@@ -210,7 +210,7 @@ Output
     "lraCoordinator": "Healthy",
     "tccCoordinator": "Healthy"
   },
-  "version": "24.2.1",
+  "version": "24.2.2",
   "started": "2023-11-28T12:55:27.916192441Z"
 }
 ```
