@@ -30,7 +30,7 @@
 	</parent>
 	<groupId>com.oracle.example</groupId>
 	<artifactId>teller</artifactId>
-	<version>24.2.1</version>
+	<version>24.2.2</version>
 	<name>teller</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
@@ -46,7 +46,7 @@
 		<dependency>
 			<groupId>com.oracle.microtx.lra</groupId>
 			<artifactId>microtx-lra-spring-boot-starter</artifactId>
-			<version>24.2.1</version>
+			<version>24.2.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
