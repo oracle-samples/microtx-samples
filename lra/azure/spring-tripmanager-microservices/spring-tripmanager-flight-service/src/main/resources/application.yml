@@ -17,6 +17,12 @@
 # PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#server.port=8083
+#
+#spring.microtx.lra.coordinator-url=http://localhost:9000/api/v1/lra-coordinator
+#spring.microtx.lra.propagation-active=true
+#spring.microtx.lra.participant-url=http://localhost:8083
+#spring.microtx.lra.headers-propagation-prefix = {x-b3-, oracle-tmm-, authorization, refresh-}
 
 server:
   port: 8083

@@ -26,13 +26,13 @@ while [[ $# > 0 ]]
 do
 key="$1"
 case $1 in
-    trips)
+    customers)
         PORT=8081
         ;;
-    hotels)
+    visits)
         PORT=8082
         ;;
-    flights)
+    vets)
         PORT=8083
         ;;
     attacks*)
