@@ -34,7 +34,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+
 import org.springframework.web.util.UriComponentsBuilder;
 import javax.sql.DataSource;
 import java.net.URI;
@@ -126,7 +126,7 @@ public class TripManagerResource {
         LOG.info("Received Confirmation for trip booking with Id : " + bookingId);
         Booking tripBooking = service.get(bookingId);
         if (tripBooking.getStatus() == Booking.BookingStatus.CANCEL_REQUESTED) {
-            throw new WebClientResponseException(HttpStatus.BAD_REQUEST.value(), "Cannot confirm a trip booking that needs to be cancelled", null, null, null);
+            return ResponseEntity.badRequest().body("Cannot confirm a trip booking that needs to be cancelled");
         }
         return ResponseEntity.ok(new BookingResponse("Confirm booking requested"));
     }
