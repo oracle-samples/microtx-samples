@@ -38,5 +38,5 @@ Build the docker image.
 ```
 Run the docker image.
 ```
-- $ docker run -p 8082:8082 -d <image_name>:<tag>
+- $ docker run -p 8081:8081 -d <image_name>:<tag>
 ```

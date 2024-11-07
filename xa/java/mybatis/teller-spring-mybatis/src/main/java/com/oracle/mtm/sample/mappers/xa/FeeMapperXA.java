@@ -1,4 +1,4 @@
-package com.oracle.mtm.sample.mappers.nonxa;
+package com.oracle.mtm.sample.mappers.xa;
 
 import com.oracle.mtm.sample.entity.Fee;
 import org.apache.ibatis.annotations.Mapper;

@@ -18,12 +18,12 @@
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 server:
-  port : 8083
+  port : 8080
 
 spring:
   microtx:
     coordinator-url: http://localhost:9000/api/v1
-    participant-url: http://localhost:8083
+    participant-url: http://localhost:8080
     propagation-active: true
     http-client-connection-pool-size: 60
     xa-transaction-timeout: 60000
@@ -55,6 +55,5 @@ feeDataSource:
 
 departmentOneEndpoint: "http://localhost:8081"
 departmentTwoEndpoint: "http://localhost:8082"
-
 
 

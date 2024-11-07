@@ -24,7 +24,7 @@ package com.oracle.mtm.sample;
 import com.oracle.microtx.common.MicroTxConfig;
 import com.oracle.microtx.xa.mybatis.MicroTxSqlSessionFactory;
 import com.oracle.microtx.xa.mybatis.MicroTxTransactionFactory;
-import com.oracle.mtm.sample.mappers.nonxa.FeeMapperXA;
+import com.oracle.mtm.sample.mappers.xa.FeeMapperXA;
 import oracle.tmm.jta.common.DataSourceInfo;
 import oracle.ucp.jdbc.PoolDataSource;
 import oracle.ucp.jdbc.PoolDataSourceFactory;
@@ -162,7 +162,7 @@ public class DataSourceConfig {
         Environment environment = new Environment("MicroTxXAEnv", transactionFactory, xaDataSource);
         org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration(environment);
         configuration.addMappers("com.oracle.mtm.sample.mappers.xa");
-        configuration.addMapper(FeeMapperXA.class);
+        // configuration.addMapper(FeeMapperXA.class);
         MicroTxSqlSessionFactory sqlSessionFactory = new MicroTxSqlSessionFactory(configuration);
 
         DataSourceInfo dataSourceInfo = new DataSourceInfo(resourceManagerId);

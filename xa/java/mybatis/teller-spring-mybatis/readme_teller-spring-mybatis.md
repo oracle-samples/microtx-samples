@@ -2,7 +2,7 @@
 
 When you run the Bank Transfer application, the Teller microservice initiates the transactions so it is called a transaction initiator service. The user interacts with this microservice to transfer money between Departments One and Two. When a new request is created, the helper method that is exposed in the MicroTx library runs the `begin()` method for XA transaction to start the XA transaction at the Teller microservice. This microservice also contains the business logic to issue the XA commit and roll back calls. This is a Spring Boot microservice.
 
-The Teller service initiates, and then participates in the transaction, so it also requires a resource manager. Set up a XA-compliant resource manager for the Teller microservice. See [the readme of the Bank Transfer application](../../readme.md).
+The Teller service initiates, and then participates in the transaction, so it also requires a resource manager. Set up a XA-compliant resource manager for the Teller microservice. See [the readme of the Bank Transfer application](../../../readme.md).
 
 ## Build Docker Image of the Teller Application
 
