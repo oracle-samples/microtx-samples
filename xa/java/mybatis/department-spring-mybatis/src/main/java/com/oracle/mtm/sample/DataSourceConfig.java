@@ -24,6 +24,7 @@ package com.oracle.mtm.sample;
 import com.oracle.microtx.common.MicroTxConfig;
 import com.oracle.microtx.xa.mybatis.MicroTxSqlSessionFactory;
 import com.oracle.microtx.xa.mybatis.MicroTxTransactionFactory;
+import com.oracle.mtm.sample.mappers.xa.AccountMapperXA;
 import com.oracle.mtm.sample.resource.AccountsResource;
 import oracle.tmm.jta.common.DataSourceInfo;
 import oracle.ucp.jdbc.PoolDataSource;

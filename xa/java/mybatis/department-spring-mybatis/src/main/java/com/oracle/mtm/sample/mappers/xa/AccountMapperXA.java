@@ -15,6 +15,6 @@ public interface AccountMapperXA {
     @Update("UPDATE accounts SET amount = amount - #{amount} WHERE account_id = #{accountId}")
     int withdrawAccountAmount(@Param("accountId") String accountId, @Param("amount") double amount);
 
-    @Update("UPDATE accounts SET amount = amount - #{amount} WHERE account_id = #{accountId}")
+    @Update("UPDATE accounts SET amount = amount + #{amount} WHERE account_id = #{accountId}")
     int depositAccountAmount(@Param("accountId") String accountId, @Param("amount") double amount);
 }

@@ -22,8 +22,8 @@ package com.oracle.mtm.sample.data;
 
 import com.oracle.microtx.xa.mybatis.MicroTxSqlSession;
 import com.oracle.mtm.sample.entity.Fee;
-import com.oracle.mtm.sample.mappers.nonxa.FeeMapperXA;
-import com.oracle.mtm.sample.mappers.xa.FeeMapperNonXA;
+import com.oracle.mtm.sample.mappers.xa.FeeMapperXA;
+import com.oracle.mtm.sample.mappers.nonxa.FeeMapperNonXA;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
