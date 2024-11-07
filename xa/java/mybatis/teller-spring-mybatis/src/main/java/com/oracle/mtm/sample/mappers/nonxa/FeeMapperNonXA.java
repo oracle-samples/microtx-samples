@@ -1,10 +1,9 @@
-package com.oracle.mtm.sample.mappers.xa;
+package com.oracle.mtm.sample.mappers.nonxa;
 
 import com.oracle.mtm.sample.entity.Fee;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface FeeMapperNonXA {

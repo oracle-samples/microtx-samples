@@ -36,4 +36,4 @@ COPY --from=build /app/target/department-spring-mybatis.jar ./
 ADD Database_Wallet Database_Wallet
 CMD ["java", "-jar", "department-spring-mybatis.jar"]
 
-EXPOSE 8082
+EXPOSE 8081
