@@ -1,0 +1,17 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oracle.mtm.sample.mappers.xa.FeeMapperXA">
+
+    <select id="findByAccountId" parameterType="String" resultType="com.oracle.mtm.sample.entity.Fee">
+        SELECT *
+        FROM fee
+        WHERE account_id = #{account_id}
+    </select>
+
+    <update id="depositFee" parameterType="map">
+        UPDATE fee
+        SET amount = amount + #{amount}
+        WHERE account_id = #{accountId}
+    </update>
+
+</mapper>
