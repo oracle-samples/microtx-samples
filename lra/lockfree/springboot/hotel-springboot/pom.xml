@@ -32,7 +32,7 @@
     </parent>
     <groupId>com.example</groupId>
     <artifactId>hotel-sb</artifactId>
-    <version>24.2.1</version>
+    <version>24.2.2</version>
     <name>hotel-sb</name>
     <description>hotel-sb</description>
     <properties>
@@ -56,7 +56,7 @@
         <dependency>
             <groupId>com.oracle.microtx.lra</groupId>
             <artifactId>microtx-lra-spring-boot-starter</artifactId>
-            <version>24.2.1</version>
+            <version>24.2.2</version>
         </dependency>
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>

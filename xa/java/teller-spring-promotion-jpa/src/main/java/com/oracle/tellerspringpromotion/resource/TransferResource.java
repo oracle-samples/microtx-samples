@@ -41,6 +41,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -55,9 +56,9 @@ import java.sql.SQLException;
 public class TransferResource {
 
     @Autowired
-    @Qualifier("MicroTxXaWebClientBuilder")
-    @Lazy
-    WebClient.Builder webClientBuilder;
+    @Qualifier("MicroTxXaRestTemplate")
+    RestTemplate restTemplate;
+
     private static final Logger LOG = LoggerFactory.getLogger(TransferResource.class);
     @Autowired
     @Lazy
@@ -260,12 +261,8 @@ public class TransferResource {
                 .queryParam("amount", amount)
                 .build()
               .toString();
+        ResponseEntity<String> response = restTemplate.postForEntity(withDrawEndpoint, null, String.class);
 
-        ResponseEntity<String> response  = webClientBuilder.baseUrl(withDrawEndpoint).build()
-                .post()
-                .retrieve()
-                .toEntity(String.class)
-                .block();
 
         HttpStatus status = HttpStatus.resolve(response.getStatusCode().value());
         LOG.info( "Withdraw Response: \n" + response.getBody().toString());
@@ -288,12 +285,7 @@ public class TransferResource {
                 .build()
                 .toString();
 
-
-        ResponseEntity<String> response  = webClientBuilder.baseUrl(depositEndpoint).build()
-                .post()
-                .retrieve()
-                .toEntity(String.class)
-                .block();
+        ResponseEntity<String> response = restTemplate.postForEntity(depositEndpoint, null, String.class);
 
         LOG.info( "Deposit Response: \n" + response.getBody().toString());
         return response;

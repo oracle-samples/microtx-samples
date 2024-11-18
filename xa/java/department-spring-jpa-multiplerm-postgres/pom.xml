@@ -31,7 +31,7 @@
 	</parent>
 	<groupId>com.oracle.mtm.sample</groupId>
 	<artifactId>department-spring-jpa-multiplerm-postgres-mixed</artifactId>
-	<version>24.2.1</version>
+	<version>24.2.2</version>
 	<name>department-spring-jpa-multiplerm-postgres-mixed</name>
 	<description>Demo springboot project for Microservice Transaction Management participant application</description>
 	<properties>
@@ -103,7 +103,7 @@
 		<dependency>
 			<groupId>com.oracle.microtx</groupId>
 			<artifactId>microtx-spring-boot-starter-hibernate</artifactId>
-			<version>24.2.1</version>
+			<version>24.2.2</version>
 		</dependency>
 	</dependencies>
 

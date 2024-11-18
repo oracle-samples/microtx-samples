@@ -153,7 +153,7 @@ BEGIN
                      APEX_JSON.initialize_clob_output;
                      APEX_JSON.open_object; -- {
 
-                     SELECT account_id, sum(reward_amount) INTO l_account_id, l_total_reward_amount 
+                     SELECT account_id, sum(reward_amount) INTO l_account_id, l_total_reward_amount
                      FROM fund_transfer_reward WHERE account_id = :accountId
                      GROUP BY account_id;
 
@@ -211,7 +211,7 @@ CREATE OR REPLACE FUNCTION callWithdrawParticipant (
     p_amount     IN  VARCHAR2,
     l_microTxTransaction IN MicroTxTransaction,
     l_forwardHeaders IN ForwardHeaders DEFAULT NULL
-) RETURN BOOLEAN 
+) RETURN BOOLEAN
 AUTHID CURRENT_USER
 AS
    l_withdraw_endpoint VARCHAR2(128) := 'http://host.docker.internal:8081';
@@ -221,7 +221,7 @@ BEGIN
     -- Withdraw URL http://host.docker.internal:8081/accounts/<account-id>/withdraw?amount=<withdraw-amount>
     l_withdraw_url := utl_lms.format_message('%s/accounts/%s/withdraw?amount=%d', l_withdraw_endpoint, p_account_id, p_amount);
 
-    
+
     apex_web_service.set_request_headers (
         -- Set link header, this is mandatory for external requests which involves distributed transaction
         p_name_01 => 'Link',
@@ -270,7 +270,7 @@ CREATE OR REPLACE FUNCTION callDepositParticipant (
     p_amount     IN  VARCHAR2,
     l_microTxTransaction IN MicroTxTransaction,
     l_forwardHeaders IN ForwardHeaders DEFAULT NULL
-) RETURN BOOLEAN 
+) RETURN BOOLEAN
 AUTHID CURRENT_USER
 AS
    l_withdraw_endpoint VARCHAR2(128) := 'http://host.docker.internal:8082';
@@ -317,7 +317,7 @@ END callDepositParticipant;
 /
 
 /**
-  Credit points to sender account on every transfer. 
+  Credit points to sender account on every transfer.
   For every transfer, the sender receives a 5% reward on the transfer amount.
 **/
 CREATE OR REPLACE PROCEDURE creditFundTransferRewards (
@@ -330,7 +330,7 @@ IS
    l_reward_amount FLOAT;
 BEGIN
    l_reward_amount := (TO_NUMBER(p_amount DEFAULT 0 ON CONVERSION ERROR) * c_reward_percentage) / 100;
-   INSERT INTO fund_transfer_reward(account_id, reward_amount) 
+   INSERT INTO fund_transfer_reward(account_id, reward_amount)
    VALUES (p_account_id, l_reward_amount);
 END creditFundTransferRewards;
 /

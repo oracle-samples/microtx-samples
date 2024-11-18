@@ -41,3 +41,4 @@ public class Account {
     @Column(name="amount")
     double amount;
 }
+

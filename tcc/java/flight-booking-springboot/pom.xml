@@ -30,7 +30,7 @@
     </parent>
     <groupId>com.example</groupId>
     <artifactId>flight-booking-springboot</artifactId>
-    <version>24.2.1</version>
+    <version>24.2.2</version>
     <name>flightBookingSpring</name>
     <description>flightBookingSpring</description>
     <properties>
@@ -44,7 +44,7 @@
         <dependency>
             <groupId>com.oracle.microtx</groupId>
             <artifactId>microtx-spring-boot-starter</artifactId>
-            <version>24.2.1</version>
+            <version>24.2.2</version>
         </dependency>
     </dependencies>
     <build>
