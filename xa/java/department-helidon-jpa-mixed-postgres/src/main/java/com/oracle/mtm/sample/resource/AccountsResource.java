@@ -119,7 +119,7 @@ public class AccountsResource {
                     logger.info(creditPointAmount + " Credit Point failed to added for account: " + accountId);
                 }
 
-                return Response.status(Response.Status.OK.getStatusCode(),  "Amount withdrawn from the account").build();
+                return Response.status(Response.Status.OK.getStatusCode()).entity( "Amount withdrawn from the account").build();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -164,7 +164,7 @@ public class AccountsResource {
                     logger.info(creditPointAmount + " Credit Point failed to added for account: " + accountId);
                 }
 
-                return Response.status(Response.Status.OK.getStatusCode(), "Amount deposited to the account").build();
+                return Response.status(Response.Status.OK.getStatusCode()).entity( "Amount deposited to the account").build();
             }
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage());
