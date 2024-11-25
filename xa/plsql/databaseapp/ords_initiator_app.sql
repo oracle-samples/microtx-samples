@@ -245,15 +245,15 @@ BEGIN
         p_body => ''
     );
     IF apex_web_service.g_status_code = 200 THEN
-       microtx_log('Withdraw operation successful');
+       microtx_log(log_level.INFO, 'Withdraw operation successful');
        RETURN TRUE;
     ELSE
-       microtx_log('Withdraw failed with HTTP response ' || apex_web_service.g_status_code || ' : ' || l_withdraw_response);
+       microtx_log(log_level.ERROR, 'Withdraw failed with HTTP response ' || apex_web_service.g_status_code || ' : ' || l_withdraw_response);
        RETURN FALSE;
     END IF;
 EXCEPTION
     WHEN OTHERS THEN
-        microtx_log('Withdraw failed ' || SQLERRM || ' = Backtrace: ' || dbms_utility.format_error_backtrace);
+        microtx_log(log_level.ERROR, 'Withdraw failed ' || SQLERRM || ' = Backtrace: ' || dbms_utility.format_error_backtrace);
         RETURN FALSE;
 END callWithdrawParticipant;
 /
@@ -273,12 +273,12 @@ CREATE OR REPLACE FUNCTION callDepositParticipant (
 ) RETURN BOOLEAN 
 AUTHID CURRENT_USER
 AS
-   l_withdraw_endpoint VARCHAR2(128) := 'http://host.docker.internal:8082';
+   l_deposit_endpoint VARCHAR2(128) := 'http://host.docker.internal:8082';
    l_deposit_url VARCHAR2(255);
    l_deposit_response CLOB;
 BEGIN
     -- Deposit URL http://host.docker.internal:8082/accounts/<account-id>/deposit?amount=<withdraw-amount>
-    l_deposit_url := utl_lms.format_message('%s/accounts/%s/deposit?amount=%d', l_withdraw_endpoint, p_account_id, p_amount);
+    l_deposit_url := utl_lms.format_message('%s/accounts/%s/deposit?amount=%d', l_deposit_endpoint, p_account_id, p_amount);
 
     apex_web_service.set_request_headers (
         -- Set link header, this is mandatory for external requests which involves distributed transaction
@@ -303,15 +303,15 @@ BEGIN
         p_body => ''
     );
     IF apex_web_service.g_status_code = 200 THEN
-       microtx_log('Deposit operation successful');
+       microtx_log(log_level.INFO, 'Deposit operation successful');
        RETURN TRUE;
     ELSE
-       microtx_log('Deposit failed with HTTP response ' || apex_web_service.g_status_code || ' : ' || l_deposit_response);
+       microtx_log(log_level.ERROR, 'Deposit failed with HTTP response ' || apex_web_service.g_status_code || ' : ' || l_deposit_response);
        RETURN FALSE;
     END IF;
 EXCEPTION
     WHEN OTHERS THEN
-        microtx_log('Deposit failed ' || SQLERRM || ' = Backtrace: ' || dbms_utility.format_error_backtrace);
+        microtx_log(log_level.ERROR, 'Deposit failed ' || SQLERRM || ' = Backtrace: ' || dbms_utility.format_error_backtrace);
         RETURN FALSE;
 END callDepositParticipant;
 /
