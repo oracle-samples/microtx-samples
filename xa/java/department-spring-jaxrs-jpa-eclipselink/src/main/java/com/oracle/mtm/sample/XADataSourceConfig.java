@@ -136,6 +136,35 @@ public class XADataSourceConfig {
 
     @Bean(name = "entityManagerFactory")
     @Primary
+    public EntityManagerFactory createLocalEntityManagerFactory() throws SQLException {
+        LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
+
+        entityManagerFactoryBean.setDataSource(getDataSource());
+        entityManagerFactoryBean.setPackagesToScan(new String[] { "com.oracle.mtm.sample.entity" });
+        entityManagerFactoryBean.setJpaVendorAdapter(new EclipseLinkJpaVendorAdapter());
+        entityManagerFactoryBean.setPersistenceProviderClass(PersistenceProvider.class);
+        entityManagerFactoryBean.setPersistenceUnitName("mydeptds");
+
+        Properties properties = new Properties();
+        properties.setProperty( "jakarta.persistence.transactionType", "RESOURCE_LOCAL"); // change this to resource_local
+        properties.setProperty("jakarta.persistence.jdbc.driver", "oracle.jdbc.OracleDriver");
+        properties.setProperty("jakarta.persistence.jdbc.url", url);
+        properties.setProperty("jakarta.persistence.jdbc.user", username);
+        properties.setProperty("jakarta.persistence.jdbc.password", password);
+
+        properties.setProperty(PersistenceUnitProperties.CACHE_SHARED_DEFAULT, "false");
+        properties.setProperty(PersistenceUnitProperties.TARGET_DATABASE, "Oracle");
+        properties.setProperty(PersistenceUnitProperties.WEAVING, "false");
+        properties.setProperty(PersistenceUnitProperties.CONNECTION_POOL, "UCPPool");
+        properties.setProperty(PersistenceUnitProperties.EXCLUSIVE_CONNECTION_MODE, "Always");
+
+        entityManagerFactoryBean.setJpaProperties(properties);
+        entityManagerFactoryBean.afterPropertiesSet();
+        EntityManagerFactory emf = (EntityManagerFactory) entityManagerFactoryBean.getObject();
+        return emf;
+    }
+
+    @Bean(name = "entityManagerFactoryXA")
     public EntityManagerFactory createXAEntityManagerFactory() throws SQLException {
         LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
 
@@ -163,35 +192,6 @@ public class XADataSourceConfig {
         EntityManagerFactory emf = (EntityManagerFactory) entityManagerFactoryBean.getObject();
         System.out.println("entityManagerFactory = " + emf);
         MicroTxConfig.initEntityManagerFactory(emf, resourceManagerId); // Initialize TMM Library
-        return emf;
-    }
-
-    @Bean(name = "localEntityManagerFactory")
-    public EntityManagerFactory createEntityManagerFactory() throws SQLException {
-        LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
-
-        entityManagerFactoryBean.setDataSource(getDataSource());
-        entityManagerFactoryBean.setPackagesToScan(new String[] { "com.oracle.mtm.sample.entity" });
-        entityManagerFactoryBean.setJpaVendorAdapter(new EclipseLinkJpaVendorAdapter());
-        entityManagerFactoryBean.setPersistenceProviderClass(PersistenceProvider.class);
-        entityManagerFactoryBean.setPersistenceUnitName("mydeptds");
-
-        Properties properties = new Properties();
-        properties.setProperty( "jakarta.persistence.transactionType", "RESOURCE_LOCAL"); // change this to resource_local
-        properties.setProperty("jakarta.persistence.jdbc.driver", "oracle.jdbc.OracleDriver");
-        properties.setProperty("jakarta.persistence.jdbc.url", url);
-        properties.setProperty("jakarta.persistence.jdbc.user", username);
-        properties.setProperty("jakarta.persistence.jdbc.password", password);
-
-        properties.setProperty(PersistenceUnitProperties.CACHE_SHARED_DEFAULT, "false");
-        properties.setProperty(PersistenceUnitProperties.TARGET_DATABASE, "Oracle");
-        properties.setProperty(PersistenceUnitProperties.WEAVING, "false");
-        properties.setProperty(PersistenceUnitProperties.CONNECTION_POOL, "UCPPool");
-        properties.setProperty(PersistenceUnitProperties.EXCLUSIVE_CONNECTION_MODE, "Always");
-
-        entityManagerFactoryBean.setJpaProperties(properties);
-        entityManagerFactoryBean.afterPropertiesSet();
-        EntityManagerFactory emf = (EntityManagerFactory) entityManagerFactoryBean.getObject();
         return emf;
     }
 }
