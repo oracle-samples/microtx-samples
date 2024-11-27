@@ -29,7 +29,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class CustomAccountRepository {
     @Autowired
-    @Qualifier("localEntityManagerFactory")
+    @Qualifier("entityManagerFactory")
     private EntityManager entityManager;
 
     public Account findByAccountId(String accountId) {
