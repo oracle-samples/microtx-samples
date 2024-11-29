@@ -42,12 +42,12 @@
         </layout>
     </appender>
 
-    <logger name="com.oracle" level="TRACE" additivity="false">
+    <logger name="com.oracle.microtx" level="DEBUG" additivity="false">
         <appender-ref ref="ConsoleMTX" />
     </logger>
 
-    <logger name="org.apache" level="INFO" additivity="false">
-        <appender-ref ref="Console" />
+    <logger name="oracle.tmm" level="DEBUG" additivity="false">
+        <appender-ref ref="ConsoleMTX" />
     </logger>
 
     <root level="info">

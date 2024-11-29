@@ -31,9 +31,13 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="oracle.tmm" level="DEBUG" additivity="false">
-            <AppenderRef ref="MicroTxLib"/>
-        </Logger>
+        <logger name="com.oracle.microtx" level="DEBUG" additivity="false">
+            <appender-ref ref="ConsoleMTX" />
+        </logger>
+
+        <logger name="oracle.tmm" level="DEBUG" additivity="false">
+            <appender-ref ref="ConsoleMTX" />
+        </logger>
         <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>
