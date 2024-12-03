@@ -161,8 +161,7 @@ public class DataSourceConfig {
         TransactionFactory transactionFactory = new MicroTxTransactionFactory();
         Environment environment = new Environment("MicroTxXAEnv", transactionFactory, xaDataSource);
         org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration(environment);
-        configuration.addMappers("com.oracle.mtm.sample.mappers.xa");
-        // configuration.addMapper(FeeMapperXA.class);
+        configuration.addMapper(FeeMapperXA.class);
         MicroTxSqlSessionFactory sqlSessionFactory = new MicroTxSqlSessionFactory(configuration);
 
         DataSourceInfo dataSourceInfo = new DataSourceInfo(resourceManagerId);
