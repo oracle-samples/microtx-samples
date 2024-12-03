@@ -259,6 +259,8 @@ spec:
               value: {{ .Values.sampleapps.teller.propagateTraceHeader| quote }}
             - name: SPRING_MICROTX_XA_PROMOTABLE_ACTIVE
               value: {{ .Values.sampleapps.teller.promotable| quote }}            
+            - name: SPRING_MICROTX_XA_TRANSACTION_TIMEOUT
+              value: { { .Values.sampleapps.teller.xaTransactionTimeout| quote } }
       imagePullSecrets:
         - name: {{ .Values.sampleapps.teller.imagePullSecret }}
 ---

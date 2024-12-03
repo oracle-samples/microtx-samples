@@ -150,6 +150,8 @@ spec:
               value: helidondept
             - name: ORACLE_UCP_JDBC_POOLXADATASOURCE_LOCALORCL_URL
               value: {{ .Values.sampleapps.helidondept.connectString }}
+            - name: ORACLE_TMM_TRANSACTION_TIMEOUT
+              value: { { .Values.sampleapps.teller.xaTransactionTimeout| quote } }
             - name: ORACLE_UCP_JDBC_POOLXADATASOURCE_LOCALORCL_USER
               value: {{ .Values.sampleapps.helidondept.databaseUser }}
             - name: ORACLE_UCP_JDBC_POOLXADATASOURCE_LOCALORCL_PASSWORD

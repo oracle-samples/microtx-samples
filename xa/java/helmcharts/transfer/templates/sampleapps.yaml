@@ -234,6 +234,8 @@ spec:
               value: teller
             - name: ORACLE_TMM_PROPAGATE_TRACE_HEADERS
               value: {{ .Values.sampleapps.teller.propagateTraceHeader| quote }}
+            - name: ORACLE_TMM_TRANSACTION_TIMEOUT
+              value: { { .Values.sampleapps.teller.xaTransactionTimeout| quote } }
       imagePullSecrets:
         - name: {{ .Values.sampleapps.teller.imagePullSecret }}
 ---
