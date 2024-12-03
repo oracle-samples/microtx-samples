@@ -244,6 +244,8 @@ spec:
               value: {{ .Values.sampleapps.teller.databasePassword }}
             - name: ORACLE_TMM_XA_RMID
               value: {{ .Values.sampleapps.teller.resourceManagerId }}
+            - name: ORACLE_TMM_TRANSACTION_TIMEOUT
+              value: { { .Values.sampleapps.teller.xaTransactionTimeout| quote } }
       imagePullSecrets:
         - name: {{ .Values.sampleapps.teller.imagePullSecret }}
 ---

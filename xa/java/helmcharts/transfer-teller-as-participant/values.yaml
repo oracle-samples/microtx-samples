@@ -38,6 +38,7 @@ sampleapps:
     databasePassword: <Fill in the database password>
     propagateTraceHeader: false
     resourceManagerId: <Fill the unique identifier assigned to the database>
+    xaTransactionTimeout: 60000
   dept1:
     name: dept1
     host: dept1

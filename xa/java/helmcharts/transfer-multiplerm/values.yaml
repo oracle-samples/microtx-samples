@@ -32,6 +32,7 @@ sampleapps:
     rewriteUriPrefix: /transfers
     destinationHost: teller
     propagateTraceHeader: false
+    xaTransactionTimeout: 60000
   dept1:
     name: dept1
     host: dept1
