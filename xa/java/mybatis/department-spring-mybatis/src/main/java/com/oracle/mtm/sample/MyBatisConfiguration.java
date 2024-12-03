@@ -26,8 +26,7 @@ public class MyBatisConfiguration {
         TransactionFactory transactionFactory = new JdbcTransactionFactory();
         Environment environment = new Environment("development", transactionFactory, dataSource);
         Configuration configuration = new Configuration(environment);
-        configuration.addMappers("com.oracle.mtm.sample.mappers.nonxa");
-        //configuration.addMapper(AccountMapperNonXA.class);
+        configuration.addMapper(AccountMapperNonXA.class);
         SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(configuration);
         return sqlSessionFactory;
     }
