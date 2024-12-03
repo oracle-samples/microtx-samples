@@ -27,6 +27,7 @@ sampleapps:
     rewriteUriPrefix: /transfers
     destinationHost: teller
     propagateTraceHeader: false
+    xaTransactionTimeout: 60000
     promotable : true
     dataSources:
       # example for connect string:

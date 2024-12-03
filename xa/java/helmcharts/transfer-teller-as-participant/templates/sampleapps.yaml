@@ -237,6 +237,8 @@ spec:
               value: teller
             - name: ORACLE_TMM_PROPAGATE_TRACE_HEADERS
               value: {{ .Values.sampleapps.teller.propagateTraceHeader| quote }}
+            - name: ORACLE_TMM_TRANSACTION_TIMEOUT
+              value: { { .Values.sampleapps.teller.xaTransactionTimeout| quote } }
             - name: FEEDATASOURCE_URL
               value: {{ .Values.sampleapps.teller.connectString }}
             - name: FEEDATASOURCE_USER
