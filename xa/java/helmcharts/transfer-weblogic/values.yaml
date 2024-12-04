@@ -32,6 +32,7 @@ sampleapps:
     rewriteUriPrefix: /transfers
     destinationHost: teller
     propagateTraceHeader: false
+    xaTransactionTimeout: 60000
     weblogic:
       applicationEndpoint: <Fill in the weblogic application service endpoint>
       basicAuth:
