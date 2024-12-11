@@ -108,8 +108,10 @@ public class AccountsResource {
                 return Response.status(422, "Insufficient balance in the account").build();
             }
             if(this.accountService.withdraw(accountId, amount)) {
-                logger.info(amount + " withdrawn from account: " + accountId);
-                return Response.status(Response.Status.OK.getStatusCode(), "Amount withdrawn from the account").build();
+                logger.info("{} withdrawn from account {} successfully", amount, accountId);
+                return Response.status(Response.Status.OK.getStatusCode(), "Amount withdrawn from the account")
+                        .entity("Amount withdrawn from the account")
+                        .build();
             }
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage());
@@ -141,8 +143,10 @@ public class AccountsResource {
         }
         try {
             if(this.accountService.deposit(accountId, amount)) {
-                logger.info(amount + " deposited to account: " + accountId);
-                return Response.status(Response.Status.OK.getStatusCode(), "Amount deposited to the account").build();
+                logger.info("{} deposited to account {} successfully", amount, accountId);
+                return Response.status(Response.Status.OK.getStatusCode(), "Amount deposited to the account")
+                        .entity("Amount deposited to the account")
+                        .build();
             }
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage());

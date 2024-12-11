@@ -30,9 +30,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.oracle.mtm.sample</groupId>
-	<artifactId>teller-spring</artifactId>
+	<artifactId>teller-spring-jaxrs</artifactId>
 	<version>1.0-SNAPSHOT</version>
-	<name>teller-spring</name>
+	<name>teller-spring-jaxrs</name>
 	<description>Demo springboot project for Microservice Transaction Management Initiator as participant application</description>
 	<properties>
 		<java.version>17</java.version>
