@@ -87,8 +87,8 @@ public class AccountsResource {
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Insufficient balance in the account");
             }
             if(this.accountService.withdraw(accountId, amount)) {
-               LOG.info(amount + " withdrawn from account: " + accountId);
-                return ResponseEntity.ok("Amount withdrawn from the account");
+                LOG.info("{} withdrawn from account {} successfully", amount, accountId);
+                return ResponseEntity.ok("Amount withdrawn successfully from the account");
             }
         } catch (SQLException | IllegalArgumentException e) {
             LOG.error(e.getLocalizedMessage());
@@ -109,8 +109,8 @@ public class AccountsResource {
         }
         try {
             if(this.accountService.deposit(accountId, amount)) {
-                LOG.info(amount + " deposited to account: " + accountId);
-                return ResponseEntity.ok("Amount deposited to the account");
+                LOG.info("{} deposited to account {} successfully", amount, accountId);
+                return ResponseEntity.ok("Amount deposited to the account successfully");
             }
         } catch (SQLException e) {
             LOG.error(e.getLocalizedMessage());

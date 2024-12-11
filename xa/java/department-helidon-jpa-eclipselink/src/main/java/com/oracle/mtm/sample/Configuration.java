@@ -82,7 +82,10 @@ public class Configuration {
             this.xaDataSource.setUser(user);
             this.xaDataSource.setPassword(password);
             this.xaDataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
-            this.xaDataSource.setMaxPoolSize(15);
+            this.xaDataSource.setMinPoolSize(10);
+            this.xaDataSource.setInitialPoolSize(15);
+            this.xaDataSource.setMaxPoolSize(30);
+            this.xaDataSource.setConnectionPoolName("XAConnectionPool");
         } catch (SQLException e) {
             logger.error("Failed to initialise database");
         }
@@ -142,7 +145,10 @@ public class Configuration {
             this.dataSource.setUser(user);
             this.dataSource.setPassword(password);
             this.dataSource.setConnectionFactoryClassName("oracle.jdbc.pool.OracleDataSource");
-            this.xaDataSource.setMaxPoolSize(15);
+            this.dataSource.setConnectionPoolName("NonXaConnectionPool");
+            this.dataSource.setMinPoolSize(10);
+            this.dataSource.setInitialPoolSize(15);
+            this.dataSource.setMaxPoolSize(30);
         } catch (SQLException e) {
             logger.error("Failed to initialise database");
         }

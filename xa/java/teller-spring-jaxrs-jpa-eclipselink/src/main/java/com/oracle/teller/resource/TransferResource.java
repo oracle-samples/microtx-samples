@@ -144,9 +144,8 @@ public class TransferResource {
                 .toString();
 
         ResponseEntity<String> response = restTemplate.postForEntity(withDrawEndpoint, null, String.class);
-
         HttpStatus status = HttpStatus.resolve(response.getStatusCode().value());
-        LOG.info( "Withdraw Response: \n" + response.getBody().toString());
+        LOG.info( "Withdraw status: {}, response: {}", status, response.getBody());
         return response;
     }
 
@@ -167,8 +166,8 @@ public class TransferResource {
                 .toString();
 
         ResponseEntity<String> response = restTemplate.postForEntity(depositEndpoint, null, String.class);
-
-        LOG.info( "Deposit Response: \n" + response.getBody().toString());
+        HttpStatus status = HttpStatus.resolve(response.getStatusCode().value());
+        LOG.info( "Deposit status: {}, response: {}", status, response.getBody());
         return response;
     }
 }
