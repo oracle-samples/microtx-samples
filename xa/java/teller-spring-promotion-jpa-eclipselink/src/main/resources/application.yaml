@@ -22,7 +22,7 @@ spring:
     propagation-active: true
     http-client-connection-pool-size: 60
     xa-transaction-timeout: 60000
-    xa-resource-manager-id: 5039F7B9-EFF2-4584-8E92-B37C8F5F3A15
+    xa-resource-manager-id: 5039F7B9-EFF2-4584-8E92-B37C8F5F3F15
     xa-xa-support: true
     xa-llr-support: false
     xa-lrc-support: false
@@ -39,7 +39,7 @@ feeDataSource:
   url: "jdbc:oracle:thin:@tcps://<host>:<port>/<service_name>?wallet_location=Database_Wallet1"
   user: "user"
   password: "xxxxxx"
-  rmid: "5039F7B9-EFF2-4584-8E92-B37C8F5F3A15"
+  rmid: "5039F7B9-EFF2-4584-8E92-B37C8F5F3F15"
   # Properties for using Universal Connection Pool (UCP)
   # Note: These properties require JDBC version 21.0.0.0
   oracleucp:
