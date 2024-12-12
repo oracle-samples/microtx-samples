@@ -55,7 +55,7 @@
         <dependency>
             <groupId>com.oracle.microtx.lra</groupId>
             <artifactId>microtx-lra-spring-boot-starter</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>24.4.1</version>
         </dependency>
 
         <!--        If this app is running on ARM based Mac, uncomment this.-->

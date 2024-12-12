@@ -31,7 +31,7 @@
     </parent>
     <groupId>com.oracle.mtm</groupId>
     <artifactId>department-helidon-teq</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>24.4.1</version>
     <name>department-helidon-teq</name>
     <description>Demo helidon project for Microservice Transaction Management participant application</description>
     <properties>
@@ -55,7 +55,7 @@
         <dependency>
             <groupId>com.oracle.microtx</groupId>
             <artifactId>TmmLib-jakarta</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>24.4.1</version>
         </dependency>
 
         <dependency>

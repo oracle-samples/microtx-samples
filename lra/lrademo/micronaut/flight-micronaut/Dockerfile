@@ -26,7 +26,7 @@ WORKDIR /flight-micronaut
 # Incremental docker builds will always resume after that, unless you update
 # the pom
 
-COPY lib/* /root/.m2/repository/com/oracle/microtx/lra/microtx-lra-micronaut/1.0-SNAPSHOT/
+COPY lib/* /root/.m2/repository/com/oracle/microtx/lra/microtx-lra-micronaut/24.4.1/
 COPY pom.xml .
 RUN mvn package -Dmaven.test.skip -Declipselink.weave.skip
 

@@ -31,7 +31,7 @@
     </parent>
     <groupId>com.oracle.mtm.sample</groupId>
     <artifactId>teller-spring-jpa-jaxrs-eclipselink</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>24.4.1</version>
     <name>teller-spring-jpa-eclipselink</name>
     <description>Demo springboot project for Microservice Transaction Management teller transaction promotion application</description>
     <properties>
@@ -73,13 +73,13 @@
         <dependency>
             <groupId>com.oracle.microtx</groupId>
             <artifactId>microtx-spring-boot-jaxrs-starter</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>24.4.1</version>
         </dependency>
 
         <dependency>
             <groupId>com.oracle.microtx</groupId>
             <artifactId>microtx-spring-boot-starter-eclipselink</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>24.4.1</version>
         </dependency>
 
         <dependency>
