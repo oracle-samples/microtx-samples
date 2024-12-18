@@ -11,10 +11,10 @@ This application used the TMM Node Js Library for XA and participates in an XA T
 
 1. Download the NodeJs Lib file from the official MicroTx Distribution package : https://www.oracle.com/in/database/transaction-manager-for-microservices/
 
-Copy `oracle-microtx-1.0.0.tgz` file from `<distribution-package-dir>/lib/nodejs` to the department folder.
+Copy `oracle-microtx-24.4.1.tgz` file from `<distribution-package-dir>/lib/nodejs` to the department folder.
 
 ```
-cp <distribution-package-dir>/lib/nodejs/oracle-microtx-1.0.0.tgz ./
+cp <distribution-package-dir>/lib/nodejs/oracle-microtx-24.4.1.tgz ./
 ```
 
 2. This application connects to an Oracle Database. If you choose to use Autonomous database, then download the client credential wallet and copy the contents into the `Database_Wallet` folder in the root of department folder.

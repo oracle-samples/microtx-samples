@@ -30,7 +30,7 @@
     </parent>
     <groupId>com.example</groupId>
     <artifactId>hotel-micronaut</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>24.4.1</version>
     <name>Hotel Micronaut</name>
     <description>Demo micronaut project for Microservice Transaction Management LRA participant application</description>
     <properties>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>com.oracle.microtx.lra</groupId>
             <artifactId>microtx-lra-micronaut</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>24.4.1</version>
         </dependency>
         <dependency>
             <groupId>io.micronaut</groupId>

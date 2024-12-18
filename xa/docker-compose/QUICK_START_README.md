@@ -61,18 +61,18 @@ The installation bundle contains the `tcs-docker-swarm.yaml` file, the configura
 
 To make it easy for you to quickly set up Transaction Manager for Microservices and run sample applications, this configuration file does not contain data store, authentication, and authorization details. So you don't have to edit this file to provide details to connect to an external data store or any authentication details
 
-1. Load the Transaction Manager for Microservices image in the local Docker repository. The Transaction Manager for Microservices image is located at `installation_directory/otmm-1.0-SNAPSHOT/otmm/image/tmm-1.0-SNAPSHOT.tgz`.
+1. Load the Transaction Manager for Microservices image in the local Docker repository. The Transaction Manager for Microservices image is located at `installation_directory/otmm-24.4.1/otmm/image/tmm-24.4.1.tgz`.
 
    ```bash
-   cd installation_directory/otmm-1.0-SNAPSHOT/otmm
-   docker load < image/tmm-1.0-SNAPSHOT.tgz
+   cd installation_directory/otmm-24.4.1/otmm
+   docker load < image/tmm-24.4.1.tgz
    ```
 
    On Windows, run the following command:
 
    ```bash
-   cd installation_directory/otmm-1.0-SNAPSHOT/otmm
-   docker load -i image/tmm-1.0-SNAPSHOT.tgz
+   cd installation_directory/otmm-24.4.1/otmm
+   docker load -i image/tmm-24.4.1.tgz
    ```
 
    The following message is displayed: Loaded image: tmm:RELEASE
@@ -88,13 +88,13 @@ To make it easy for you to quickly set up Transaction Manager for Microservices 
 
    ```bash
    REPOSITORY                                                     TAG         IMAGE ID       CREATED         SIZE
-   tmm                                                            1.0-SNAPSHOT      bcc91ec952a6   4 days ago      610MB
+   tmm                                                            24.4.1      bcc91ec952a6   4 days ago      610MB
    ```
 
    b. Use the following command to create a new tag.
 
    ```bash
-   docker tag tmm:1.0-SNAPSHOT 127.0.0.1:5000/tmm
+   docker tag tmm:24.4.1 127.0.0.1:5000/tmm
    ```
 
    Here we are created the same image tmm  with a tag `127.0.0.1:5000/tmm`
@@ -107,7 +107,7 @@ To make it easy for you to quickly set up Transaction Manager for Microservices 
 
 # Deploy XA Sample Application
 
-The XA sample application is available in the installation bundle in the `installation_directory/otmm-1.0-SNAPSHOT/samples/xa/java` folder.
+The XA sample application is available in the installation bundle in the `installation_directory/otmm-24.4.1/samples/xa/java` folder.
 
 ## Set Up Resource Managers
 
@@ -127,8 +127,8 @@ If you use an Autonomous Database instance, perform the following steps to get t
 
    1. The files are extracted to a folder. Note down the name of this folder.
    2. Copy the wallet files to the following folders that contain the source code for the participant applications. Perform this step for both ATP instance wallets for the two participant applications.
-      - `installation_directory/otmm-1.0-SNAPSHOT/samples/xa/java/department-helidon/Database_Wallet/ `
-      - `installation_directory/otmm-1.0-SNAPSHOT/samples/xa/java/department-spring/Database_Wallet/ `
+      - `installation_directory/otmm-24.4.1/samples/xa/java/department-helidon/Database_Wallet/ `
+      - `installation_directory/otmm-24.4.1/samples/xa/java/department-spring/Database_Wallet/ `
 
 ## Create database and tables with sample values
 
@@ -139,14 +139,14 @@ To use the SQL script to create a database, a table and populate it with sample 
 1. Run the following SQL file using SQL Developer or SQL Plus for the first database:
 
    ```bash
-   < installation_directory/otmm-1.0-SNAPSHOT/samples/xa/java/department-helidon/department.sql
+   < installation_directory/otmm-24.4.1/samples/xa/java/department-helidon/department.sql
    ```
 
    This creates a database with the name `department_helidon` and a table with the name `accounts`. It also populates the `accounts` table with sample values.
 2. Run the following SQL file using SQL Developer or SQL Plus for the second database:
 
    ```bash
-   < installation_directory/otmm-1.0-SNAPSHOT/samples/xa/java/department-spring/department.sql
+   < installation_directory/otmm-24.4.1/samples/xa/java/department-spring/department.sql
    ```
 
 This creates a database with the name `department_spring` and a table with the name `accounts`. It also populates the `accounts` table with sample values as provided in the following table.
@@ -161,7 +161,7 @@ This creates a database with the name `department_spring` and a table with the n
 
 ## Build Docker Images for Sample XA Application
 
-The XA sample application is available in the installation bundle in the `installation_directory/otmm-1.0-SNAPSHOT/samples/xa/java` folder. This folder contains the code for three microservices, YAML file, and Helm charts.
+The XA sample application is available in the installation bundle in the `installation_directory/otmm-24.4.1/samples/xa/java` folder. This folder contains the code for three microservices, YAML file, and Helm charts.
 
 Before you begin building the Docker images, ensure that you have copied the wallet files to the sample application folders if you are using an Autonomous Database instances as resource manager.
 Perform the following steps to build Docker images for each microservice in the sample:
@@ -169,21 +169,21 @@ Perform the following steps to build Docker images for each microservice in the 
 1. Run the following commands to build the Docker image for the teller application. Then, push the image to the docker registry after the build is completed
 
    ```bash
-   cd installation_directory/otmm-1.0-SNAPSHOT/samples/xa/java/teller
+   cd installation_directory/otmm-24.4.1/samples/xa/java/teller
    docker image build -t 127.0.0.1:5000/teller:1.0 .
    docker push 127.0.0.1:5000/teller:1.0
    ```
 2. Run the following commands to build the Docker image for the Department 1 application. Then, push the image to the docker registry after the build is completed.
 
    ```bash
-   cd installation_directory/otmm-1.0-SNAPSHOT/samples/xa/java/department-helidon
+   cd installation_directory/otmm-24.4.1/samples/xa/java/department-helidon
    docker image build -t 127.0.0.1:5000/department-helidon:1.0 .
    docker push 127.0.0.1:5000/department-helidon:1.0
    ```
 3. Run the following commands to build the Docker image for the Department 2 application. Then, push the image to the docker registry after the build is completed.
 
    ```bash
-   cd installation_directory/otmm-1.0-SNAPSHOT/samples/xa/java/department-spring
+   cd installation_directory/otmm-24.4.1/samples/xa/java/department-spring
    docker image build -t 127.0.0.1:5000/department-spring:1.0 .
    docker push 127.0.0.1:5000/department-spring:1.0
    ```
