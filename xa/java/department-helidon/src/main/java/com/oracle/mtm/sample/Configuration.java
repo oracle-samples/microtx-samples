@@ -72,6 +72,16 @@ public class Configuration {
             this.xaDataSource.setPassword(password);
             this.xaDataSource.setConnectionFactoryClassName("oracle.jdbc.xa.client.OracleXADataSource");
             this.xaDataSource.setMaxPoolSize(15);
+
+            this.xaDataSource.setLoginTimeout(60);
+            this.xaDataSource.setMaxConnectionReuseCount(1000);
+            this.xaDataSource.setConnectionWaitTimeout(300);
+            this.xaDataSource.setValidateConnectionOnBorrow(true);
+            this.xaDataSource.setSQLForValidateConnection("select 1 from dual");
+            this.xaDataSource.setInactiveConnectionTimeout(120);
+            this.xaDataSource.setAbandonedConnectionTimeout(120);
+            this.xaDataSource.setMaxIdleTime(60);
+
             TrmConfig.initXaDataSource(this.xaDataSource);
         } catch (SQLException e) {
             logger.error("Failed to initialise database");
@@ -89,6 +99,13 @@ public class Configuration {
             this.dataSource.setPassword(password);
             this.dataSource.setConnectionFactoryClassName("oracle.jdbc.pool.OracleDataSource");
             this.dataSource.setMaxPoolSize(15);
+
+            this.dataSource.setValidateConnectionOnBorrow(true);
+            this.dataSource.setSQLForValidateConnection("select 1 from dual");
+            this.dataSource.setInactiveConnectionTimeout(60);
+            this.dataSource.setAbandonedConnectionTimeout(60);
+            this.dataSource.setMaxIdleTime(60);
+
         } catch (SQLException e) {
             logger.error("Failed to initialise database");
         }

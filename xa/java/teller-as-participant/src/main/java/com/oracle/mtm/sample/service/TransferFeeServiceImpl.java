@@ -18,16 +18,58 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-package com.oracle.mtm.sample;
+package com.oracle.mtm.sample.service;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.EnableAsync;
 
-@SpringBootApplication
-@EnableAsync
-public class TellerSpringApplication {
-	public static void main(String[] args) {
-		SpringApplication.run(TellerSpringApplication.class, args);
-	}
+import com.oracle.mtm.sample.entity.Fee;
+import oracle.tmm.jta.common.TrmSQLConnection;
+
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+
+import javax.sql.XAConnection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+@RequestScoped
+public class TransferFeeServiceImpl implements TransferFeeService {
+
+    @Inject
+    @TrmSQLConnection
+    private Connection connection;
+
+    @Override
+    public boolean depositFee(String accountId, double amount) throws SQLException {
+        String query = "UPDATE fee SET amount=amount+? WHERE account_id=?";
+        System.out.println("query "+ query + accountId+ " "+ amount);
+        try (PreparedStatement statement = connection.prepareStatement(query);) {
+            statement.setDouble(1, amount);
+            statement.setString(2, accountId);
+            return statement.executeUpdate() > 0;
+        }
+    }
+
+    @Override
+    public Fee getFeeDetails(String accountId) throws SQLException {
+        Fee fee = null;
+        try {
+            if (connection == null) {
+                return null;
+            }
+            String query = "SELECT * FROM fee where account_id=?";
+            try (PreparedStatement statement = connection.prepareStatement(query);) {
+                statement.setString(1, accountId);
+                ResultSet dataSet = statement.executeQuery();
+                if (dataSet.next()) {
+                    fee = new Fee(dataSet.getString("account_id"), dataSet.getDouble("amount"));
+                }
+            }
+        } catch (SQLException e) {
+            throw e;
+        }
+        return fee;
+    }
 }
+

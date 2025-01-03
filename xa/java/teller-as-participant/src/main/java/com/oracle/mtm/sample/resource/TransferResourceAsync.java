@@ -22,13 +22,24 @@ package com.oracle.mtm.sample.resource;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.oracle.mtm.sample.Configuration;
 import com.oracle.mtm.sample.entity.Fee;
 import com.oracle.mtm.sample.entity.Transfer;
+import com.oracle.mtm.sample.exception.TransferFailedException;
 import com.oracle.mtm.sample.service.TransferFeeService;
-
+import jakarta.inject.Inject;
+import jakarta.transaction.HeuristicMixedException;
+import jakarta.transaction.HeuristicRollbackException;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.SystemException;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import oracle.tmm.jta.TrmUserTransaction;
+import oracle.tmm.task.decorator.MicroTxXATaskExecutor;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.annotations.info.Info;
@@ -39,25 +50,16 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.inject.Inject;
-import jakarta.transaction.HeuristicMixedException;
-import jakarta.transaction.HeuristicRollbackException;
-import jakarta.transaction.RollbackException;
-import jakarta.transaction.SystemException;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.SQLException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
-@Path("/transfers")
+@Path("/transfersWithFutureTaskAsync")
 @OpenAPIDefinition(info = @Info(title = "Amount Transfer endpoint", version = "1.0"))
-public class TransferResource {
+public class TransferResourceAsync {
 
     private static Client withdrawClient = ClientBuilder.newClient();
     private static Client depositClient = ClientBuilder.newClient();
@@ -75,10 +77,10 @@ public class TransferResource {
     @ConfigProperty(name = "departmentTwoEndpoint")
     private String departmentTwoEndpoint;
 
-    @Inject
-    private Configuration config;
-
     private ObjectMapper mapper = new ObjectMapper();
+
+    @Inject
+    MicroTxXATaskExecutor microTxXATaskExecutor;
 
 
     @APIResponses(value = {
@@ -102,42 +104,54 @@ public class TransferResource {
         try {
             // Begin a user transaction and also enlist in the transaction by setting enlist = true
             transaction.begin(true);
+
+            FutureTask<Response> withdrawFutureTask = getWithdrawFutureTask(departmentOneEndpoint, transferDetails.getAmount(), transferDetails.getFrom());
+            FutureTask<Response> depositFutureTask = getDepositFutureTask(departmentTwoEndpoint, transferDetails.getAmount(), transferDetails.getTo());
+            FutureTask<Boolean> depositFeeFutureTask = getDepositFeeFutureTask(transferDetails.getFrom(), transferDetails.getTransferFee());
+
+            microTxXATaskExecutor.submit(withdrawFutureTask);
+            microTxXATaskExecutor.submit(depositFutureTask);
+            microTxXATaskExecutor.submit(depositFeeFutureTask);
+
             // Withdraw processing
-            withdrawResponse= withdraw(departmentOneEndpoint, transferDetails.getTotalCharged(), transferDetails.getFrom());
+            withdrawResponse = withdrawFutureTask.get();
             if (withdrawResponse.getStatus() != Response.Status.OK.getStatusCode()) {
                 transaction.rollback();
                 logger.error("Withdraw failed: "+ transferDetails + "Reason: " + withdrawResponse.getStatusInfo().getReasonPhrase());
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Withdraw failed").build();
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity("Withdraw failed").build();
             }
+
             // Fee processing
-            if (transferFeeService.depositFee(transferDetails.getFrom(), transferDetails.getTransferFee())) {
+            boolean feeDeposited = depositFeeFutureTask.get();
+            if (feeDeposited) {
                 logger.info("Fee deposited successful" + transferDetails);
             }else{
                 transaction.rollback();
                 logger.error("Fee deposited failed" + transferDetails);
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Fee deposit failed").build();
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity("Fee deposit failed").build();
             }
+
             // Deposit processing
-            depositResponse = deposit(departmentTwoEndpoint, transferDetails.getAmount(), transferDetails.getTo());
+            depositResponse = depositFutureTask.get();
             if (depositResponse.getStatus() != Response.Status.OK.getStatusCode()) {
                 transaction.rollback();
                 logger.error("Deposit failed: "+ transferDetails + "Reason: " + depositResponse.getStatusInfo().getReasonPhrase());
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Deposit failed").build();
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity("Deposit failed").build();
             }
             // Commit the transaction
             transaction.commit();
             logger.info("Transfer successful:" + transferDetails);
             return Response.ok(transferDetails).build();
-        } catch (SQLException e) {
+        } catch (SystemException e) {
             logger.error("Transfer Fee Deposit failed: "+ transferDetails + "Reason: " + e.getLocalizedMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        } catch (SystemException | URISyntaxException e) {
-            logger.error(e.getLocalizedMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         } catch(RollbackException | HeuristicMixedException | HeuristicRollbackException e){
-            logger.error(e.getLocalizedMessage());
+            logger.error("Transfer Fee Deposit failed: "+ transferDetails + "Reason: " + e.getLocalizedMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Transfer failed").build();
-        }  finally {
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("Transfer Fee Deposit failed: "+ transferDetails + "Reason: " + e.getLocalizedMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Transfer failed").build();
+        } finally {
             if(withdrawResponse != null) withdrawResponse.close();
             if(depositResponse != null) depositResponse.close();
         }
@@ -157,7 +171,7 @@ public class TransferResource {
     @GET
     @Path("{accountId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAccountFeeDetails(@PathParam("accountId") String accountId) {
+    public Response getAccountDetails(@PathParam("accountId") String accountId) {
         try {
             Fee fee = transferFeeService.getFeeDetails(accountId);
             if(fee == null) {
@@ -171,6 +185,19 @@ public class TransferResource {
         }
     }
 
+    private FutureTask<Boolean> getDepositFeeFutureTask(String from, double transferFee) {
+        Callable<Boolean> task = () -> {
+            Boolean hasFeeDeposited = false;
+            try {
+                hasFeeDeposited = transferFeeService.depositFee(from, transferFee);
+            } catch (Exception e) {
+                logger.error("Updating deposit fee failed: {}", e.getMessage());
+            }
+            return hasFeeDeposited;
+        };
+        return new FutureTask<>(task);
+    }
+
     /**
      * Send an HTTP request to the service to withdraw amount from the provided account identity
      * @param serviceEndpoint The service endpoint which is called to withdraw
@@ -178,11 +205,27 @@ public class TransferResource {
      * @param accountId The account Identity
      * @return HTTP Response from the service
      */
-    private Response withdraw(String serviceEndpoint, double amount, String accountId) throws URISyntaxException {
-        String withDrawEndpoint = UriBuilder.fromUri(new URI(serviceEndpoint)).path("accounts").path(accountId).path("withdraw").queryParam("amount", amount).toString();
-        Response response = withdrawClient.target(withDrawEndpoint).request().post(Entity.text(""));
-        logger.info("Withdraw Response: \n" + response.toString());
-        return response;
+    private FutureTask<Response> getWithdrawFutureTask(String serviceEndpoint, double amount, String accountId) {
+        Callable<Response> task = () -> {
+            Response response = null;
+            try {
+                String withDrawEndpoint = UriBuilder.fromUri(new URI(serviceEndpoint))
+                        .path("accounts")
+                        .path(accountId)
+                        .path("withdraw")
+                        .queryParam("amount", amount)
+                        .toString();
+
+                response = withdrawClient.target(withDrawEndpoint).request().post(Entity.text(""));
+                logger.info("Withdraw Response: {}", response.toString());
+                logger.info("Withdraw Response Body: {}", response.readEntity(String.class));
+            } catch (Exception e) {
+                logger.error("Withdraw failed: {}", e.getMessage());
+                throw new TransferFailedException("Withdraw failed: " + e.getMessage());
+            }
+            return response;
+        };
+        return new FutureTask<>(task);
     }
 
     /**
@@ -192,10 +235,26 @@ public class TransferResource {
      * @param accountId The account Identity
      * @return HTTP Response from the service
      */
-    private Response deposit(String serviceEndpoint, double amount, String accountId) throws URISyntaxException {
-        String depositEndpoint = UriBuilder.fromUri(new URI(serviceEndpoint)).path("accounts").path(accountId).path("/deposit").queryParam("amount", amount).toString();
-        Response response = depositClient.target(depositEndpoint).request().post(Entity.text(""));
-        logger.info("Deposit Response: \n" + response.toString());
-        return response;
+    private FutureTask<Response> getDepositFutureTask(String serviceEndpoint, double amount, String accountId) {
+        Callable<Response> task = () -> {
+            Response response = null;
+            try {
+                String depositEndpoint = UriBuilder.fromUri(new URI(serviceEndpoint))
+                        .path("accounts")
+                        .path(accountId)
+                        .path("/deposit")
+                        .queryParam("amount", amount)
+                        .toString();
+
+                response = depositClient.target(depositEndpoint).request().post(Entity.text(""));
+                logger.info( "Deposit Response: {}", response.toString());
+                logger.info( "Deposit Response Body: {}", response.readEntity(String.class));
+            } catch (Exception e) {
+                logger.error("Deposit failed: {}", e.getMessage());
+                throw new TransferFailedException("Deposit failed: " + e.getMessage(), e);
+            }
+            return response;
+        };
+        return new FutureTask<>(task);
     }
 }

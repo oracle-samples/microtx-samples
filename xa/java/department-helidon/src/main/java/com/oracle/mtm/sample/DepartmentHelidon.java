@@ -20,14 +20,11 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 package com.oracle.mtm.sample;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.EnableAsync;
+import io.helidon.microprofile.server.Server;
 
-@SpringBootApplication
-@EnableAsync
-public class TellerSpringApplication {
-	public static void main(String[] args) {
-		SpringApplication.run(TellerSpringApplication.class, args);
-	}
+public class DepartmentHelidon {
+
+    public static void main(String[] args) {
+        Server.builder().build().start();
+    }
 }

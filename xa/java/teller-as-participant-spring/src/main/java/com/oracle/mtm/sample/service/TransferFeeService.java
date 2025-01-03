@@ -18,16 +18,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-package com.oracle.mtm.sample;
+package com.oracle.mtm.sample.service;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.EnableAsync;
+import com.oracle.mtm.sample.entity.Fee;
 
-@SpringBootApplication
-@EnableAsync
-public class TellerSpringApplication {
-	public static void main(String[] args) {
-		SpringApplication.run(TellerSpringApplication.class, args);
-	}
+import java.sql.SQLException;
+
+public interface TransferFeeService {
+
+    boolean depositFee(String accountId, double amount) throws SQLException;
+
+    Fee feeDetails(String accountId) throws SQLException;
 }

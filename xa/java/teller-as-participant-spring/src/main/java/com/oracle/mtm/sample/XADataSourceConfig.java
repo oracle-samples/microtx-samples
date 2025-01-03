@@ -77,6 +77,12 @@ public class XADataSourceConfig {
             ((PoolXADataSource) pds).setDataSourceName(dataSourceName);
             ((PoolXADataSource) pds).setConnectionPoolName(connectionPoolName);
 
+            ((PoolXADataSource) pds).setValidateConnectionOnBorrow(true);
+            ((PoolXADataSource) pds).setSQLForValidateConnection("select 1 from dual");
+            ((PoolXADataSource) pds).setInactiveConnectionTimeout(60);
+            ((PoolXADataSource) pds).setAbandonedConnectionTimeout(60);
+            ((PoolXADataSource) pds).setMaxIdleTime(60);
+
             MicroTxConfig.initXaDataSource((XADataSource) pds);
             System.out.println("XADataSourceConfig: XADataSource created");
         } catch (SQLException ex) {

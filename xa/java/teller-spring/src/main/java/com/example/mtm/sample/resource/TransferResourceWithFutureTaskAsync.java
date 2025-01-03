@@ -22,22 +22,18 @@ package com.example.mtm.sample.resource;
 
 import com.example.mtm.sample.entity.Transfer;
 import com.example.mtm.sample.exception.TransferFailedException;
-import com.oracle.microtx.xa.rm.MicroTxUserTransaction;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -47,23 +43,20 @@ import org.springframework.web.context.annotation.RequestScope;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 @Component
 @RestController
-@RequestMapping("/transfersWithBoundary")
+@RequestMapping("/transfersWithFutureTaskAsync")
 @OpenAPIDefinition(info = @Info(title = "Amount Transfer endpoint", version = "1.0"))
 @RequestScope
-public class TransferResourceWithBoundary {
+public class TransferResourceWithFutureTaskAsync {
 
     @Autowired
     @Qualifier("MicroTxXaRestTemplate")
     RestTemplate restTemplate;
-
-    private static final Logger LOG = LoggerFactory.getLogger(TransferResourceWithBoundary.class);
-
-    @Autowired
-    MicroTxUserTransaction microTxUserTransaction;
 
     @Value("${departmentOneEndpoint}")
     String departmentOneEndpoint;
@@ -71,32 +64,40 @@ public class TransferResourceWithBoundary {
     @Value("${departmentTwoEndpoint}")
     String departmentTwoEndpoint;
 
+    @Autowired
+    @Qualifier("microTxThreadPoolTaskExecutor")
+    ThreadPoolTaskExecutor threadPoolTaskExecutor;
+
+    private static final Logger LOG = LoggerFactory.getLogger(TransferResourceWithFutureTaskAsync.class);
+
     @RequestMapping(value = "", method = RequestMethod.POST)
+    @Transactional(propagation = Propagation.REQUIRED)
     public ResponseEntity<?> transfer(@RequestBody Transfer transferDetails) {
-        LOG.info("Transfer with Self Define Transaction Boundary initiated: {}", transferDetails);
         try {
-            microTxUserTransaction.begin();
-            ResponseEntity<String> withdrawResponse = withdraw(transferDetails.getAmount(), transferDetails.getFrom());
-            if (!withdrawResponse.getStatusCode().is2xxSuccessful()) {
+            LOG.info("Transfer initiated: {}", transferDetails);
+
+            FutureTask<ResponseEntity<String>> withdrawFutureTask = getWithdrawFutureTask(transferDetails.getAmount(), transferDetails.getFrom());
+            FutureTask<ResponseEntity<String>> depositFutureTask = getDepositFutureTask(transferDetails.getAmount(), transferDetails.getTo());
+            threadPoolTaskExecutor.submit(withdrawFutureTask);
+            threadPoolTaskExecutor.submit(depositFutureTask);
+
+            ResponseEntity<String> withdrawResponse = withdrawFutureTask.get();
+            if (withdrawResponse != null && !withdrawResponse.getStatusCode().is2xxSuccessful()) {
                 LOG.error("Withdraw failed: {} Reason: {}", transferDetails, withdrawResponse.getBody());
-                microTxUserTransaction.rollback();
                 throw new TransferFailedException(String.format("Withdraw failed: %s Reason: %s", transferDetails, withdrawResponse.getBody()));
             }
 
-            // Deposit processing
-            ResponseEntity<String> depositResponse = deposit(transferDetails.getAmount(), transferDetails.getTo());
+            ResponseEntity<String> depositResponse = depositFutureTask.get();
             if (!depositResponse.getStatusCode().is2xxSuccessful()) {
                 LOG.error("Deposit failed: {} Reason: {}", transferDetails, depositResponse.getBody());
-                microTxUserTransaction.rollback();
                 throw new TransferFailedException(String.format("Deposit failed: %s Reason: %s ", transferDetails, depositResponse.getBody()));
             }
 
             LOG.info("Transfer successful: {}", transferDetails);
-            microTxUserTransaction.commit();
             return ResponseEntity.ok("Transfer completed successfully");
-        } catch (Exception e) {
-            LOG.error(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Transfer Failed ");
+        } catch (InterruptedException | ExecutionException | TransferFailedException e) {
+            // @Transactional rollbacks only on RuntimeException (TransferFailedException)
+            throw new TransferFailedException("Transfer Failed");
         }
     }
 
@@ -104,47 +105,57 @@ public class TransferResourceWithBoundary {
      * Send an HTTP request to the service to withdraw amount from the provided account identity
      * @param amount The amount to be withdrawn
      * @param accountId The account Identity
-     * @return HTTP Response from the service
+     * @return FutureTask HTTP Response from the service
      */
-    private ResponseEntity<String> withdraw(double amount, String accountId) throws URISyntaxException {
-        URI departmentUri = getDepartmetnOneTarget()
-                .path("/accounts")
-                .path("/" + accountId)
-                .path("/withdraw")
-                .queryParam("amount", amount)
-                .build()
-                .toUri();
+    private FutureTask<ResponseEntity<String>> getWithdrawFutureTask(double amount, String accountId) {
+        Callable<ResponseEntity<String>> task = () -> {
+            ResponseEntity<String> responseEntity = null;
+            try {
+                URI departmentUri = UriComponentsBuilder.fromUri(URI.create(departmentOneEndpoint))
+                        .path("/accounts")
+                        .path("/" + accountId)
+                        .path("/withdraw")
+                        .queryParam("amount", amount)
+                        .build()
+                        .toUri();
 
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(departmentUri, null, String.class);
-        LOG.info("Withdraw Response: {}", responseEntity.getBody());
-        return responseEntity;
+                responseEntity = restTemplate.postForEntity(departmentUri, null, String.class);
+                LOG.info("Withdraw Response: {}", responseEntity.getBody());
+            } catch (Exception e) {
+                LOG.error("Withdraw failed: {}", e.getMessage());
+                throw new TransferFailedException("Withdraw failed: " + e.getMessage());
+            }
+            return responseEntity;
+        };
+        return new FutureTask<>(task);
     }
 
     /**
      * Send an HTTP request to the service to deposit amount into the provided account identity
      * @param amount The amount to be deposited
      * @param accountId The account Identity
-     * @return HTTP Response from the service
+     * @return FutureTask HTTP Response from the service
      */
-    private ResponseEntity<String> deposit(double amount, String accountId) throws URISyntaxException {
-        URI departmentUri = getDepartmentTwoTarget()
-                .path("/accounts")
-                .path("/" + accountId)
-                .path("/deposit")
-                .queryParam("amount", amount)
-                .build()
-                .toUri();
+    private FutureTask<ResponseEntity<String>> getDepositFutureTask(double amount, String accountId) {
+        Callable<ResponseEntity<String>> task = () -> {
+            ResponseEntity<String> responseEntity = null;
+            try {
+                URI departmentUri = UriComponentsBuilder.fromUri(URI.create(departmentTwoEndpoint))
+                        .path("/accounts")
+                        .path("/" + accountId)
+                        .path("/deposit")
+                        .queryParam("amount", amount)
+                        .build()
+                        .toUri();
 
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(departmentUri, null, String.class);
-        LOG.info("Deposit Response: {}", responseEntity.getBody());
-        return responseEntity;
-    }
-
-    private UriComponentsBuilder getDepartmetnOneTarget() {
-        return UriComponentsBuilder.fromUri(URI.create(departmentOneEndpoint));
-    }
-
-    private UriComponentsBuilder getDepartmentTwoTarget() {
-        return UriComponentsBuilder.fromUri(URI.create(departmentTwoEndpoint));
+                responseEntity = restTemplate.postForEntity(departmentUri, null, String.class);
+                LOG.info("Deposit Response: {}", responseEntity.getBody());
+            } catch (Exception e) {
+                LOG.error("Deposit failed: {}", e.getMessage());
+                throw new TransferFailedException("Deposit failed: " + e.getMessage(), e);
+            }
+            return responseEntity;
+        };
+        return new FutureTask<>(task);
     }
 }

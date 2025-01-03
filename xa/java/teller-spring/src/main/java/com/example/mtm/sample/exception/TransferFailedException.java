@@ -20,8 +20,12 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 package com.example.mtm.sample.exception;
 
-public class TransferFailedException extends Exception {
+public class TransferFailedException extends RuntimeException {
     public TransferFailedException(String message) {
         super(message);
+    }
+
+    public TransferFailedException(String message, Exception e) {
+        super(message, e);
     }
 }
