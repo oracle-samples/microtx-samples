@@ -80,6 +80,12 @@ public class XADataSourceConfig {
             ((PoolXADataSource) pds).setInitialPoolSize(Integer.valueOf(initialPoolSize));
             ((PoolXADataSource) pds).setMaxPoolSize(Integer.valueOf(maxPoolSize));
 
+            ((PoolXADataSource) pds).setValidateConnectionOnBorrow(true);
+            ((PoolXADataSource) pds).setSQLForValidateConnection("select 1 from dual");
+            ((PoolXADataSource) pds).setInactiveConnectionTimeout(60);
+            ((PoolXADataSource) pds).setAbandonedConnectionTimeout(60);
+            ((PoolXADataSource) pds).setMaxIdleTime(60);
+
             ((PoolXADataSource) pds).setDataSourceName(dataSourceName);
             ((PoolXADataSource) pds).setConnectionPoolName(connectionPoolName);
 

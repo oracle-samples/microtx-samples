@@ -18,9 +18,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-package com.oracle.mtm.sample.data;
+package com.oracle.mtm.sample.service;
 
 import com.oracle.mtm.sample.entity.Fee;
+import com.oracle.mtm.sample.resource.TransferResourceWithSpringAsync;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
@@ -40,7 +43,8 @@ import java.sql.SQLException;
 
 @Service
 @RequestScope
-public class TransferFeeService {
+public class TransferFeeServiceImpl implements TransferFeeService {
+
     @Autowired
     @Qualifier("microTxSqlConnection")
     @Lazy
@@ -50,6 +54,7 @@ public class TransferFeeService {
     @Qualifier("ucpXADataSource")
     XADataSource dataSource;
 
+    @Override
     public boolean depositFee(String accountId, double amount) throws SQLException {
         String query = "UPDATE fee SET amount=amount+? where account_id=?";
         try(PreparedStatement statement = connection.prepareStatement(query);) {
@@ -59,6 +64,7 @@ public class TransferFeeService {
         }
     }
 
+    @Override
     public Fee feeDetails(String accountId) throws SQLException {
         Fee fee = null;
         Connection connection = null;

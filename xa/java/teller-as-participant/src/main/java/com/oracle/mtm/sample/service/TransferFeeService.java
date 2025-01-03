@@ -20,30 +20,13 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 package com.oracle.mtm.sample.service;
 
+import com.oracle.mtm.sample.entity.Fee;
 
-
-import oracle.tmm.jta.common.TrmSQLConnection;
-
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Inject;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-@RequestScoped
-public class TransferFeeService {
+public interface TransferFeeService {
 
-    @Inject
-    @TrmSQLConnection
-    private Connection connection;
+    boolean depositFee(String accountId, double amount) throws SQLException;
 
-    public boolean depositFee(String accountId, double amount) throws SQLException {
-        String query = "UPDATE fee SET amount=amount+? WHERE account_id=?";
-        try(PreparedStatement statement = connection.prepareStatement(query);) {
-            statement.setDouble(1, amount);
-            statement.setString(2, accountId);
-            return statement.executeUpdate() > 0;
-        }
-    }
+    Fee getFeeDetails(String accountId) throws SQLException;
 }
-

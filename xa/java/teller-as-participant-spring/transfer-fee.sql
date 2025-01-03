@@ -24,7 +24,7 @@ GRANT CREATE SESSION TO transfer_fee;
 ALTER SESSION SET CURRENT_SCHEMA=transfer_fee;
 create table fee
 (
-    account_id VARCHAR(10) not null,
+    account_id VARCHAR(16) not null,
     amount decimal(10,2) not null,
     PRIMARY KEY (account_id)
 );
