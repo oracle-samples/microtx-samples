@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.example</groupId>
         <artifactId>spring-tripmanager-service</artifactId>
-        <version>24.2.2</version>
+        <version>1.0-SNAPSHOT</version>
 	</parent>
 
     <properties>
@@ -37,7 +37,7 @@
         <dependency>
             <groupId>com.oracle.microtx.lra</groupId>
             <artifactId>microtx-lra-spring-boot-starter</artifactId>
-            <version>24.2.1</version>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
