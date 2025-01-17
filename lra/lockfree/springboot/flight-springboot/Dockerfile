@@ -39,8 +39,8 @@ FROM openjdk:17.0.1-jdk-slim
 WORKDIR /flight-sb-app
 
 # Copy the binary built in the 1st stage
-COPY --from=build  /flight-sb-app/target/flight-sb.jar ./
+COPY --from=build  /flight-sb-app/target/lockfree-flight-sb.jar ./
 
-CMD ["java", "-jar", "flight-sb.jar"]
+CMD ["java", "-jar", "lockfree-flight-sb.jar"]
 
 EXPOSE 8083

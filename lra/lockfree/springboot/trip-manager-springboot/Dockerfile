@@ -42,8 +42,8 @@ FROM openjdk:17.0.1-jdk-slim
 WORKDIR /trip-manager-app
 
 # Copy the binary built in the 1st stage
-COPY --from=build  /trip-manager-app/target/trip-manager-sb.jar ./
+COPY --from=build  /trip-manager-app/target/lockfree-trip-manager-sb.jar ./
 
-CMD ["java", "-jar", "trip-manager-sb.jar"]
+CMD ["java", "-jar", "lockfree-trip-manager-sb.jar"]
 
 EXPOSE 8081
