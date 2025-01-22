@@ -64,6 +64,14 @@ spec:
           ports:
             - containerPort: 8081
           env:
+            - name: SPRING_MICROTX_COORDINATOR_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: SPRING_MICROTX_PARTICIPANT_URL
+              value: http://dept1:8081
+            - name: SPRING_MICROTX_PROPAGATION_ACTIVE
+              value: {{ .Values.sampleapps.dept1.propagateTraceHeader| quote }}
+            - name: SPRING_MICROTX_XA_RESOURCE_MANAGER_ID
+              value: {{ .Values.sampleapps.dept1.resourceManagerId }}
             - name: ORACLE_TMM_TCS_URL
               value: http://otmm-tcs:9000/api/v1
             - name: ORACLE_TMM_CALLBACK_URL
@@ -137,23 +145,6 @@ spec:
           ports:
             - containerPort: 8082
           env:
-            - name: SPRING_MICROTX_COORDINATOR_URL
-              value: http://otmm-tcs:9000/api/v1
-            - name: SPRING_MICROTX_PARTICIPANT_URL
-              value: http://dept2:8082
-            - name: SPRING_MICROTX_PROPAGATION_ACTIVE
-              value: {{ .Values.sampleapps.dept2.propagateTraceHeader| quote }}
-            - name: SPRING_MICROTX_XA_RESOURCE_MANAGER_ID
-              value: {{ .Values.sampleapps.dept2.resourceManagerId }}            
-            - name: SERVICE_NAME
-              value: dept2
-            - name: DEPARTMENTDATASOURCE_URL
-              value: {{ .Values.sampleapps.dept2.connectString }}
-            - name: DEPARTMENTDATASOURCE_USER
-              value: {{ .Values.sampleapps.dept2.databaseUser }}
-            - name: DEPARTMENTDATASOURCE_PASSWORD
-              value: {{ .Values.sampleapps.dept2.databasePassword }}            
-            #### Copying the values to older env variables for backward compatibility
             - name: ORACLE_TMM_TCS_URL
               value: http://otmm-tcs:9000/api/v1
             - name: ORACLE_TMM_CALLBACK_URL
@@ -162,7 +153,23 @@ spec:
               value: {{ .Values.sampleapps.dept2.propagateTraceHeader| quote }}
             - name: ORACLE_TMM_XA_RMID
               value: {{ .Values.sampleapps.dept2.resourceManagerId }}
-
+            - name: SERVICE_NAME
+              value: dept2
+            - name: DEPARTMENTDATASOURCE_URL
+              value: {{ .Values.sampleapps.dept2.connectString }}
+            - name: DEPARTMENTDATASOURCE_USER
+              value: {{ .Values.sampleapps.dept2.databaseUser }}
+            - name: DEPARTMENTDATASOURCE_PASSWORD
+              value: {{ .Values.sampleapps.dept2.databasePassword }}
+            # Springboot properties
+            - name: SPRING_MICROTX_COORDINATOR_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: SPRING_MICROTX_PARTICIPANT_URL
+              value: http://dept2:8082
+            - name: SPRING_MICROTX_PROPAGATION_ACTIVE
+              value: {{ .Values.sampleapps.dept2.propagateTraceHeader| quote }}
+            - name: SPRING_MICROTX_XA_RESOURCE_MANAGER_ID
+              value: {{ .Values.sampleapps.dept2.resourceManagerId }}
       imagePullSecrets:
         - name: {{ .Values.sampleapps.dept2.imagePullSecret }}
 ---
@@ -250,7 +257,7 @@ spec:
               value: {{ .Values.sampleapps.teller.dataSources.creditDataSource.databasePassword }}
             - name: CREDITDATASOURCE_RMID
               value: {{ .Values.sampleapps.teller.dataSources.creditDataSource.resourceManagerId }}
-            # Copying values for springboot lib
+            # Springboot properties
             - name: SPRING_MICROTX_COORDINATOR_URL
               value: http://otmm-tcs:9000/api/v1
             - name: SPRING_MICROTX_PARTICIPANT_URL

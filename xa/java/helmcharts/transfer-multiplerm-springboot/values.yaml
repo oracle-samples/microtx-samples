@@ -61,8 +61,8 @@ sampleapps:
     gatewayUriPrefix: /dept2
     rewriteUriPrefix: /accounts
     destinationHost: dept2
-    sessionAffinity: false  
-    propagateTraceHeader: true    
+    sessionAffinity: false
+    propagateTraceHeader: true
     dataSources:
       # example for connect string:
       # jdbc:oracle:thin:@tcps://<host>:<port>/<service_name>?wallet_location=Database_Wallet

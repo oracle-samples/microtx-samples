@@ -87,6 +87,15 @@ spec:
               value: {{ .Values.sampleapps.dept1.propagateTraceHeader | quote }}
             - name: ORACLE_TMM_XA_RMID
               value: {{ .Values.sampleapps.dept1.resourceManagerId }}
+            # Springboot properties
+            - name: SPRING_MICROTX_COORDINATOR_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: SPRING_MICROTX_PARTICIPANT_URL
+              value: http://dept1:8081
+            - name: SPRING_MICROTX_PROPAGATION_ACTIVE
+              value: {{ .Values.sampleapps.dept1.propagateTraceHeader| quote }}
+            - name: SPRING_MICROTX_XA_RESOURCE_MANAGER_ID
+              value: {{ .Values.sampleapps.dept1.resourceManagerId }}
       imagePullSecrets:
         - name: {{ .Values.sampleapps.dept1.imagePullSecret }}
 ---
@@ -144,12 +153,12 @@ spec:
           ports:
             - containerPort: 8082
           env:
-            - name: SPRING_MICROTX_COORDINATOR_URL
+            - name: ORACLE_TMM_TCS_URL
               value: http://otmm-tcs:9000/api/v1
-            - name: SPRING_MICROTX_PARTICIPANT_URL
+            - name: ORACLE_TMM_CALLBACK_URL
               value: http://dept2:8082
-            - name: SPRING_MICROTX_PROPAGATION_ACTIVE
-              value: {{ .Values.sampleapps.dept2.propagateTraceHeader| quote }}            
+            - name: ORACLE_TMM_PROPAGATE_TRACE_HEADERS
+              value: {{ .Values.sampleapps.dept2.propagateTraceHeader| quote }}
             - name: SERVICE_NAME
               value: dept2            
             - name: DEPARTMENTDATASOURCE_URL
@@ -168,14 +177,13 @@ spec:
               value: {{ .Values.sampleapps.dept2.dataSources.creditDataSource.databasePassword }}
             - name: CREDITDATASOURCE_RMID
               value: {{ .Values.sampleapps.dept2.dataSources.creditDataSource.resourceManagerId }}
-            #### Copying the values to older env variables for backward compatibility 
-            - name: ORACLE_TMM_TCS_URL
+            # Springboot properties
+            - name: SPRING_MICROTX_COORDINATOR_URL
               value: http://otmm-tcs:9000/api/v1
-            - name: ORACLE_TMM_CALLBACK_URL
+            - name: SPRING_MICROTX_PARTICIPANT_URL
               value: http://dept2:8082
-            - name: ORACLE_TMM_PROPAGATE_TRACE_HEADERS
+            - name: SPRING_MICROTX_PROPAGATION_ACTIVE
               value: {{ .Values.sampleapps.dept2.propagateTraceHeader| quote }}
-
       imagePullSecrets:
         - name: {{ .Values.sampleapps.dept2.imagePullSecret }}
 ---
@@ -235,6 +243,8 @@ spec:
           env:
             - name: ORACLE_TMM_TCS_URL
               value: http://otmm-tcs:9000/api/v1
+            - name: ORACLE_TMM_CALLBACK_URL
+              value: http://teller:8080
             - name: DEPARTMENTONEENDPOINT
               value: http://dept1:8081
             - name: DEPARTMENTTWOENDPOINT
@@ -243,6 +253,13 @@ spec:
               value: teller
             - name: ORACLE_TMM_PROPAGATE_TRACE_HEADERS
               value: {{ .Values.sampleapps.teller.propagateTraceHeader| quote }}
+            # Springboot properties
+            - name: SPRING_MICROTX_COORDINATOR_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: SPRING_MICROTX_PROPAGATION_ACTIVE
+              value: {{ .Values.sampleapps.teller.propagateTraceHeader| quote }}
+            - name: SPRING_MICROTX_PARTICIPANT_URL
+              value: http://teller:8080
       imagePullSecrets:
         - name: {{ .Values.sampleapps.teller.imagePullSecret }}
 ---
