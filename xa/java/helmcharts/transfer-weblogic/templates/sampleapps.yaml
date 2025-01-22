@@ -85,6 +85,13 @@ spec:
               value: teller
             - name: ORACLE_TMM_PROPAGATE_TRACE_HEADERS
               value: {{ .Values.sampleapps.teller.propagateTraceHeader| quote }}
+            # Springboot properties
+            - name: SPRING_MICROTX_COORDINATOR_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: SPRING_MICROTX_PROPAGATION_ACTIVE
+              value: {{ .Values.sampleapps.teller.propagateTraceHeader| quote }}
+            - name: SPRING_MICROTX_PARTICIPANT_URL
+              value: http://teller:8080
       imagePullSecrets:
         - name: {{ .Values.sampleapps.teller.imagePullSecret }}
 ---
@@ -158,6 +165,13 @@ spec:
               value: {{ .Values.sampleapps.helidondept.propagateTraceHeader | quote }}
             - name: ORACLE_TMM_XA_RMID
               value: {{ .Values.sampleapps.helidondept.resourceManagerId }}
+            # Springboot properties
+            - name: SPRING_MICROTX_COORDINATOR_URL
+              value: http://otmm-tcs:9000/api/v1
+            - name: SPRING_MICROTX_PARTICIPANT_URL
+              value: http://helidondept:8080
+            - name: SPRING_MICROTX_PROPAGATION_ACTIVE
+              value: {{ .Values.sampleapps.helidondept.propagateTraceHeader| quote }}
       imagePullSecrets:
         - name: {{ .Values.sampleapps.helidondept.imagePullSecret }}
 ---
