@@ -18,7 +18,7 @@
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 # 1st stage, build the app
-FROM maven:3.6-jdk-11 as build
+FROM maven:3.8.3-openjdk-17 as build
 
 WORKDIR /app
 
@@ -28,7 +28,7 @@ RUN mvn package -DskipTests
 RUN echo "done!"
 
 # 2nd stage, build the runtime image
-FROM openjdk:11-jre-slim
+FROM openjdk:17.0.1-jdk-slim
 WORKDIR /app
 
 # Copy the binary built in the 1st stage
