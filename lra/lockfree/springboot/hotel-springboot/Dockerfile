@@ -42,8 +42,8 @@ FROM openjdk:17.0.1-jdk-slim
 WORKDIR /hotel-sb-app
 
 # Copy the binary built in the 1st stage
-COPY --from=build  /hotel-sb-app/target/hotel-sb.jar ./
+COPY --from=build  /hotel-sb-app/target/lockfree-hotel-sb.jar ./
 
-CMD ["java", "-jar", "hotel-sb.jar"]
+CMD ["java", "-jar", "lockfree-hotel-sb.jar"]
 
 EXPOSE 8082
