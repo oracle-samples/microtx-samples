@@ -16,9 +16,23 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
 # PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# 1st stage, build the app
+FROM maven:3.8.3-openjdk-17 as build
 
-#Modify the below to provide database connection details for your database
-departmentDataSource:
-  url: "jdbc:oracle:thin:@tcps://<host>:<port>/<service_name>?wallet_location=Database_Wallet"
-  user: "user"
-  password: "xxxxxx"
+WORKDIR /app
+
+COPY pom.xml .
+COPY src src
+RUN mvn package -DskipTests
+RUN echo "done!"
+
+# 2nd stage, build the runtime image
+FROM openjdk:17.0.1-jdk-slim
+WORKDIR /app
+
+# Copy the binary built in the 1st stage
+COPY --from=build /app/target/department-spring-embedded.jar ./
+
+CMD ["java", "-jar", "department-spring-embedded.jar"]
+
+EXPOSE 8082
