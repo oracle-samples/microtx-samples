@@ -73,31 +73,31 @@ public class TransferResourceWithBoundary {
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ResponseEntity<?> transfer(@RequestBody Transfer transferDetails) {
-            LOG.info("Transfer with Self Define Transaction Boundary initiated:" + transferDetails.toString());
-            try {
-                microTxUserTransaction.begin();
-                ResponseEntity<String> withdrawResponse = withdraw(transferDetails.getAmount(), transferDetails.getFrom());
-                if (!withdrawResponse.getStatusCode().is2xxSuccessful()) {
-                    LOG.error("Withdraw failed: " + transferDetails.toString() + "Reason: " + withdrawResponse.getBody());
-                    microTxUserTransaction.rollback();
-                    throw new TransferFailedException(String.format("Withdraw failed: %s Reason: %s", transferDetails, withdrawResponse.getBody()));
-                }
-
-                // Deposit processing
-                ResponseEntity<String> depositResponse = deposit(transferDetails.getAmount(), transferDetails.getTo());
-                if (!depositResponse.getStatusCode().is2xxSuccessful()) {
-                    LOG.error("Deposit failed: " + transferDetails.toString() + "Reason: " + depositResponse.getBody());
-                    microTxUserTransaction.rollback();
-                    throw new TransferFailedException(String.format("Deposit failed: %s Reason: %s ", transferDetails, depositResponse.getBody()));
-                }
-
-                LOG.info("Transfer successful:" + transferDetails.toString());
-                microTxUserTransaction.commit();
-                return ResponseEntity.ok("Transfer completed successfully");
-            }catch (Exception e){
-                LOG.error(e.getMessage());
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Transfer Failed ");
+        LOG.info("Transfer with Self Define Transaction Boundary initiated: {}", transferDetails);
+        try {
+            microTxUserTransaction.begin();
+            ResponseEntity<String> withdrawResponse = withdraw(transferDetails.getAmount(), transferDetails.getFrom());
+            if (!withdrawResponse.getStatusCode().is2xxSuccessful()) {
+                LOG.error("Withdraw failed: {} Reason: {}", transferDetails, withdrawResponse.getBody());
+                microTxUserTransaction.rollback();
+                throw new TransferFailedException(String.format("Withdraw failed: %s Reason: %s", transferDetails, withdrawResponse.getBody()));
             }
+
+            // Deposit processing
+            ResponseEntity<String> depositResponse = deposit(transferDetails.getAmount(), transferDetails.getTo());
+            if (!depositResponse.getStatusCode().is2xxSuccessful()) {
+                LOG.error("Deposit failed: {} Reason: {}", transferDetails, depositResponse.getBody());
+                microTxUserTransaction.rollback();
+                throw new TransferFailedException(String.format("Deposit failed: %s Reason: %s ", transferDetails, depositResponse.getBody()));
+            }
+
+            LOG.info("Transfer successful: {}", transferDetails);
+            microTxUserTransaction.commit();
+            return ResponseEntity.ok("Transfer completed successfully");
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Transfer Failed ");
+        }
     }
 
     /**
@@ -116,7 +116,7 @@ public class TransferResourceWithBoundary {
                 .toUri();
 
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(departmentUri, null, String.class);
-        LOG.info("Withdraw Response: \n" + responseEntity.getBody());
+        LOG.info("Withdraw Response: {}", responseEntity.getBody());
         return responseEntity;
     }
 
@@ -136,15 +136,15 @@ public class TransferResourceWithBoundary {
                 .toUri();
 
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(departmentUri, null, String.class);
-        LOG.info("Deposit Response: \n" + responseEntity.getBody());
+        LOG.info("Deposit Response: {}", responseEntity.getBody());
         return responseEntity;
     }
 
-    private UriComponentsBuilder getDepartmetnOneTarget(){
+    private UriComponentsBuilder getDepartmetnOneTarget() {
         return UriComponentsBuilder.fromUri(URI.create(departmentOneEndpoint));
     }
 
-    private UriComponentsBuilder getDepartmentTwoTarget(){
+    private UriComponentsBuilder getDepartmentTwoTarget() {
         return UriComponentsBuilder.fromUri(URI.create(departmentTwoEndpoint));
     }
 }

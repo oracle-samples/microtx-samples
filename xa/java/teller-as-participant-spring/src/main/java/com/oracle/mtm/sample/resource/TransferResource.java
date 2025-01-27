@@ -20,8 +20,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 package com.oracle.mtm.sample.resource;
 
-import com.oracle.microtx.xa.rm.MicroTxUserTransactionService;
-import com.oracle.mtm.sample.data.TransferFeeService;
+import com.oracle.mtm.sample.service.TransferFeeService;
 import com.oracle.mtm.sample.entity.Fee;
 import com.oracle.mtm.sample.entity.Transfer;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -83,34 +82,32 @@ public class TransferResource {
         transferDetails.setTransferFee(0.1* transferDetails.getAmount());
         transferDetails.setTotalCharged(transferDetails.getAmount() + transferDetails.getTransferFee());
         try {
-            LOG.info("Transfer initiated:" + transferDetails.toString());
+            LOG.info("Transfer initiated: {}", transferDetails);
             //microTxUserTransactionService.begin();
             ResponseEntity<String> withdrawResponse = withdraw(transferDetails.getTotalCharged(), transferDetails.getFrom());
-            HttpStatus withdrawHttpStatus = HttpStatus.resolve(withdrawResponse.getStatusCode().value());
-            if (!withdrawHttpStatus.equals(HttpStatus.OK)) {
+            if (!withdrawResponse.getStatusCode().is2xxSuccessful()) {
                 //microTxUserTransactionService.rollback();
-                LOG.error("Withdraw failed: " + transferDetails.toString() + "Reason: " + withdrawResponse.getBody());
+                LOG.error("Withdraw failed: {} Reason: {}", transferDetails, withdrawResponse.getBody());
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Withdraw failed");
             }
             // Fee processing
             boolean feeDeposited = transferFeeService.depositFee(transferDetails.getFrom(), transferDetails.getTransferFee());
             if (feeDeposited) {
-                LOG.info("Fee deposited successful" + transferDetails.toString());
+                LOG.info("Fee deposited successful {}", transferDetails);
             } else {
                 //microTxUserTransactionService.rollback();
-                LOG.error("Fee deposited failed" + transferDetails.toString());
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Withdraw failed");
+                LOG.error("Fee deposited failed {}", transferDetails);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fee deposited failed");
             }
             // Deposit processing
             ResponseEntity<String> depositResponse = deposit(transferDetails.getAmount(), transferDetails.getTo());
-            HttpStatus depositHttpStatus = HttpStatus.resolve(depositResponse.getStatusCode().value());
-            if (!depositHttpStatus.equals(HttpStatus.OK)) {
+            if (!depositResponse.getStatusCode().is2xxSuccessful()) {
                 //microTxUserTransactionService.rollback();
-                LOG.error("Deposit failed: "+ transferDetails.toString() + "Reason: " + depositResponse.getBody());
+                LOG.error("Deposit failed: {} Reason: {}", transferDetails, depositResponse.getBody());
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Deposit failed");
             }
             //microTxUserTransactionService.commit();
-            LOG.info("Transfer successful:" + transferDetails.toString());
+            LOG.info("Transfer successful: {}", transferDetails);
             return ResponseEntity.ok("Transfer completed successfully");
         } catch (URISyntaxException | SQLException e) {
             LOG.error(e.getLocalizedMessage());
@@ -132,7 +129,7 @@ public class TransferResource {
         try {
             Fee fee = transferFeeService.feeDetails(accountId);
             if(fee == null) {
-                LOG.error("Account not found: " + accountId);
+                LOG.error("Account not found: {}", accountId);
                 ResponseEntity.status(HttpStatus.NOT_FOUND).body("No account found for the provided fee Identity");
             }
             return ResponseEntity.ok(fee);
@@ -158,7 +155,7 @@ public class TransferResource {
                 .toUri();
 
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(departmentUri, null, String.class);
-        LOG.info("Withdraw Response: \n" + responseEntity.getBody());
+        LOG.info("Withdraw Response: {}", responseEntity.getBody());
         return responseEntity;
     }
 
@@ -178,7 +175,7 @@ public class TransferResource {
                 .toUri();
 
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(departmentUri, null, String.class);
-        LOG.info("Deposit Response: \n" + responseEntity.getBody());
+        LOG.info("Deposit Response: {}", responseEntity.getBody());
         return responseEntity;
     }
 

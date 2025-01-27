@@ -252,6 +252,8 @@ spec:
               value: {{ .Values.sampleapps.teller.propagateTraceHeader| quote }}
             - name: SPRING_MICROTX_PARTICIPANT_URL
               value: http://teller:8080
+            - name: ORACLE_TMM_TRANSACTION_TIMEOUT
+              value: {{ .Values.sampleapps.teller.xaTransactionTimeout| quote }}
       imagePullSecrets:
         - name: {{ .Values.sampleapps.teller.imagePullSecret }}
 ---

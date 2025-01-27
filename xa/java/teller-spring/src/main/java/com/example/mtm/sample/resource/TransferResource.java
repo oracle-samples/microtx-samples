@@ -72,21 +72,21 @@ public class TransferResource {
     @RequestMapping(value = "", method = RequestMethod.POST)
     @Transactional(propagation = Propagation.REQUIRED)
     public ResponseEntity<?> transfer(@RequestBody Transfer transferDetails) throws Exception {
-            LOG.info("Transfer initiated:" + transferDetails.toString());
-            ResponseEntity<String> withdrawResponse = withdraw(transferDetails.getAmount(), transferDetails.getFrom());
-            if (!withdrawResponse.getStatusCode().is2xxSuccessful()) {
-                LOG.error("Withdraw failed: " + transferDetails.toString() + "Reason: " + withdrawResponse.getBody());
-                throw new TransferFailedException(String.format("Withdraw failed: %s Reason: %s", transferDetails, withdrawResponse.getBody()));
-            }
+        LOG.info("Transfer initiated: {}", transferDetails);
+        ResponseEntity<String> withdrawResponse = withdraw(transferDetails.getAmount(), transferDetails.getFrom());
+        if (!withdrawResponse.getStatusCode().is2xxSuccessful()) {
+            LOG.error("Withdraw failed: {} Reason: {}", transferDetails, withdrawResponse.getBody());
+            throw new TransferFailedException(String.format("Withdraw failed: %s Reason: %s", transferDetails, withdrawResponse.getBody()));
+        }
 
-            // Deposit processing
-            ResponseEntity<String> depositResponse = deposit(transferDetails.getAmount(), transferDetails.getTo());
-            if (!depositResponse.getStatusCode().is2xxSuccessful()) {
-                LOG.error("Deposit failed: "+ transferDetails.toString() + "Reason: " + depositResponse.getBody());
-                throw new TransferFailedException(String.format("Deposit failed: %s Reason: %s ", transferDetails, depositResponse.getBody()));
-            }
-            LOG.info("Transfer successful:" + transferDetails.toString());
-            return ResponseEntity.ok("Transfer completed successfully");
+        // Deposit processing
+        ResponseEntity<String> depositResponse = deposit(transferDetails.getAmount(), transferDetails.getTo());
+        if (!depositResponse.getStatusCode().is2xxSuccessful()) {
+            LOG.error("Deposit failed: " + transferDetails + "Reason: " + depositResponse.getBody());
+            throw new TransferFailedException(String.format("Deposit failed: %s Reason: %s ", transferDetails, depositResponse.getBody()));
+        }
+        LOG.info("Transfer successful:" + transferDetails);
+        return ResponseEntity.ok("Transfer completed successfully");
     }
 
     /**
@@ -129,11 +129,11 @@ public class TransferResource {
         return responseEntity;
     }
 
-    private UriComponentsBuilder getDepartmetnOneTarget(){
+    private UriComponentsBuilder getDepartmetnOneTarget() {
         return UriComponentsBuilder.fromUri(URI.create(departmentOneEndpoint));
     }
 
-    private UriComponentsBuilder getDepartmentTwoTarget(){
+    private UriComponentsBuilder getDepartmentTwoTarget() {
         return UriComponentsBuilder.fromUri(URI.create(departmentTwoEndpoint));
     }
 }

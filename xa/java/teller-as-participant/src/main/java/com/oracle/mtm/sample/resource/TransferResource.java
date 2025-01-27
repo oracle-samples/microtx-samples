@@ -20,10 +20,14 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 package com.oracle.mtm.sample.resource;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oracle.mtm.sample.Configuration;
+import com.oracle.mtm.sample.entity.Fee;
 import com.oracle.mtm.sample.entity.Transfer;
 import com.oracle.mtm.sample.service.TransferFeeService;
 
+import jakarta.ws.rs.*;
 import oracle.tmm.jta.TrmUserTransaction;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
@@ -40,10 +44,6 @@ import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
@@ -54,7 +54,6 @@ import java.lang.invoke.MethodHandles;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
-import java.util.logging.Level;
 
 @Path("/transfers")
 @OpenAPIDefinition(info = @Info(title = "Amount Transfer endpoint", version = "1.0"))
@@ -79,6 +78,8 @@ public class TransferResource {
     @Inject
     private Configuration config;
 
+    private ObjectMapper mapper = new ObjectMapper();
+
 
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Transfer completed successfully", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(ref = "Transfer"))),
@@ -91,7 +92,7 @@ public class TransferResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response transfer(Transfer transferDetails){
-        logger.info("Transfer initiated:" + transferDetails.toString());
+        logger.info("Transfer initiated:" + transferDetails);
         Response withdrawResponse = null;
         Response depositResponse = null;
         // Use-case: The transfer service charges 10% as Fee
@@ -105,30 +106,30 @@ public class TransferResource {
             withdrawResponse= withdraw(departmentOneEndpoint, transferDetails.getTotalCharged(), transferDetails.getFrom());
             if (withdrawResponse.getStatus() != Response.Status.OK.getStatusCode()) {
                 transaction.rollback();
-                logger.error("Withdraw failed: "+ transferDetails.toString() + "Reason: " + withdrawResponse.getStatusInfo().getReasonPhrase());
+                logger.error("Withdraw failed: "+ transferDetails + "Reason: " + withdrawResponse.getStatusInfo().getReasonPhrase());
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Withdraw failed").build();
             }
             // Fee processing
             if (transferFeeService.depositFee(transferDetails.getFrom(), transferDetails.getTransferFee())) {
-                logger.info("Fee deposited successful" + transferDetails.toString());
+                logger.info("Fee deposited successful" + transferDetails);
             }else{
                 transaction.rollback();
-                logger.error("Fee deposited failed" + transferDetails.toString());
+                logger.error("Fee deposited failed" + transferDetails);
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Fee deposit failed").build();
             }
             // Deposit processing
             depositResponse = deposit(departmentTwoEndpoint, transferDetails.getAmount(), transferDetails.getTo());
             if (depositResponse.getStatus() != Response.Status.OK.getStatusCode()) {
                 transaction.rollback();
-                logger.error("Deposit failed: "+ transferDetails.toString() + "Reason: " + depositResponse.getStatusInfo().getReasonPhrase());
+                logger.error("Deposit failed: "+ transferDetails + "Reason: " + depositResponse.getStatusInfo().getReasonPhrase());
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Deposit failed").build();
             }
             // Commit the transaction
             transaction.commit();
-            logger.info("Transfer successful:" + transferDetails.toString());
+            logger.info("Transfer successful:" + transferDetails);
             return Response.ok(transferDetails).build();
         } catch (SQLException e) {
-            logger.error("Transfer Fee Deposit failed: "+ transferDetails.toString() + "Reason: " + e.getLocalizedMessage());
+            logger.error("Transfer Fee Deposit failed: "+ transferDetails + "Reason: " + e.getLocalizedMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         } catch (SystemException | URISyntaxException e) {
             logger.error(e.getLocalizedMessage());
@@ -139,6 +140,34 @@ public class TransferResource {
         }  finally {
             if(withdrawResponse != null) withdrawResponse.close();
             if(depositResponse != null) depositResponse.close();
+        }
+    }
+
+    /**
+     * API to get an account details
+     * @param accountId - The accountId for which the details should be returned
+     * @return - Account Details associated with the accountId
+     */
+    @APIResponses(value = {
+            @APIResponse(responseCode = "200", description = "Account Details",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(ref = "Account"))),
+            @APIResponse(responseCode = "404", description = "No account found for the provided account Identity"),
+            @APIResponse(responseCode = "500", description = "Internal Server Error")
+    })
+    @GET
+    @Path("{accountId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAccountFeeDetails(@PathParam("accountId") String accountId) {
+        try {
+            Fee fee = transferFeeService.getFeeDetails(accountId);
+            if(fee == null) {
+                logger.error("Account not found: {}", accountId);
+                return Response.status(Response.Status.NOT_FOUND.getStatusCode()).entity("No account found for the provided account Identity").build();
+            }
+            return Response.status(Response.Status.OK).entity(mapper.writeValueAsString(fee)).build();
+        } catch (JsonProcessingException | SQLException e) {
+            logger.error(e.getLocalizedMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
     }
 

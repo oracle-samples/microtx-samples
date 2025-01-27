@@ -20,76 +20,75 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 package com.oracle.mtm.sample.data;
 
-import com.oracle.mtm.sample.entity.Fee;
+import com.oracle.mtm.sample.entity.Account;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.web.context.annotation.RequestScope;
+import org.springframework.stereotype.Component;
 
-import javax.sql.XAConnection;
-import javax.sql.XADataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import jakarta.persistence.EntityManager;
 import java.sql.SQLException;
 
 /**
  * Service that connects to the accounts database and provides methods to interact with the account
  */
 
-@Service
-@RequestScope
-public class TransferFeeService {
+@Component
+public class AccountService implements IAccountService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AccountService.class);
+
     @Autowired
-    @Qualifier("microTxSqlConnection")
+    CustomAccountRepository customAccountRepository;
+
+    @Autowired
+    @Qualifier("microTxEntityManager")
     @Lazy
-    private Connection connection;
+    private EntityManager entityManager;
 
-    @Autowired
-    @Qualifier("ucpXADataSource")
-    XADataSource dataSource;
-
-    public boolean depositFee(String accountId, double amount) throws SQLException {
-        String query = "UPDATE fee SET amount=amount+? where account_id=?";
-        try(PreparedStatement statement = connection.prepareStatement(query);) {
-            statement.setDouble(1, amount);
-            statement.setString(2, accountId);
-            return statement.executeUpdate() > 0;
-        }
+    @Override
+    public Account accountDetails(String accountId) throws SQLException {
+        Account account = customAccountRepository.findByAccountId(accountId);
+        return account;
     }
 
-    public Fee feeDetails(String accountId) throws SQLException {
-        Fee fee = null;
-        Connection connection = null;
-        XAConnection xaConnection = null;
-        PreparedStatement statement = null;
-        try {
-            xaConnection = dataSource.getXAConnection();
-            connection = xaConnection.getConnection();
-            if (connection == null) {
-                return null;
-            }
-            String query = "SELECT * FROM fee where account_id=?";
-            statement = connection.prepareStatement(query);
-            statement.setString(1, accountId);
-            ResultSet dataSet = statement.executeQuery();
-            if (dataSet.next()) {
-                fee = new Fee(dataSet.getString("account_id"), dataSet.getDouble("amount"));
-            }
-        } catch (SQLException e) {
-            throw e;
-        } finally {
-            if(statement!=null){
-                statement.close();
-            }
-            if(connection != null){
-                connection.close();
-            }
-            if(xaConnection!=null){
-                xaConnection.close();
-            }
+    @Override
+    public boolean withdraw(String accountId, double amount) throws SQLException {
+        Account account = customAccountRepository.findByAccountId(accountId, entityManager);
+        if (account != null) {
+            LOG.info("Current Balance: " + account.getAmount());
+            account.setAmount(account.getAmount() - amount);
+            account = entityManager.merge(account);
+            entityManager.flush();
+            LOG.info("New Balance: " + account.getAmount());
+            return true;
         }
-        return fee;
+        return false;
+    }
+
+    @Override
+    public boolean deposit(String accountId, double amount) throws SQLException {
+        Account account = customAccountRepository.findByAccountId(accountId, entityManager);
+        if (account != null) {
+            LOG.info("Current Balance: " + account.getAmount());
+            account.setAmount(account.getAmount() + amount);
+            account = entityManager.merge(account);
+            entityManager.flush();
+            LOG.info("New Balance: " + account.getAmount());
+            return true;
+        }
+        return false;
+    }
+
+
+    @Override
+    public double getBalance(String accountId) throws SQLException {
+        Account account = customAccountRepository.findByAccountId(accountId, entityManager);
+        if (account != null) {
+            return account.getAmount();
+        }
+        throw new IllegalArgumentException("Account not found");
     }
 }

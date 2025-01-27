@@ -25,15 +25,18 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS}  %-5level --- [%t] %-50.70C : %X{microtx-txnId} : %msg%n%throwable"/>
         </Console>
-
-        <Console name="MicroTxLib" target="SYSTEM_OUT">
+        <Console name="ConsoleMTX" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS}  %-5level --- [%t] %-50.70C : %X{microtx-txnId} : %msg%n%throwable"/>
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="oracle.tmm" level="DEBUG" additivity="false">
-            <AppenderRef ref="MicroTxLib"/>
-        </Logger>
+        <logger name="com.oracle.microtx" level="DEBUG" additivity="false">
+            <appender-ref ref="ConsoleMTX" />
+        </logger>
+
+        <logger name="oracle.tmm" level="DEBUG" additivity="false">
+            <appender-ref ref="ConsoleMTX" />
+        </logger>
         <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>

@@ -24,7 +24,7 @@ GRANT CREATE SESSION TO department_spring;
 ALTER SESSION SET CURRENT_SCHEMA=department_spring;
 create table accounts
 (
-    account_id VARCHAR(10) not null,
+    account_id VARCHAR(16) not null,
     name VARCHAR(60) not null,
     amount decimal(10,2) not null,
     PRIMARY KEY (account_id)
