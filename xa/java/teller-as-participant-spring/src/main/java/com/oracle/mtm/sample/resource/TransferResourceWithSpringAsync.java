@@ -70,7 +70,7 @@ public class TransferResourceWithSpringAsync {
         transferDetails.setTotalCharged(transferDetails.getAmount() + transferDetails.getTransferFee());
         LOG.info("Transfer initiated: {}", transferDetails);
 
-        CompletableFuture<ResponseEntity> withdrawCompletableFuture = bankingService.withdraw(transferDetails.getAmount(), transferDetails.getFrom());
+        CompletableFuture<ResponseEntity> withdrawCompletableFuture = bankingService.withdraw(transferDetails.getTotalCharged(), transferDetails.getFrom());
         CompletableFuture<ResponseEntity> depositCompletableFuture = bankingService.deposit(transferDetails.getAmount(), transferDetails.getTo());
         CompletableFuture<Boolean> depositFeeFuture = bankingService.depositFee(transferDetails.getFrom(), transferDetails.getTransferFee());
 

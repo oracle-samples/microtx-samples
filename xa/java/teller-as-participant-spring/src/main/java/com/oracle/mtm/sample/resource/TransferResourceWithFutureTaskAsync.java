@@ -88,7 +88,7 @@ public class TransferResourceWithFutureTaskAsync {
         try {
             LOG.info("Transfer initiated: {}", transferDetails);
 
-            FutureTask<ResponseEntity<String>> withdrawFutureTask = getWithdrawFutureTask(transferDetails.getAmount(), transferDetails.getFrom());
+            FutureTask<ResponseEntity<String>> withdrawFutureTask = getWithdrawFutureTask(transferDetails.getTotalCharged(), transferDetails.getFrom());
             FutureTask<ResponseEntity<String>> depositFutureTask = getDepositFutureTask(transferDetails.getAmount(), transferDetails.getTo());
             FutureTask<Boolean> depositFeeFutureTask = getDepositFeeFutureTask(transferDetails.getFrom(), transferDetails.getTransferFee());
 
