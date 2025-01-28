@@ -105,7 +105,7 @@ public class TransferResourceAsync {
             // Begin a user transaction and also enlist in the transaction by setting enlist = true
             transaction.begin(true);
 
-            FutureTask<Response> withdrawFutureTask = getWithdrawFutureTask(departmentOneEndpoint, transferDetails.getAmount(), transferDetails.getFrom());
+            FutureTask<Response> withdrawFutureTask = getWithdrawFutureTask(departmentOneEndpoint, transferDetails.getTotalCharged(), transferDetails.getFrom());
             FutureTask<Response> depositFutureTask = getDepositFutureTask(departmentTwoEndpoint, transferDetails.getAmount(), transferDetails.getTo());
             FutureTask<Boolean> depositFeeFutureTask = getDepositFeeFutureTask(transferDetails.getFrom(), transferDetails.getTransferFee());
 
