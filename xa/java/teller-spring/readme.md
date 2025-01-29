@@ -36,3 +36,8 @@ Run the docker image.
 ```
 - $ docker run -p 8080:8080 -d -e DEPARTMENTONEENDPOINT=<department_one_url> -e DEPARTMENTTWOENDPOINT=<department_two_url> <image_name>:<tag>
 ```
+
+## Open the transfer app in browser 
+```
+http://localhost:8080
+```
