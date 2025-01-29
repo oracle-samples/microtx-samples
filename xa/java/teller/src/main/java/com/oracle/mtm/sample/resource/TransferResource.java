@@ -20,9 +20,14 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 package com.oracle.mtm.sample.resource;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oracle.mtm.sample.AllTrustingClientBuilder;
 import com.oracle.mtm.sample.Configuration;
+import com.oracle.mtm.sample.entity.Account;
+import com.oracle.mtm.sample.entity.FailureResponse;
 import com.oracle.mtm.sample.entity.Transfer;
+import com.oracle.mtm.sample.entity.TransferResponse;
 import oracle.tmm.jta.TrmUserTransaction;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
@@ -46,6 +51,7 @@ import jakarta.ws.rs.core.UriBuilder;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 @Path("/transfers")
@@ -54,6 +60,9 @@ public class TransferResource {
 
     private static Client withdrawClient = AllTrustingClientBuilder.newClient();
     private static Client depositClient = AllTrustingClientBuilder.newClient();
+    private static Client fetchClient = AllTrustingClientBuilder.newClient();
+
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Inject
     @ConfigProperty(name = "departmentOneEndpoint")
@@ -101,13 +110,13 @@ public class TransferResource {
             if (withdrawResponse.getStatus() != Response.Status.OK.getStatusCode()) {
                 transaction.rollback();
                 logger.error("Withdraw failed: {}. Reason: {}", transferDetails, withdrawResponse.getStatusInfo().getReasonPhrase());
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity("Withdraw failed").build();
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity(new TransferResponse("Withdraw failed")).build();
             }
             depositResponse = deposit(departmentTwoEndpoint, transferDetails.getAmount(), transferDetails.getTo());
             if (depositResponse.getStatus() != Response.Status.OK.getStatusCode()) {
                 transaction.rollback();
                 logger.error("Deposit failed: {}. Reason: {}", transferDetails, depositResponse.getStatusInfo().getReasonPhrase());
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity("Deposit failed").build();
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity(new TransferResponse("Deposit failed")).build();
             }
             if (demoIntervalSecs > 0) {
                 logger.info("Sleep for {} seconds before commit", demoIntervalSecs);
@@ -115,16 +124,18 @@ public class TransferResource {
             }
             transaction.commit();
             logger.info("Transfer successful: {}", transferDetails);
-            return Response.status(Response.Status.OK.getStatusCode()).entity("Transfer completed successfully").build();
+            return Response.status(Response.Status.OK.getStatusCode())
+                    .entity(new TransferResponse("Transfer completed successfully"))
+                    .build();
         } catch (SystemException | URISyntaxException e) {
             logger.error("{}", e.getLocalizedMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new TransferResponse("Transfer failed. "+e.getMessage())).build();
         } catch(RollbackException | HeuristicMixedException | HeuristicRollbackException e){
             logger.error("{}", e.getLocalizedMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity("Transfer failed").build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity(new TransferResponse("Transfer failed. "+e.getMessage())).build();
         } catch (InterruptedException e) {
             logger.error("Thread interrupted: {}", e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new TransferResponse("Transfer failed. "+e.getMessage())).build();
         } finally {
             if(withdrawResponse != null) withdrawResponse.close();
             if(depositResponse != null) depositResponse.close();
@@ -159,5 +170,35 @@ public class TransferResource {
         logger.info( "Deposit Response: {}", response.toString());
         logger.info( "Deposit Response Body: {}", response.readEntity(String.class));
         return response;
+    }
+
+    /**
+     * REST Method to fetchBalance from department/participant services
+     * @param department : department1|department2
+     * @param accountId : account ID's
+     * @return  HTTP Response from the service consumed by front-end
+     */
+    @GET
+    @Path("fetchBalance")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAccountDetails(@QueryParam("department") String department, @QueryParam("accountId") String accountId) {
+        String departmentEndpoint = department.equals("department1") ? departmentOneEndpoint : departmentTwoEndpoint;
+        try {
+            String depositEndpoint = UriBuilder.fromUri(new URI(departmentEndpoint))
+                    .path("accounts")
+                    .path(accountId)
+                    .toString();
+            Response response = fetchClient.target(depositEndpoint).request().get();
+            logger.info("Fetch balance from {} returned {}", department, response.toString());
+            Account account = response.readEntity(Account.class);
+            return Response.status(Response.Status.OK).entity(objectMapper.writeValueAsString(account)).build();
+        } catch (Exception e) {
+            String errorMessage = "Unable to fetch balance. Reason: " + e.getMessage();
+            logger.error(errorMessage);
+            Response response = Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(new FailureResponse(errorMessage))
+                    .build();
+            return response;
+        }
     }
 }
