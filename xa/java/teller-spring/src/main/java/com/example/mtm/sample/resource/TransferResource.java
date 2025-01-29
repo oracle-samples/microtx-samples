@@ -20,7 +20,10 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 */
 package com.example.mtm.sample.resource;
 
+import com.example.mtm.sample.entity.Account;
+import com.example.mtm.sample.entity.FailureResponse;
 import com.example.mtm.sample.entity.Transfer;
+import com.example.mtm.sample.entity.TransferResponse;
 import com.example.mtm.sample.exception.TransferFailedException;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -40,10 +43,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.annotation.RequestScope;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -61,7 +62,6 @@ public class TransferResource {
     @Autowired
     @Qualifier("MicroTxXaRestTemplate")
     RestTemplate restTemplate;
-    private static final Logger LOG = LoggerFactory.getLogger(TransferResource.class);
 
     @Value("${departmentOneEndpoint}")
     String departmentOneEndpoint;
@@ -69,24 +69,26 @@ public class TransferResource {
     @Value("${departmentTwoEndpoint}")
     String departmentTwoEndpoint;
 
+    private static final Logger LOG = LoggerFactory.getLogger(TransferResource.class);
+
     @RequestMapping(value = "", method = RequestMethod.POST)
     @Transactional(propagation = Propagation.REQUIRED)
     public ResponseEntity<?> transfer(@RequestBody Transfer transferDetails) throws Exception {
-            LOG.info("Transfer initiated:" + transferDetails.toString());
+            LOG.info("Transfer initiated: {}", transferDetails);
             ResponseEntity<String> withdrawResponse = withdraw(transferDetails.getAmount(), transferDetails.getFrom());
             if (!withdrawResponse.getStatusCode().is2xxSuccessful()) {
-                LOG.error("Withdraw failed: " + transferDetails.toString() + "Reason: " + withdrawResponse.getBody());
+                LOG.error("Withdraw failed: {} Reason: {}", transferDetails, withdrawResponse.getBody());
                 throw new TransferFailedException(String.format("Withdraw failed: %s Reason: %s", transferDetails, withdrawResponse.getBody()));
             }
 
             // Deposit processing
             ResponseEntity<String> depositResponse = deposit(transferDetails.getAmount(), transferDetails.getTo());
             if (!depositResponse.getStatusCode().is2xxSuccessful()) {
-                LOG.error("Deposit failed: "+ transferDetails.toString() + "Reason: " + depositResponse.getBody());
+                LOG.error("Deposit failed: " + transferDetails + "Reason: " + depositResponse.getBody());
                 throw new TransferFailedException(String.format("Deposit failed: %s Reason: %s ", transferDetails, depositResponse.getBody()));
             }
-            LOG.info("Transfer successful:" + transferDetails.toString());
-            return ResponseEntity.ok("Transfer completed successfully");
+            LOG.info("Transfer successful: {}", transferDetails);
+            return ResponseEntity.ok(new TransferResponse("Transfer completed successfully"));
     }
 
     /**
@@ -136,4 +138,34 @@ public class TransferResource {
     private UriComponentsBuilder getDepartmentTwoTarget(){
         return UriComponentsBuilder.fromUri(URI.create(departmentTwoEndpoint));
     }
+
+    /**
+     * REST Method to checkBalance from department/participant services
+     * @param department : department1|department2
+     * @param accountId : account ID's
+     * @return  HTTP Response from the service consumed by front-end
+     */
+    @RequestMapping(value = "checkBalance", method = RequestMethod.GET)
+    public ResponseEntity<?> checkBalance(@RequestParam("department") String department, @RequestParam("accountId") String accountId) {
+        ResponseEntity<?> responseEntity = null;
+        String departmentEndpoint = department.equals("department1") ? departmentOneEndpoint : departmentTwoEndpoint;
+
+        URI departmentUri = UriComponentsBuilder.fromUri(URI.create(departmentEndpoint))
+                .path("/accounts")
+                .path("/" + accountId)
+                .build()
+                .toUri();
+        try {
+            responseEntity = restTemplate.getForEntity(departmentUri, Account.class);
+            LOG.info("Fetch balance from {} returned {}", department, (Account) responseEntity.getBody());
+        } catch (Exception e){
+            String errorMessage = "Unable to fetch balance. Reason: " + e.getMessage();
+            LOG.error(errorMessage);
+            responseEntity = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new FailureResponse(errorMessage));
+        }
+        return responseEntity;
+    }
+
+
+
 }
