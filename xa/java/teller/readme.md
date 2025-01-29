@@ -34,3 +34,8 @@ Run the docker image.
 ```
 - $ docker run -p 8080:8080 -d <image_name>:<tag>
 ```
+
+## Open the transfer app in browser
+```
+http://localhost:8080
+```
