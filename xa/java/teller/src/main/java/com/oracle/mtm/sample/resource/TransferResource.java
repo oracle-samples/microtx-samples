@@ -173,13 +173,13 @@ public class TransferResource {
     }
 
     /**
-     * REST Method to fetchBalance from department/participant services
+     * REST Method to checkBalance from department/participant services
      * @param department : department1|department2
      * @param accountId : account ID's
      * @return  HTTP Response from the service consumed by front-end
      */
     @GET
-    @Path("fetchBalance")
+    @Path("checkBalance")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAccountDetails(@QueryParam("department") String department, @QueryParam("accountId") String accountId) {
         String departmentEndpoint = department.equals("department1") ? departmentOneEndpoint : departmentTwoEndpoint;

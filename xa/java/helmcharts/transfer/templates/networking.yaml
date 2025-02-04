@@ -43,6 +43,26 @@ spec:
           host: {{ $val.host }}
           subset: {{ $val.version }}
   {{- end }}
+  -
+    match:
+      - uri:
+          prefix: "/checkBalance"
+    rewrite:
+      uri: "/transfers/checkBalance"
+    route:
+      - destination:
+          host: {{ .Values.sampleapps.teller.host }}
+          subset: {{ .Values.sampleapps.teller.version }}
+  -
+    match:
+      - uri:
+          prefix: "/teller"
+    rewrite:
+      uri: "/"
+    route:
+      - destination:
+          host: {{ .Values.sampleapps.teller.host }}
+          subset: {{ .Values.sampleapps.teller.version }}
 
 ---
 

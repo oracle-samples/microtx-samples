@@ -289,7 +289,7 @@
 
         toggleLoading(selectId === 'fromAccount' ? 'checkBalanceFromBtn' : 'checkBalanceToBtn', true);
 
-        fetch(`/transfers/checkBalance?department=${department}&accountId=${account}`)
+        fetch(`/checkBalance?department=${department}&accountId=${account}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`Failed to get balance: ${response.statusText}`);
