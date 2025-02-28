@@ -31,7 +31,7 @@
     </parent>
     <groupId>com.oracle.tmm.sample</groupId>
     <artifactId>UserBanking</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>24.4.1</version>
     <name>UserBanking</name>
     <description>Demo Spring Boot project for MicroTx Banking sample application. This microservice is responsible for User Interface.</description>
     <properties>

@@ -27,20 +27,24 @@
     <parent>
         <groupId>io.helidon.applications</groupId>
         <artifactId>helidon-mp</artifactId>
-        <version>3.2.1</version>
+        <version>2.3.2</version>
         <relativePath></relativePath>
     </parent>
-    <groupId>com.oracle</groupId>
-    <artifactId>hotel-booking</artifactId>
-    <version>24.4.1</version>
+    <groupId>com.oracle.tmm.sample</groupId>
+    <artifactId>teller</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>teller</name>
+    <description>Demo helidon project for Microservice Transaction Management initiator application</description>
+
     <properties>
         <mpVersion>3.3</mpVersion>
         <maven.compiler.target>11</maven.compiler.target>
-        <package>com.oracle.hotel-booking</package>
+        <package>com.oracle.mtm.sample</package>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <maven.compiler.source>11</maven.compiler.source>
-        <final.name>hotel-booking</final.name>
-        <helidonVersion>3.2.1</helidonVersion>
+        <final.name>teller</final.name>
+        <helidonVersion>2.3.2</helidonVersion>
+        <log4j-api.version>2.20.0</log4j-api.version>
     </properties>
     <dependencies>
         <dependency>
@@ -52,12 +56,27 @@
         </dependency>
         <dependency>
             <groupId>com.oracle.microtx</groupId>
-            <artifactId>TmmLib-jakarta</artifactId>
-            <version>24.4.1</version>
+            <artifactId>TmmLib</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j-api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j-api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>${log4j-api.version}</version>
         </dependency>
     </dependencies>
     <build>
-        <finalName>hotel-booking</finalName>
+        <finalName>teller</finalName>
     </build>
     <profiles>
         <profile>
@@ -98,9 +117,9 @@
                     <optional>true</optional>
                 </dependency>
                 <dependency>
-                    <groupId>jakarta.activation</groupId>
-                    <artifactId>jakarta.activation-api</artifactId>
-                    <scope>runtime</scope>
+                    <groupId>javax.activation</groupId>
+                    <artifactId>javax.activation-api</artifactId>
+                    <version>1.2.0</version>
                 </dependency>
             </dependencies>
         </profile>

@@ -30,7 +30,7 @@
     </parent>
     <groupId>com.example</groupId>
     <artifactId>travel-agent-springBoot</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>24.4.1</version>
     <name>travelAgentSpringBoot</name>
     <description>travelAgentSpringBoot</description>
     <properties>

@@ -31,7 +31,7 @@
 	</parent>
 	<groupId>com.oracle.tmm.sample</groupId>
 	<artifactId>CoreBanking</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>24.4.1</version>
 	<name>CoreBanking</name>
 	<description>Demo Spring Boot project for MicroTx Banking sample application. This microservice is responsible for Core Banking.</description>
 	<properties>
@@ -49,7 +49,7 @@
 		<dependency>
 			<groupId>com.oracle.microtx</groupId>
 			<artifactId>microtx-spring-boot-starter</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>24.4.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>

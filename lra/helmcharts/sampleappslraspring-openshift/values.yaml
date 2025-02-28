@@ -17,28 +17,31 @@
 # PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# 1st stage, build the app
-FROM maven:3.6-jdk-11 as build
+# Default values for sampleappslraspring-openshift.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+# Refer readme.md file for the details
 
-WORKDIR /app
-
-COPY pom.xml .
-RUN mvn package -Dmaven.test.skip -Declipselink.weave.skip
-
-# Do the Maven build!
-# Incremental docker builds will resume here when you change sources
-ADD src src
-RUN mvn package -DskipTests
-RUN echo "done!"
-
-# 2nd stage, build the runtime image
-FROM openjdk:11-jre-slim
-WORKDIR /app
-
-# Copy the binary built in the 1st stage
-COPY --from=build /app/target/teller.jar ./
-COPY --from=build /app/target/libs ./libs
-
-CMD ["java", "-jar", "teller.jar"]
-
-EXPOSE 8080
+sampleappslra:
+  lraCoordinatorUrl: http://otmm-tcs.otmm.svc.cluster.local:9000/api/v1/lra-coordinator
+  tripmanager:
+    name: trip-manager
+    host: trip-manager
+    namespace: otmm
+    version: v1
+    image: lra-trip-manager:1.0
+    imagePullSecret:
+  flight:
+    name: flight
+    host: flight
+    namespace: otmm
+    version: v1
+    image: lra-flight:1.0
+    imagePullSecret:
+  hotel:
+    name: hotel
+    host: hotel
+    namespace: otmm
+    version: v1
+    image: lra-hotel:1.0
+    imagePullSecret:

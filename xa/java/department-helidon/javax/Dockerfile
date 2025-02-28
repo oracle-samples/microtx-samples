@@ -16,7 +16,6 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
 # PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 # 1st stage, build the app
 FROM maven:3.6-jdk-11 as build
 
@@ -36,9 +35,10 @@ FROM openjdk:11-jre-slim
 WORKDIR /app
 
 # Copy the binary built in the 1st stage
-COPY --from=build /app/target/teller.jar ./
+COPY --from=build /app/target/department.jar ./
 COPY --from=build /app/target/libs ./libs
+# Add the Oracle Automous database wallet under the root folder on the application
+ADD Database_Wallet Database_Wallet
+CMD ["java", "-jar", "department.jar"]
 
-CMD ["java", "-jar", "teller.jar"]
-
-EXPOSE 8080
+EXPOSE 8081

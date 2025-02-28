@@ -17,28 +17,27 @@
 # PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# 1st stage, build the app
-FROM maven:3.6-jdk-11 as build
+apiVersion: v2
+name: sampleappslra
+description: A Helm chart for deploying MicroTx LRA Sample App in Kubernetes
 
-WORKDIR /app
+# A chart can be either an 'application' or a 'library' chart.
+#
+# Application charts are a collection of templates that can be packaged into versioned archives
+# to be deployed.
+#
+# Library charts provide useful utilities or functions for the chart developer. They're included as
+# a dependency of application charts to inject those utilities and functions into the rendering
+# pipeline. Library charts do not define any templates and therefore cannot be deployed.
+type: application
 
-COPY pom.xml .
-RUN mvn package -Dmaven.test.skip -Declipselink.weave.skip
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+# Versions are expected to follow Semantic Versioning (https://semver.org/)
+version: 1.0.1
 
-# Do the Maven build!
-# Incremental docker builds will resume here when you change sources
-ADD src src
-RUN mvn package -DskipTests
-RUN echo "done!"
-
-# 2nd stage, build the runtime image
-FROM openjdk:11-jre-slim
-WORKDIR /app
-
-# Copy the binary built in the 1st stage
-COPY --from=build /app/target/teller.jar ./
-COPY --from=build /app/target/libs ./libs
-
-CMD ["java", "-jar", "teller.jar"]
-
-EXPOSE 8080
+# This is the version number of the application being deployed. This version number should be
+# incremented each time you make changes to the application. Versions are not expected to
+# follow Semantic Versioning. They should reflect the version the application is using.
+# It is recommended to use it with quotes.
+appVersion: "1.0.1"
