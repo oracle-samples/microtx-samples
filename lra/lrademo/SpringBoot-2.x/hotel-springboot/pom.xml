@@ -32,7 +32,7 @@
     </parent>
     <groupId>com.example</groupId>
     <artifactId>hotel-sb</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>24.4.1</version>
     <name>hotel-sb</name>
     <description>hotel-sb</description>
     <properties>
@@ -56,7 +56,7 @@
         <dependency>
             <groupId>com.oracle.microtx.lra</groupId>
             <artifactId>microtx-lra-spring-boot-starter</artifactId>
-            <version>24.2.2</version>
+            <version>24.4.1</version>
         </dependency>
 
         <!--        If this app is running on ARM based Mac, uncomment this.-->

@@ -116,7 +116,6 @@ public class XADataSourceConfig {
     @Primary
     public EntityManagerFactory createXAEntityManagerFactory() throws SQLException {
         LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
-
         entityManagerFactoryBean.setDataSource(getXADataSource());
         entityManagerFactoryBean.setPackagesToScan(new String[] { "com.oracle.mtm.sample.entity" });
         entityManagerFactoryBean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());

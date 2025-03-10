@@ -7,10 +7,10 @@ The Teller service only initiates the transaction and does not participate in it
 ### Prerequisite
 1. Download the NodeJs Lib file from the official MicroTx Distribution package : https://www.oracle.com/in/database/transaction-manager-for-microservices/
 
-Copy `oracle-microtx-24.2.2.tgz` file from `<distribution-package-dir>/lib/nodejs` to the teller folder.
+Copy `oracle-microtx-24.4.1.tgz` file from `<distribution-package-dir>/lib/nodejs` to the teller folder.
 
 ```
-cp <distribution-package-dir>/lib/nodejs/oracle-microtx-24.2.2.tgz ./
+cp <distribution-package-dir>/lib/nodejs/oracle-microtx-24.4.1.tgz ./
 ```
 
 2. A running instance of TMM transaction coordinator

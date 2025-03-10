@@ -83,6 +83,10 @@ spec:
               value: {{ .Values.sampleapps.dept1.databaseUser }}
             - name: DEPARTMENTDATASOURCE_PASSWORD
               value: {{ .Values.sampleapps.dept1.databasePassword }}
+            - name: DEPARTMENTDATASOURCE_WALLETLOCATION
+              value: {{ .Values.sampleapps.dept1.walletLocation }}
+            - name: DEPARTMENTDATASOURCE_WALLETPASSWORD
+              value: {{ .Values.sampleapps.dept1.walletPassword }}
             - name: ORACLE_TMM_PROPAGATE_TRACE_HEADERS
               value: {{ .Values.sampleapps.dept1.propagateTraceHeader| quote }}
             - name: ORACLE_TMM_XA_RMID
@@ -156,6 +160,10 @@ spec:
               value: {{ .Values.sampleapps.dept2.databaseUser }}
             - name: DEPARTMENTDATASOURCE_PASSWORD
               value: {{ .Values.sampleapps.dept2.databasePassword }}
+            - name: DEPARTMENTDATASOURCE_WALLETLOCATION
+              value: {{ .Values.sampleapps.dept2.walletLocation }}
+            - name: DEPARTMENTDATASOURCE_WALLETPASSWORD
+              value: {{ .Values.sampleapps.dept2.walletPassword }}
             - name: ORACLE_TMM_PROPAGATE_TRACE_HEADERS
               value: {{ .Values.sampleapps.dept2.propagateTraceHeader| quote }}
             - name: ORACLE_TMM_XA_RMID

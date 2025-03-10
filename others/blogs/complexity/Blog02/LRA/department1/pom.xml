@@ -30,7 +30,7 @@
 	</parent>
 	<groupId>com.oracle.example</groupId>
 	<artifactId>department1</artifactId>
-	<version>24.2.2</version>
+	<version>24.4.1</version>
 	<name>department1</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
@@ -47,7 +47,7 @@
 		<dependency>
 			<groupId>com.oracle.microtx.lra</groupId>
 			<artifactId>microtx-lra-spring-boot-starter</artifactId>
-			<version>24.2.2</version>
+			<version>24.4.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

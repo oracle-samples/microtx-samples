@@ -77,7 +77,7 @@ public class AccountsResource {
             Account account = this.accountService.accountDetails(accountId);
             if(account == null) {
                 logger.error("Account not found: " + accountId);
-                return Response.status(Response.Status.NOT_FOUND.getStatusCode(), "No account found for the provided account Identity").build();
+                return Response.status(Response.Status.NOT_FOUND.getStatusCode()).entity("No account found for the provided account Identity").build();
             }
             return Response.status(Response.Status.OK).entity(mapper.writeValueAsString(account)).build();
         } catch (JsonProcessingException | SQLException e) {
@@ -103,15 +103,15 @@ public class AccountsResource {
     @Path("{accountId}/withdraw")
     public Response withdraw(@PathParam("accountId") String accountId, @QueryParam("amount") double amount) {
         if(amount == 0){
-            return Response.status(422,"Amount must be greater than zero").build();
+            return Response.status(422).entity("Amount must be greater than zero").build();
         }
         try {
             if (this.accountService.getBalance(accountId) < amount) {
-                return Response.status(422, "Insufficient balance in the account").build();
+                return Response.status(422).entity("Insufficient balance in the account").build();
             }
             if(this.accountService.withdraw(accountId, amount)) {
                 logger.info(amount + " withdrawn from account: " + accountId);
-                return Response.status(Response.Status.OK.getStatusCode(),  "Amount withdrawn from the account").build();
+                return Response.status(Response.Status.OK.getStatusCode()).entity("Amount withdrawn from the account").build();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -120,10 +120,10 @@ public class AccountsResource {
         }catch (IllegalArgumentException e){
             e.printStackTrace();
             logger.error(e.getLocalizedMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getLocalizedMessage()).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity(e.getLocalizedMessage()).build();
         }
         System.out.println("Withdraw failed");
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Withdraw failed").build();
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity("Withdraw failed").build();
     }
 
 
@@ -147,12 +147,12 @@ public class AccountsResource {
         try {
             if(this.accountService.deposit(accountId, amount)) {
                 logger.info(amount + " deposited to account: " + accountId);
-                return Response.status(Response.Status.OK.getStatusCode(), "Amount deposited to the account").build();
+                return Response.status(Response.Status.OK.getStatusCode()).entity("Amount deposited to the account").build();
             }
         } catch (SQLException e) {
             logger.error(e.getLocalizedMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Deposit failed").build();
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity("Deposit failed").build();
     }
 }

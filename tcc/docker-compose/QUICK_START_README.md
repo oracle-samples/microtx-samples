@@ -61,18 +61,18 @@ The installation bundle contains the `tcs-docker-swarm.yaml` file, the configura
 
 To make it easy for you to quickly set up Transaction Manager for Microservices and run sample applications, this configuration file does not contain data store, authentication, and authorization details. So you don't have to edit this file to provide details to connect to an external data store or any authentication details
 
-1. Load the Transaction Manager for Microservices image in the local Docker repository. The Transaction Manager for Microservices image is located at `installation_directory/otmm-24.2.2/otmm/image/tmm-24.2.2.tgz`.
+1. Load the Transaction Manager for Microservices image in the local Docker repository. The Transaction Manager for Microservices image is located at `installation_directory/otmm-24.4.1/otmm/image/tmm-24.4.1.tgz`.
 
    ```bash
-   cd installation_directory/otmm-24.2.2/otmm
-   docker load < image/tmm-24.2.2.tgz
+   cd installation_directory/otmm-24.4.1/otmm
+   docker load < image/tmm-24.4.1.tgz
    ```
 
    On Windows, run the following command:
 
    ```bash
-   cd installation_directory/otmm-24.2.2/otmm
-   docker load -i image/tmm-24.2.2.tgz
+   cd installation_directory/otmm-24.4.1/otmm
+   docker load -i image/tmm-24.4.1.tgz
    ```
 
    The following message is displayed: Loaded image: tmm:RELEASE
@@ -88,13 +88,13 @@ To make it easy for you to quickly set up Transaction Manager for Microservices 
 
    ```bash
    REPOSITORY                                                     TAG         IMAGE ID       CREATED         SIZE
-   tmm                                                            24.2.2      bcc91ec952a6   4 days ago      610MB
+   tmm                                                            24.4.1      bcc91ec952a6   4 days ago      610MB
    ```
 
    b. Use the following command to create a new tag.
 
    ```bash
-   docker tag tmm:24.2.2 127.0.0.1:5000/tmm
+   docker tag tmm:24.4.1 127.0.0.1:5000/tmm
    ```
 
    Here we are created the same image tmm  with a tag `127.0.0.1:5000/tmm`
@@ -108,7 +108,7 @@ To make it easy for you to quickly set up Transaction Manager for Microservices 
 
 # Deploy TCC Sample Application
 
-The TCC sample application is available in the installation bundle in the `installation_directory/otmm-24.2.2/samples/tcc` folder.
+The TCC sample application is available in the installation bundle in the `installation_directory/otmm-24.4.1/samples/tcc` folder.
 
 View the TCC sample application stack file contents.
 
@@ -132,21 +132,21 @@ Perform the following steps to build Docker images for each microservice in the 
 1. Run the following commands to build the Docker image for the travel-agent application. Then, push the image to the docker registry after the build is completed.
 
    ```bash
-   cd installation_directory/otmm-24.2.2/samples/tcc/java/travel-agent
+   cd installation_directory/otmm-24.4.1/samples/tcc/java/travel-agent
    docker image build -t 127.0.0.1:5000/tcc-travel-agent:1.0 .
    docker push 127.0.0.1:5000/tcc-travel-agent:1.0
    ```
 2. Run the following commands to build the Docker image for the flight application. Then, push the image to the docker registry after the build is completed
 
    ```bash
-   cd installation_directory/otmm-24.2.2/samples/tcc/java/flight-booking
+   cd installation_directory/otmm-24.4.1/samples/tcc/java/flight-booking
    docker image build -t 127.0.0.1:5000/tcc-flight:1.0 .
    docker push 127.0.0.1:5000/tcc-flight:1.0
    ```
 3. Run the following commands to build the Docker image for the hotel application. Then, push the image to the docker registry after the build is completed.
 
    ```bash
-   cd installation_directory/otmm-24.2.2/samples/tcc/java/hotel-booking
+   cd installation_directory/otmm-24.4.1/samples/tcc/java/hotel-booking
    docker image build -t 127.0.0.1:5000/tcc-hotel:1.0 .
    docker push 127.0.0.1:5000/tcc-hotel:1.0
    ```

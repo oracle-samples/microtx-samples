@@ -8,10 +8,10 @@ Install dependency :
 
 Download the NodeJs Lib file from the official MicroTx Distribution package : https://www.oracle.com/in/database/transaction-manager-for-microservices/
 
-Copy `oracle-microtx-24.2.2.tgz` file from `<distribution-package-dir>/lib/nodejs` to the travel-agent folder.
+Copy `oracle-microtx-24.4.1.tgz` file from `<distribution-package-dir>/lib/nodejs` to the travel-agent folder.
 
 ```
-cp <distribution-package-dir>/lib/nodejs/oracle-microtx-24.2.2.tgz ./
+cp <distribution-package-dir>/lib/nodejs/oracle-microtx-24.4.1.tgz ./
 ```
 
 ```

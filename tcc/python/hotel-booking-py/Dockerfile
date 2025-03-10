@@ -22,14 +22,12 @@ FROM python:3.11-slim
 WORKDIR /python-docker
 
 COPY requirements.txt requirements.txt
-COPY tmmpy-24.2.2-py3-none-any.whl ./
+COPY tmmpy-24.4.1-py3-none-any.whl ./
 
 RUN pip3 install -r requirements.txt
-RUN pip3 install tmmpy-24.2.2-py3-none-any.whl
+RUN pip3 install tmmpy-24.4.1-py3-none-any.whl
 
 
 COPY . .
 EXPOSE 8081
 CMD [ "python3","-u", "project/app.py"]
-
-

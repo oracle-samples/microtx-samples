@@ -27,17 +27,17 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.3</version>
+        <version>3.3.6</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.example</groupId>
     <artifactId>hotel-sb</artifactId>
-    <version>24.2.2</version>
+    <version>24.4.1</version>
     <name>hotel-sb</name>
     <description>hotel-sb</description>
     <properties>
         <java.version>17</java.version>
-        <spring.version>3.2.3</spring.version>
+        <spring.version>3.3.6</spring.version>
     </properties>
     <dependencies>
         <dependency>
@@ -56,7 +56,7 @@
         <dependency>
             <groupId>com.oracle.microtx.lra</groupId>
             <artifactId>microtx-lra-spring-boot-starter</artifactId>
-            <version>24.2.2</version>
+            <version>24.4.1</version>
         </dependency>
 
         <!--        If this app is running on ARM based Mac, uncomment this.-->

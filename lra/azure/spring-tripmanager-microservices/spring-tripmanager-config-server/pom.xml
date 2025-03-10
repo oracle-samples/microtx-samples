@@ -10,7 +10,7 @@
     <parent>
         <groupId>com.example</groupId>
         <artifactId>spring-tripmanager-service</artifactId>
-        <version>24.2.2</version>
+        <version>24.4.1</version>
     </parent>
 
     <properties>

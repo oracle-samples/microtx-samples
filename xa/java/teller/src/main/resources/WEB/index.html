@@ -2,16 +2,311 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Microservice Transaction Management Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amount Transfer App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo img {
+            max-width: 200px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+
+        select, input[type="button"], input[type="number"] {
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        input[type="button"]:active {
+            transform: scale(0.95);
+            background-color: #ddd;
+        }
+
+        input[type="button"]:disabled {
+            background-color: #f0f0f0;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ccc;
+            border-top: 2px solid #333;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .message-box {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+            min-height: 50px;
+        }
+
+        .balance-message-box {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+            min-height: 20px;
+        }
+
+        .balance-result {
+            margin-top: 20px;
+        }
+
+        /*Tool tip css*/
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip-icon {
+            width: 17px;
+            height: 17px;
+            margin-left: -1px;
+            cursor: help;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: normal;
+
+            /* Position the tooltip text */
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+
+            /* Fade in tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #020202 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 5;
+        }
+    </style>
 </head>
 <body>
+<div class="container">
 
-<h3>Health</h3>
-<a href="health/live" target="_blank">Health (Live) status (with custom status)</a> <br/>
-<a href="health/ready" target="_blank">Health (Ready) status (with custom status)</a> <br/>
+    <h1>Teller App</h1>
 
-<h3>Open API</h3>
-<a href="openapi" target="_blank">Open API Documentation</a> <br/>
+    <!-- Transfer Section -->
+    <div class="section">
+        <h2>Transfer Amount</h2>
 
+        <label for="fromAccount">From Account
+            <span class="tooltip">
+                <svg xmlns="http://www.w3.org/2000/svg" class="tooltip-icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" fill="#000"/>
+                    <text x="12" y="16" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">i</text>
+                </svg>
+                <span class="tooltiptext">Account from which the amount will be transferred</span>
+            </span>
+        </label>
+
+        <select id="fromAccount">
+            <option value="">Select User</option>
+            <option value="account1">account1</option>
+            <option value="account2">account2</option>
+            <option value="account3">account3</option>
+            <option value="account4">account4</option>
+            <option value="account5">account5</option>
+        </select>
+        <input type="button" value="Check Balance" id="checkBalanceFromBtn" onclick="checkBalance('fromAccount', 'fromBalanceResult', 'department1')"/>
+
+        <div class="balance-message-box" id="fromBalanceResult">From account balance will appear here.</div>
+
+        <label for="toAccount">To Account
+            <span class="tooltip">
+                <svg xmlns="http://www.w3.org/2000/svg" class="tooltip-icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" fill="#000"/>
+                    <text x="12" y="16" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">i</text>
+                </svg>
+                <span class="tooltiptext">Account to which the amount will be transferred</span>
+            </span>
+        </label>
+        <select id="toAccount">
+            <option value="">Select User</option>
+            <option value="account1">account1</option>
+            <option value="account2">account2</option>
+            <option value="account3">account3</option>
+            <option value="account4">account4</option>
+            <option value="account5">account5</option>
+        </select>
+        <input type="button" value="Check Balance" id="checkBalanceToBtn" onclick="checkBalance('toAccount', 'toBalanceResult', 'department2')"/>
+
+        <div class="balance-message-box" id="toBalanceResult">To account balance will appear here.</div>
+
+        <label for="amount">Amount
+            <span class="tooltip">
+                <svg xmlns="http://www.w3.org/2000/svg" class="tooltip-icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" fill="#000"/>
+                    <text x="12" y="16" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">i</text>
+                </svg>
+                <span class="tooltiptext">Amount to transfer</span>
+            </span>
+        </label>
+
+        <input type="number" id="amount"/>
+
+        <input type="button" value="Transfer" id="transferBtn" onclick="performTransfer()"/>
+
+        <div class="message-box" id="transferResult">Transfer result will appear here.</div>
+    </div>
+</div>
+
+<script>
+    function toggleLoading(buttonId, isLoading) {
+        const button = document.getElementById(buttonId);
+        if (isLoading) {
+            button.disabled = true;
+            button.insertAdjacentHTML('afterend', '<span class="spinner" id="' + buttonId + 'Spinner"></span>');
+        } else {
+            button.disabled = false;
+            const spinner = document.getElementById(buttonId + 'Spinner');
+            if (spinner) spinner.remove();
+        }
+    }
+
+    function performTransfer() {
+        const fromAccount = document.getElementById('fromAccount').value;
+        const toAccount = document.getElementById('toAccount').value;
+        const amount = parseFloat(document.getElementById('amount').value);
+
+        if (!fromAccount || !toAccount || isNaN(amount)) {
+            document.getElementById('transferResult').innerText = 'Please select both accounts and enter a valid amount.';
+            return;
+        }
+
+        const url = '/transfers';
+        const body = { from: fromAccount, to: toAccount, amount: amount };
+
+        toggleLoading('transferBtn', true);
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Transfer failed: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const transferResponseMessage = data.message;
+                document.getElementById('transferResult').innerText = transferResponseMessage;
+            })
+            .catch(error => {
+                document.getElementById('transferResult').innerText = `Error during transfer: ${error.message}`;
+            })
+            .finally(() => {
+                toggleLoading('transferBtn', false);
+            });
+    }
+
+    function checkBalance(selectId, resultId, department) {
+        const account = document.getElementById(selectId).value;
+
+        if (!account) {
+            document.getElementById(resultId).innerText = 'Please select an account.';
+            return;
+        }
+
+        toggleLoading(selectId === 'fromAccount' ? 'checkBalanceFromBtn' : 'checkBalanceToBtn', true);
+
+        fetch(`/transfers/checkBalance?department=${department}&accountId=${account}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to get balance: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const amount = data.amount;
+                document.getElementById(resultId).innerText = `Balance for ${account}: $${amount}`;
+            })
+            .catch(error => {
+                document.getElementById(resultId).innerText = `Error getting balance: ${error.message}`;
+            })
+            .finally(() => {
+                toggleLoading(selectId === 'fromAccount' ? 'checkBalanceFromBtn' : 'checkBalanceToBtn', false);
+            });
+    }
+</script>
 </body>
 </html>

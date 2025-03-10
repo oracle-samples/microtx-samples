@@ -30,7 +30,7 @@
 	</parent>
 	<groupId>com.oracle.example</groupId>
 	<artifactId>department1</artifactId>
-	<version>24.2.2</version>
+	<version>24.4.1</version>
 	<name>department1</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>

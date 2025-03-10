@@ -18,12 +18,7 @@
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 FROM node:16
 
-ADD Instant_Client/* /opt/oracle/instantclient_21_5/
-RUN apt-get update && apt-get install -y libaio1 && \
-    sh -c "echo /opt/oracle/instantclient_21_5 > /etc/ld.so.conf.d/oracle-instantclient.conf" && \
-    ldconfig
-
-COPY Database_Wallet /opt/oracle/instantclient_21_5/network/admin
+COPY Database_Wallet /usr/src/app
 # Create app directory
 WORKDIR /usr/src/app
 
@@ -31,6 +26,7 @@ WORKDIR /usr/src/app
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available (npm@5+)
 COPY package*.json ./
+
 
 RUN npm install
 RUN npm rebuild

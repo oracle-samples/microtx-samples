@@ -18,8 +18,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+
+// Note: If the connecting database uses wallet, walletLocation and walletPassword property needs to be set.
 export default {
-    user          : process.env.DEPARTMENTDATASOURCE_USER,
-    password      : process.env.DEPARTMENTDATASOURCE_PASSWORD,
-    connectString : process.env.DEPARTMENTDATASOURCE_URL
+    user          : process.env.DEPARTMENTDATASOURCE_USER  || "user-name",
+    password      : process.env.DEPARTMENTDATASOURCE_PASSWORD || "db-password",
+    connectString : process.env.DEPARTMENTDATASOURCE_URL || "(description= (retry_count=3)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=xyz.abc.com))(connect_data=(service_name=serviceID))(security=(ssl_server_dn_match=yes)))",
+    walletLocation: process.env.DEPARTMENTDATASOURCE_WALLETLOCATION || "wallet_location",
+    walletPassword: process.env.DEPARTMENTDATASOURCE_WALLETPASSWORD || "wallet_password"
 };

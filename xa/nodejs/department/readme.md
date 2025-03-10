@@ -11,34 +11,36 @@ This application used the TMM Node Js Library for XA and participates in an XA T
 
 1. Download the NodeJs Lib file from the official MicroTx Distribution package : https://www.oracle.com/in/database/transaction-manager-for-microservices/
 
-Copy `oracle-microtx-24.2.2.tgz` file from `<distribution-package-dir>/lib/nodejs` to the department folder.
+Copy `oracle-microtx-24.4.1.tgz` file from `<distribution-package-dir>/lib/nodejs` to the department folder.
 
 ```
-cp <distribution-package-dir>/lib/nodejs/oracle-microtx-24.2.2.tgz ./
+cp <distribution-package-dir>/lib/nodejs/oracle-microtx-24.4.1.tgz ./
 ```
 
-2. Download the Instant client Basic Package with version 21.5 or above from https://www.oracle.com/in/database/technologies/instant-client/linux-x86-64-downloads.html. Unzip the content to `Instant_Client` folder, which is present under root of department folder.
+2. This application connects to an Oracle Database. If you choose to use Autonomous database, then download the client credential wallet and copy the contents into the `Database_Wallet` folder in the root of department folder.
+3. Execute the SQL DML commands present in `./department.sql` file on database
 
-
-3. This application connects to an Oracle Database. If you choose to use Autonomous database, then download the client credential wallet and copy the contents into the `Database_Wallet` folder in the root of department folder.
-4.Execute the SQL DML commands present in `./department.sql` file on database
-
-5. A running instance of TMM transaction coordinator
+4. A running instance of TMM transaction coordinator
 
 ### Build the Department Application Code on Local Machine
 
-Set database connection parameters in `dbconfig.ts` file. 
+Set database connection parameters in `dbconfig.ts` file.
+
+Note: If the connecting database uses wallet, walletLocation and walletPassword property needs to be set.
 
 ```
 export default {
     user          : process.env.DEPARTMENTDATASOURCE_USER  || "<user-name>",
     password      : process.env.DEPARTMENTDATASOURCE_PASSWORD || "<db-password>",
-    connectString : process.env.DEPARTMENTDATASOURCE_URL || "<connection-string>"
+    connectString : process.env.DEPARTMENTDATASOURCE_URL || "(description= (retry_count=3)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=xyz.abc.com))(connect_data=(service_name=serviceID))(security=(ssl_server_dn_match=yes)))",
+    walletLocation: process.env.DEPARTMENTDATASOURCE_WALLETLOCATION || "<wallet_location",
+    walletPassword: process.env.DEPARTMENTDATASOURCE_WALLETPASSWORD || "<wallet_password>"
+    
 };
 ```
 Sample connection string for reference:
 ```
-(description= (retry_count=3)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=xyz.abc.com))(connect_data=(service_name=serviceID))(security=(ssl_server_dn_match=yes))(WALLET_LOCATION = (SOURCE = (METHOD = file) (METHOD_DATA = (DIRECTORY=\"Database_Wallet\")))))
+(description= (retry_count=3)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=xyz.abc.com))(connect_data=(service_name=serviceID))(security=(ssl_server_dn_match=yes)))
 ```
 For constructing the connection string, please refer [node-oracledb documentation](https://node-oracledb.readthedocs.io/en/latest/user_guide/connection_handling.html#embedtns)
 

@@ -43,7 +43,7 @@ AUTHID CURRENT_USER
 AS
   v_count   NUMBER;
 BEGIN
-
+    
     SELECT COUNT(*)
     INTO v_count
     FROM accounts
@@ -131,7 +131,7 @@ BEGIN
                         l_tmmReturn2 TmmReturn;
 
                         BEGIN
-                            microtx_log(''Deposit initiated'');
+                            microtx_log(log_level.INFO, ''Deposit initiated'');
                             IF :amount > 1000 THEN
                                 HTP.p(''Error: Cannot deposit amount more than 1000 without prior authorization'');
                                 :status_code := 400;
@@ -151,10 +151,10 @@ BEGIN
 
                                 END IF;
                             END IF;
-                            microtx_log(''Deposit complete'');
+                            microtx_log(log_level.INFO, ''Deposit complete'');
                         exception
                             when others then
-                                microtx_log(''Deposit failed '' || SQLERRM);
+                                microtx_log(log_level.ERROR, ''Deposit failed '' || SQLERRM);
                                 HTP.p(''ERROR Code: '' || SQLCODE || '' : ERROR Message: '' || SQLERRM || '' = Backtrace: '' || dbms_utility.format_error_backtrace);
                                 :status_code := 500;
 
@@ -192,7 +192,7 @@ BEGIN
                         l_tmmReturn2 TmmReturn;
 
                         BEGIN
-                            microtx_log(''Withdraw initiated'');
+                            microtx_log(log_level.INFO, ''Withdraw initiated'');
                             --Call TmmStart as shown below. All Other parameters than the callBackUrl must be passed as shown below.
                             l_tmmReturn := TmmStart(callBackUrl => l_callBackUrl, linkUrl => :linkUrl, requestId => :requestId, authorizationToken => :authorization, tmmTxToken => :tmmTxToken);
                             --HTP.p(''l_tmmReturn.proceed='' || l_tmmReturn.proceed);
@@ -207,10 +207,10 @@ BEGIN
                             ELSE
                                 :status_code := 400; --bad request
                             END IF;
-                            microtx_log(''Withdraw complete'');
+                            microtx_log(log_level.INFO, ''Withdraw complete'');
                         exception
                             when others then
-                                microtx_log(''Withdraw failed '' || SQLERRM);
+                                microtx_log(log_level.ERROR, ''Withdraw failed '' || SQLERRM);
                                 HTP.p(''ERROR Code: '' || SQLCODE || '' : ERROR Message: '' || '' = Backtrace: '' || dbms_utility.format_error_backtrace);
                                 :status_code := 500;
 
