@@ -72,10 +72,10 @@ public class TransferResourceWithSpringAsync {
 
         CompletableFuture<ResponseEntity> withdrawCompletableFuture = bankingService.withdraw(transferDetails.getTotalCharged(), transferDetails.getFrom());
         CompletableFuture<ResponseEntity> depositCompletableFuture = bankingService.deposit(transferDetails.getAmount(), transferDetails.getTo());
-        CompletableFuture<Boolean> depositFeeFuture = bankingService.depositFee(transferDetails.getFrom(), transferDetails.getTransferFee());
+
 
         // Join all threads so that we can wait until all are done
-        CompletableFuture.allOf(withdrawCompletableFuture, depositCompletableFuture, depositFeeFuture).join();
+        CompletableFuture.allOf(withdrawCompletableFuture, depositCompletableFuture).join();
 
         ResponseEntity<String> withdrawResponse = withdrawCompletableFuture.get();
         if (!withdrawResponse.getStatusCode().is2xxSuccessful()) {
@@ -89,7 +89,7 @@ public class TransferResourceWithSpringAsync {
             throw new TransferFailedException("Deposit failed " + depositResponse.getBody());
         }
 
-        boolean feeDeposited = depositFeeFuture.get();
+        Boolean feeDeposited = bankingService.depositFee(transferDetails.getFrom(), transferDetails.getTransferFee());
         if (feeDeposited) {
             LOG.info("Fee deposited successful {}", transferDetails);
         } else {

@@ -114,7 +114,7 @@ public class TransferResourceWithFutureTaskAsync {
                 LOG.info("Fee deposited successful {}", transferDetails);
             } else {
                 LOG.error("Fee deposited failed {}", transferDetails);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fee deposited failed");
+                throw new TransferFailedException("Fee deposited failed");
             }
 
             LOG.info("Transfer successful: {}", transferDetails);

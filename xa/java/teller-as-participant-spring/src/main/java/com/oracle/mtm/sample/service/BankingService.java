@@ -27,5 +27,5 @@ public interface BankingService {
 
     CompletableFuture withdraw(double amount, String accountId);
     CompletableFuture deposit(double amount, String accountId);
-    CompletableFuture<Boolean> depositFee(String from, double transferFee);
+    Boolean depositFee(String from, double transferFee);
 }
