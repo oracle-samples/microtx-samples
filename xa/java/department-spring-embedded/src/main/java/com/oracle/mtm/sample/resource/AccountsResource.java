@@ -59,7 +59,7 @@ public class AccountsResource {
             Account account = this.accountService.accountDetails(accountId);
             if(account == null) {
                 LOG.error("Account not found: " + accountId);
-                ResponseEntity.status(HttpStatus.NOT_FOUND).body("No account found for the provided account Identity");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{ \"message \" : \"No account found for the provided account Identity\"}");
             }
             return ResponseEntity.ok(account);
         } catch (SQLException e) {

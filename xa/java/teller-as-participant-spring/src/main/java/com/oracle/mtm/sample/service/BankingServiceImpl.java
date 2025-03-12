@@ -100,7 +100,7 @@ public class BankingServiceImpl implements BankingService {
     }
 
     @Override
-    public CompletableFuture<Boolean> depositFee(String from, double transferFee) {
+    public Boolean depositFee(String from, double transferFee) {
         Boolean hasFeeDeposited = false;
         try {
             hasFeeDeposited = transferFeeService.depositFee(from, transferFee);
@@ -108,6 +108,6 @@ public class BankingServiceImpl implements BankingService {
             LOG.error("Updating deposit fee failed: {}", e.getMessage());
             throw new TransferFailedException("Updating deposit fee failed: " + e.getMessage());
         }
-        return CompletableFuture.completedFuture(hasFeeDeposited);
+        return hasFeeDeposited;
     }
 }
