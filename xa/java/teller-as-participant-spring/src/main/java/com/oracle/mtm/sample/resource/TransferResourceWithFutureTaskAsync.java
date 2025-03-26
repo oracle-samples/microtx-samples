@@ -90,11 +90,9 @@ public class TransferResourceWithFutureTaskAsync {
 
             FutureTask<ResponseEntity<String>> withdrawFutureTask = getWithdrawFutureTask(transferDetails.getTotalCharged(), transferDetails.getFrom());
             FutureTask<ResponseEntity<String>> depositFutureTask = getDepositFutureTask(transferDetails.getAmount(), transferDetails.getTo());
-            FutureTask<Boolean> depositFeeFutureTask = getDepositFeeFutureTask(transferDetails.getFrom(), transferDetails.getTransferFee());
 
             threadPoolTaskExecutor.submit(withdrawFutureTask);
             threadPoolTaskExecutor.submit(depositFutureTask);
-            threadPoolTaskExecutor.submit(depositFeeFutureTask);
 
             ResponseEntity<String> withdrawResponse = withdrawFutureTask.get();
             if (!withdrawResponse.getStatusCode().is2xxSuccessful()) {
@@ -109,7 +107,8 @@ public class TransferResourceWithFutureTaskAsync {
             }
 
             // Fee processing
-            boolean feeDeposited = depositFeeFutureTask.get();
+
+            boolean feeDeposited = getDepositFeeFutureTask(transferDetails.getFrom(), transferDetails.getTransferFee());
             if (feeDeposited) {
                 LOG.info("Fee deposited successful {}", transferDetails);
             } else {
@@ -146,8 +145,7 @@ public class TransferResourceWithFutureTaskAsync {
         }
     }
 
-    private FutureTask<Boolean> getDepositFeeFutureTask(String from, double transferFee) {
-        Callable<Boolean> task = () -> {
+    private Boolean getDepositFeeFutureTask(String from, double transferFee) {
             Boolean hasFeeDeposited = false;
             try {
                 hasFeeDeposited = transferFeeService.depositFee(from, transferFee);
@@ -155,8 +153,6 @@ public class TransferResourceWithFutureTaskAsync {
                 LOG.error("Updating deposit fee failed: {}", e.getMessage());
             }
             return hasFeeDeposited;
-        };
-        return new FutureTask<>(task);
     }
 
     /**
