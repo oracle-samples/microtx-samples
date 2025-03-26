@@ -107,11 +107,11 @@ public class TransferResourceAsync {
 
             FutureTask<Response> withdrawFutureTask = getWithdrawFutureTask(departmentOneEndpoint, transferDetails.getTotalCharged(), transferDetails.getFrom());
             FutureTask<Response> depositFutureTask = getDepositFutureTask(departmentTwoEndpoint, transferDetails.getAmount(), transferDetails.getTo());
-            FutureTask<Boolean> depositFeeFutureTask = getDepositFeeFutureTask(transferDetails.getFrom(), transferDetails.getTransferFee());
+
 
             microTxXATaskExecutor.submit(withdrawFutureTask);
             microTxXATaskExecutor.submit(depositFutureTask);
-            microTxXATaskExecutor.submit(depositFeeFutureTask);
+
 
             // Withdraw processing
             withdrawResponse = withdrawFutureTask.get();
@@ -121,8 +121,17 @@ public class TransferResourceAsync {
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity("Withdraw failed").build();
             }
 
+            // Deposit processing
+            depositResponse = depositFutureTask.get();
+            if (depositResponse.getStatus() != Response.Status.OK.getStatusCode()) {
+                transaction.rollback();
+                logger.error("Deposit failed: "+ transferDetails + "Reason: " + depositResponse.getStatusInfo().getReasonPhrase());
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity("Deposit failed").build();
+            }
+
             // Fee processing
-            boolean feeDeposited = depositFeeFutureTask.get();
+            boolean feeDeposited = getDepositFeeFutureTask(transferDetails.getFrom(), transferDetails.getTransferFee());
+
             if (feeDeposited) {
                 logger.info("Fee deposited successful" + transferDetails);
             }else{
@@ -131,13 +140,6 @@ public class TransferResourceAsync {
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity("Fee deposit failed").build();
             }
 
-            // Deposit processing
-            depositResponse = depositFutureTask.get();
-            if (depositResponse.getStatus() != Response.Status.OK.getStatusCode()) {
-                transaction.rollback();
-                logger.error("Deposit failed: "+ transferDetails + "Reason: " + depositResponse.getStatusInfo().getReasonPhrase());
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity("Deposit failed").build();
-            }
             // Commit the transaction
             transaction.commit();
             logger.info("Transfer successful:" + transferDetails);
@@ -185,8 +187,7 @@ public class TransferResourceAsync {
         }
     }
 
-    private FutureTask<Boolean> getDepositFeeFutureTask(String from, double transferFee) {
-        Callable<Boolean> task = () -> {
+    private Boolean getDepositFeeFutureTask(String from, double transferFee) {
             Boolean hasFeeDeposited = false;
             try {
                 hasFeeDeposited = transferFeeService.depositFee(from, transferFee);
@@ -194,8 +195,6 @@ public class TransferResourceAsync {
                 logger.error("Updating deposit fee failed: {}", e.getMessage());
             }
             return hasFeeDeposited;
-        };
-        return new FutureTask<>(task);
     }
 
     /**
