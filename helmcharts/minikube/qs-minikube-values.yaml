@@ -1,0 +1,168 @@
+# Default values for Oracle TMM.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+istioSystemNameSpace: istio-system
+applicationNameSpace: otmm
+
+istioIngressGateway:
+  name: ingressgateway
+  tlsEnabled: "false"
+  # Kubernetes secret that contains the SSL and key certificate 
+  # Run the below command to create the secret,
+  # kubectl create -n istio-system secret tls tls-credential --key=<ssl key file path> --cert=<ssl cert file path>
+  # example: kubectl create -n istio-system secret tls tls-credential --key=example.dev.key --cert=example.dev.crt
+  credentialName:
+  hosts:
+
+# TMM pod replicas in the cluster
+tmmReplicaCount: 1
+
+# TMM Container image information
+tmmImage:
+  # Image path in private Container registry
+  image: container-registry.oracle.com/database/otmm:latest
+  imagePullPolicy: IfNotPresent
+  # The kubernetes secret for pulling TMM Container image from the private container registry
+  imagePullSecret: 
+
+tmmConfiguration:
+  tmmAppName: otmm-tcs
+  port: 9000
+  # The tmmExternalURL will consist of the Ingress Gateway hostname and port (if not 80 and 443). Example - https://{tmmExternalURL.host} OR https://{tmmExternalURL.host}:{tmmExternalURL.port}
+  # This is for generating TmmURL
+  # The generated TmmURL may look like ${tmmExternalURL.protocol}://${tmmExternalURL.host}:{tmmExternalURL.port}/api/v1/xa-transaction/${TXID}
+  tmmExternalURL:
+    #The protocol allowed at the Ingress Gateway. Must be one of - http or https
+    protocol:
+    #The external host name or IP address of the Ingress Gateway
+    host:
+    #The port of the Ingress Gateway. Example 80 for http or 443 for https
+    port:
+
+  # TMM supports three coordinator types: XA, LRA, TCC
+  # Specify which coordinator type(s) to be enabled
+  xaCoordinator:
+    enabled: "true"
+  lraCoordinator:
+    enabled: "true"
+  tccCoordinator:
+    enabled: "true"
+
+  #Compatibility with Narayana LRA Coordinator
+  narayanaLraCompatibilityMode:
+    enabled: "false"
+
+
+  storage:
+    type: memory
+
+
+  logging:
+    # TCS log level - "error | warning | info | debug"
+    level: info
+    httpTraceEnabled: true
+
+  metrics:
+    # Allow prometheus to scrape TCS metrics
+    enabled: false
+
+  #Authorization settings
+  authorization:
+    enabled: "false"
+    #This indicates the Authorization (Access) and Refresh-Token propagation is enabled/disabled.
+    authTokenPropagationEnabled: "false"
+    # Provide the identity provider details under identityProvider configuration
+
+  #Retry settings
+  #The maximum number of times the TMM (Transaction Coordinator) will retry an operation in case of certain failures
+  maxRetryCount: 10
+  #The minimum retry interval in milliseconds
+  minRetryInterval: 1000
+  #The maximum retry interval in milliseconds
+  maxRetryInterval: 10000
+  # Coordinator HTTP client timeout value in seconds. A Timeout of zero means no timeout. Max allowed value is 900 seconds
+  httpClientTimeoutInSecs: 60
+
+  # Skips verifying the TLS cert before doing http connect to secure callback url. Default false
+  skipVerifyInsecureTLS: false
+
+  # The counters update interval in seconds after which the values are updated in storage. Valid range is 30 - 1800 seconds.
+  countersUpdateInterval: 60
+
+# Authentication using JWT token. Provide JWT token issuer url
+authentication:
+  requestsWithNoJWT: ALLOW # ALLOW or DENY
+  # provide the jwksUri and the issuer details under identityProvider configuration
+
+# Identity provider configuration
+# Configure issuer, jwksUri for the authentication
+# Configure all the properties except jwksUri for the the console
+# All identityProvider configuration are mandatory if the authn & authz are enabled at the MicroTx coordinator
+identityProvider:
+  # Type of identity server. Currently supported is idcs/other (default other).
+  serverType: ""
+  # Space seperated values for multiple scopes. Keep it blank for default scenario (Default scope for idcs is "openid groups" and "openid" for other server types)
+  scopes: ""
+  # Identifies the issuer that issued the JWT: example - "http://10.20.30.10:8080/auth/realms/istio"
+  issuer: ""
+  # URL of the provider’s public key set to validate signature of the JWT. Example URL: "http://10.20.30.10:8080/auth/realms/istio/protocol/openid-connect/certs"
+  jwksUri: ""
+  # Audience of the token - each JWT is validated to check the audience
+  audience: ""
+  # Provide JWT token identity provider url.
+  identityProviderUrl: ""
+  # Admin role names configured in the identity provider separated by comma
+  # Ex: admin, consoleadmin
+  adminUserRoles: ""
+  # Admin role path in the JWT payload from the root. Skip this for idcs server type
+  # Ex: For keycloak payload, roles are present under realm_access
+  # {
+  #   "realm_access": {
+  #     "roles": [
+  #       "admin"
+  #     ]
+  #   }
+  # }
+  adminUserRolesPath: ""
+  # Client ID and Client Password  as a kubernetes secret generated by identity provider service
+  # To create a kubernetes:
+  #  1. copy paste the below content in a file
+  #  2. Run the command $ kubectl apply -f <filename> -n <namespace>
+  # apiVersion: v1
+  # kind: Secret
+  # metadata:
+  #   name: console-identity-client-secret
+  # type: Opaque
+  # data:
+  #   clientId: <base64 encoded clientId>
+  #   clientPassword: <base64 encoded clientPassword>
+  # Provide the kubernetes secret name
+  clientSecretName: ""
+
+encryption:
+  # The current sercretKeyVersion that will be used (from the list below). Can be 1 or 2 ...
+  encryptionSecretKeyVersion: "1"
+  encryptionSecretKeys:
+    # Add new secretKey with the kubernetes secret name of the key and increment the version by 1 starting with 1.
+    secretKeys:
+      - secretKeyName: ""
+        version: "1"
+    #  - secretKeyName: "TMMSECRETKEY2"
+    #    version: "2"
+
+transactionToken:
+  transactionTokenEnabled: "false"
+  # The current transactionTokenKeyPairVersion that will be used (from the list below). Can be 1 or 2 ...
+  transactionTokenKeyPairVersion: ""
+  transactionTokenKeyPairs:
+    # Add new KeyPair with the kubernetes secret names of the privateKey, publicKey, privateKeyPassword and increment the version by 1 starting with 1.
+    keyPairs:
+#      - privateKeyName: "TMMPRIVKEY1"
+#        publicKeyName: "TMMPUBKEY1"
+#        privateKeyPasswordName: "TMMPRIVKEYPASSWD1"
+#        version: "1"
+#      - privateKeyName: "TMMPRIVKEY2"
+#        publicKeyName: "TMMPUBKEY2"
+#        privateKeyPasswordName: "TMMPRIVKEYPASSWD2"
+#        version: "2"
