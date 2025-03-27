@@ -46,6 +46,20 @@ Ensure that you have installed the following required software on your local mac
     Replace these values based on your environment. For more information about running the `az containerapp env create` command, see [https://learn.microsoft.com/en-us/cli/azure/containerapp/env?view=azure-cli-latest#az-containerapp-env-create](https://learn.microsoft.com/en-us/cli/azure/containerapp/env?view=azure-cli-latest#az-containerapp-env-create).
 
 8. Deploy the MicroTx transaction coordinator to the Azure Container Apps environment that you have created. See [https://learn.microsoft.com/en-us/azure/container-apps/tutorial-code-to-cloud?tabs=bash%2Ccsharp&pivots=acr-remote#deploy-your-image-to-a-container-app](https://learn.microsoft.com/en-us/azure/container-apps/tutorial-code-to-cloud?tabs=bash%2Ccsharp&pivots=acr-remote#deploy-your-image-to-a-container-app).
+   Also provide the below environment variables :
+
+   | Environment Variable    | Value                        |
+   |-------------------------|-----------------------------|
+   | LISTEN_ADDR             | 0.0.0.0:9000                |
+   | STORAGE_TYPE            | memory                      |
+   | EXTERNAL_ADDR           | <microtx-application-url>   |
+   | INTERNAL_ADDR           | <microtx-application-url>   |
+   | LRA_COORDINATOR_ENABLED | true                        |
+   | XA_COORDINATOR_ENABLED  | true                        |
+   | TCC_COORDINATOR_ENABLED | true                        |
+   | LOGGING_LEVEL           | info                        |
+   | SERVE_TLS_ENABLED       | false                       |
+
 
 9. Note down the application's fully qualified domain name (FQDN) from the output, and save the name in an environment variable, such as `APP_FQDN`.
 
@@ -61,16 +75,6 @@ Ensure that you have installed the following required software on your local mac
 
     The details of the MicroTx transaction coordinator are displayed on the Azure Portal. Note down the application URL. You will need to provide this in the next step
 
-2. Override the default commands that are executed at startup with the commands provided below.
+2. Deploy the MicroTx transaction coordinator to the Azure Container Apps environment that you have created. See [https://learn.microsoft.com/en-us/azure/container-apps/tutorial-code-to-cloud?tabs=bash%2Ccsharp&pivots=acr-remote#deploy-your-image-to-a-container-app](https://learn.microsoft.com/en-us/azure/container-apps/tutorial-code-to-cloud?tabs=bash%2Ccsharp&pivots=acr-remote#deploy-your-image-to-a-container-app).
 
-    ```
-    <copy>
-    /app/tcs, -storage-type, memory, -listen-addr, 0.0.0.0:9000, -logging-level, debug, -enable-tls, false, -http-trace, true, -external-addr, <Application_URL_on_Overview_Page>
-    </copy>
-    ```
-
-    See [https://techcommunity.microsoft.com/blog/appsonazureblog/command-override-in-azure-container-apps-container-app-job/4082514](https://techcommunity.microsoft.com/blog/appsonazureblog/command-override-in-azure-container-apps-container-app-job/4082514).
-
-3. Deploy the MicroTx transaction coordinator to the Azure Container Apps environment that you have created. See [https://learn.microsoft.com/en-us/azure/container-apps/tutorial-code-to-cloud?tabs=bash%2Ccsharp&pivots=acr-remote#deploy-your-image-to-a-container-app](https://learn.microsoft.com/en-us/azure/container-apps/tutorial-code-to-cloud?tabs=bash%2Ccsharp&pivots=acr-remote#deploy-your-image-to-a-container-app).
-
-4. Access the application URL in the browser to verify that the application has been deployed successfully.
+3. Access the application URL in the browser to verify that the application has been deployed successfully.
