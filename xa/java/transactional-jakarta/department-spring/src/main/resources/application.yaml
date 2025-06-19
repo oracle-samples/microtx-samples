@@ -16,18 +16,17 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
 # PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 server:
-  port : 8080
+  port : 8082
 
 spring:
   microtx:
     coordinator-url: http://localhost:9000/api/v1
-    participant-url: http://localhost:8080
+    participant-url: http://localhost:8082
     propagation-active: true
     http-client-connection-pool-size: 60
     xa-transaction-timeout: 60000
-    xa-resource-manager-id: MYBATIS-SPRING-<SERVICE-NAME>-RM
+    xa-resource-manager-id: DEPT-SPRING-RM1
     xa-xa-support: true
     xa-llr-support: false
     xa-lrc-support: false
@@ -37,23 +36,21 @@ spring:
     xa-weblogic-transaction-support: false
     xa-weblogic-namespace: weblogic
 
-#Change the below details to use database of your choice
-feeDataSource:
-  url: "jdbc:oracle:thin:@tcps://<host>:<port>/<service_name>?wallet_location=Database_Wallet"
-  user: "user"
-  password: "xxxxxx"
-  oracleucp:
-    driver-class-name: oracle.jdbc.OracleDriver
-    type: oracle.ucp.jdbc.PoolXADataSource
-    connection-factory-class-name: oracle.jdbc.xa.client.OracleXADataSource
-    sql-for-validate-connection: select * from dual
-    connection-pool-name: connectionPoolName2
-    initial-pool-size: 15
-    min-pool-size: 10
-    max-pool-size: 30
-    data-source-name: deptxadatasource
-
-departmentOneEndpoint: "http://localhost:8081"
-departmentTwoEndpoint: "http://localhost:8082"
-
-
+## For connecting to Autonomous Database (ATP) refer https://www.oracle.com/database/technologies/getting-started-using-jdbc.html
+## Provide the database URL, database username and database password (as shown in the example values)
+departmentDataSource:
+    url: "jdbc:oracle:thin:@<DB-HOST>:1521/<SERVICE-NAME>"
+    user: "<db-user>"
+    password: "<db-password>"
+    # Properties for using Universal Connection Pool (UCP)
+    # Note: These properties require JDBC version 21.0.0.0
+    oracleucp:
+      driver-class-name: oracle.jdbc.OracleDriver
+      type: oracle.ucp.jdbc.PoolXADataSource
+      connection-factory-class-name: oracle.jdbc.xa.client.OracleXADataSource
+      sql-for-validate-connection: select * from dual
+      connection-pool-name: connectionPoolName2
+      initial-pool-size: 15
+      min-pool-size: 10
+      max-pool-size: 30
+      data-source-name: deptxadatasource

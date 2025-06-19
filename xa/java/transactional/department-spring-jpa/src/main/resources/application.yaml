@@ -4,8 +4,8 @@
 
 # Subject to the condition set forth below, permission is hereby granted to any person obtaining a copy of this software, associated documentation and/or data
 # (collectively the "Software"), free of charge and under any and all copyright rights in the Software, and any and all patent rights owned or freely licensable by each
-# licensor hereunder covering either the unmodified Software as contributed to or provided by such licensor, or (ii) the Larger Works (as defined below), to deal in both
-# ** (a) the Software, and (b) any piece of software and/or hardware listed in the lrgrwrks.txt file if one is included with the Software (each a "Larger Work" to which
+# licensor hereunder covering either the unmodified Software as contributed to or provided by such licensor, or (ii) the Larger Works (as defined below), to deal in both 
+# ** (a) the Software, and (b) any piece of software and/or hardware listed in the lrgrwrks.txt file if one is included with the Software (each a "Larger Work" to which 
 # the Software is contributed by such licensors), **
 # without restriction, including without limitation the rights to copy, create derivative works of, display, perform, and distribute the Software and make, use, sell,
 # offer for sale, import, export, have made, and have sold the Software and the Larger Work(s), and to sublicense the foregoing rights on either these or other terms. **
@@ -18,16 +18,16 @@
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 server:
-  port : 8080
+  port : 8081
 
 spring:
   microtx:
     coordinator-url: http://localhost:9000/api/v1
-    participant-url: http://localhost:8080
+    participant-url: http://localhost:8081
     propagation-active: true
     http-client-connection-pool-size: 60
     xa-transaction-timeout: 60000
-    xa-resource-manager-id: MYBATIS-SPRING-<SERVICE-NAME>-RM
+    xa-resource-manager-id: SPRING-JPA-HIBERNATE-RM
     xa-xa-support: true
     xa-llr-support: false
     xa-lrc-support: false
@@ -37,12 +37,15 @@ spring:
     xa-weblogic-transaction-support: false
     xa-weblogic-namespace: weblogic
 
-#Change the below details to use database of your choice
-feeDataSource:
-  url: "jdbc:oracle:thin:@tcps://<host>:<port>/<service_name>?wallet_location=Database_Wallet"
-  user: "user"
-  password: "xxxxxx"
-  oracleucp:
+## For connecting to Autonomous Database (ATP) refer https://www.oracle.com/database/technologies/getting-started-using-jdbc.html
+## Provide the database URL, database username and database password (as shown in the example values)
+departmentDataSource:
+  url: "jdbc:oracle:thin:@<DB-HOST>:1521/<SERVICE-NAME>"
+  user: "<db-user>"
+  password: "<db-password>"
+  # Properties for using Universal Connection Pool (UCP)
+  # Note: These properties require JDBC version 21.0.0.0
+  xaOracleucp:
     driver-class-name: oracle.jdbc.OracleDriver
     type: oracle.ucp.jdbc.PoolXADataSource
     connection-factory-class-name: oracle.jdbc.xa.client.OracleXADataSource
@@ -53,7 +56,12 @@ feeDataSource:
     max-pool-size: 30
     data-source-name: deptxadatasource
 
-departmentOneEndpoint: "http://localhost:8081"
-departmentTwoEndpoint: "http://localhost:8082"
+  oracleucp:
+    driver-class-name: oracle.jdbc.OracleDriver
+    type: oracle.ucp.jdbc.PoolDataSource
+    connection-factory-class-name: oracle.jdbc.pool.OracleDataSource
+    sql-for-validate-connection: select * from dual
+    connection-pool-name: connectionPoolName3
+    data-source-name: deptdatasource
 
-
+#spring.jpa.open-in-view: false

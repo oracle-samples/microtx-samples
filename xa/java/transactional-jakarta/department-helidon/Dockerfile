@@ -17,43 +17,29 @@
 # PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-server:
-  port : 8080
+# 1st stage, build the app
+FROM maven:3.8.3-openjdk-17 as build
 
-spring:
-  microtx:
-    coordinator-url: http://localhost:9000/api/v1
-    participant-url: http://localhost:8080
-    propagation-active: true
-    http-client-connection-pool-size: 60
-    xa-transaction-timeout: 60000
-    xa-resource-manager-id: MYBATIS-SPRING-<SERVICE-NAME>-RM
-    xa-xa-support: true
-    xa-llr-support: false
-    xa-lrc-support: false
-    xa-llr-delete-commit-record-interval: 720000
-    xa-promotable-active: false
-    xa-rac-active: false
-    xa-weblogic-transaction-support: false
-    xa-weblogic-namespace: weblogic
+WORKDIR /app
 
-#Change the below details to use database of your choice
-feeDataSource:
-  url: "jdbc:oracle:thin:@tcps://<host>:<port>/<service_name>?wallet_location=Database_Wallet"
-  user: "user"
-  password: "xxxxxx"
-  oracleucp:
-    driver-class-name: oracle.jdbc.OracleDriver
-    type: oracle.ucp.jdbc.PoolXADataSource
-    connection-factory-class-name: oracle.jdbc.xa.client.OracleXADataSource
-    sql-for-validate-connection: select * from dual
-    connection-pool-name: connectionPoolName2
-    initial-pool-size: 15
-    min-pool-size: 10
-    max-pool-size: 30
-    data-source-name: deptxadatasource
+COPY pom.xml .
+RUN mvn package -Dmaven.test.skip -Declipselink.weave.skip
 
-departmentOneEndpoint: "http://localhost:8081"
-departmentTwoEndpoint: "http://localhost:8082"
+# Do the Maven build!
+# Incremental docker builds will resume here when you change sources
+ADD src src
+RUN mvn package -DskipTests
+RUN echo "done!"
 
+# 2nd stage, build the runtime image
+FROM openjdk:17.0.1-jdk-slim
+WORKDIR /app
 
+# Copy the binary built in the 1st stage
+COPY --from=build /app/target/department.jar ./
+COPY --from=build /app/target/libs ./libs
+# Add the Oracle Automous database wallet under the root folder on the application
+ADD Database_Wallet Database_Wallet
+CMD ["java", "-jar", "department.jar"]
+
+EXPOSE 8081

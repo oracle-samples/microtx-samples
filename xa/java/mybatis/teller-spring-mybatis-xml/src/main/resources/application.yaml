@@ -27,7 +27,7 @@ spring:
     propagation-active: true
     http-client-connection-pool-size: 60
     xa-transaction-timeout: 60000
-    xa-resource-manager-id: MYBATIS-SPRING-INITIATOR-RM
+    xa-resource-manager-id: MYBATIS-SPRING-<SERVICE-NAME>-RM
     xa-xa-support: true
     xa-llr-support: false
     xa-lrc-support: false
