@@ -1,9 +1,7 @@
-package com.oracle.mtm.sample.resource;
+package com.oracle.mtm.sample.helpers;
 
 import com.oracle.mtm.sample.AllTrustingClientBuilder;
-import com.oracle.mtm.sample.Configuration;
 import com.oracle.mtm.sample.entity.Transfer;
-import com.oracle.mtm.sample.exception.CustomCheckedException1;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +15,6 @@ import jakarta.ws.rs.core.UriBuilder;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.logging.Level;
 
 /**
  * @author Bharath.MC
@@ -33,11 +30,11 @@ public class NotificationHelpers {
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Transactional(Transactional.TxType.NEVER)
-    public Response emailNotification(Transfer transferDetails) {
+    public Response emailNotificationAnnotatedNever(Transfer transferDetails) {
         logger.info("Email notification initiated:" + transferDetails.toString());
         Response emailResponse = null;
         try {
-            emailResponse = emailNotification(departmentOneEndpoint, transferDetails.getAmount(), transferDetails.getFrom());
+            emailResponse = emailNotificationAnnotatedNever(departmentOneEndpoint, transferDetails.getAmount(), transferDetails.getFrom());
             if (emailResponse.getStatus() != Response.Status.OK.getStatusCode()) {
                 logger.error("Email notification failed: "+ transferDetails.toString() + "Reason: " + emailResponse.getStatusInfo().getReasonPhrase());
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Email notification failed").build();
@@ -53,22 +50,22 @@ public class NotificationHelpers {
     }
 
     @Transactional(Transactional.TxType.NOT_SUPPORTED)
-    public Response emailNotifyNotSupportedOC(Transfer transferDetails) {
+    public Response emailNotifyNotSupportedOC_AnnotatedNotSupported(Transfer transferDetails) {
         return emailNotify(transferDetails);
     }
 
     @Transactional(Transactional.TxType.NOT_SUPPORTED)
-    public Response emailNotifyNotSupportedIC(Transfer transferDetails) {
+    public Response emailNotifyNotSupportedIC_AnnotatedNotSupported(Transfer transferDetails) {
         return emailNotify(transferDetails);
     }
 
     @Transactional(Transactional.TxType.NEVER)
-    public Response emailNotifyNeverOC(Transfer transferDetails) {
+    public Response emailNotifyNeverOC_AnnotatedNever(Transfer transferDetails) {
         return emailNotify(transferDetails);
     }
 
     @Transactional(Transactional.TxType.NEVER)
-    public Response emailNotifyNeverIC(Transfer transferDetails) {
+    public Response emailNotifyNeverIC_AnnotatedNever(Transfer transferDetails) {
         return emailNotify(transferDetails);
     }
 
@@ -76,7 +73,7 @@ public class NotificationHelpers {
         logger.info("Email notification initiated:" + transferDetails.toString());
         Response emailResponse = null;
         try {
-            emailResponse = emailNotification(departmentOneEndpoint, transferDetails.getAmount(), transferDetails.getFrom());
+            emailResponse = emailNotificationAnnotatedNever(departmentOneEndpoint, transferDetails.getAmount(), transferDetails.getFrom());
             if (emailResponse.getStatus() != Response.Status.OK.getStatusCode()) {
                 logger.error("Email notification failed: "+ transferDetails.toString() + "Reason: " + emailResponse.getStatusInfo().getReasonPhrase());
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Email notification failed").build();
@@ -91,7 +88,7 @@ public class NotificationHelpers {
         }
     }
 
-    private Response emailNotification(String serviceEndpoint, double amount, String accountId) throws URISyntaxException {
+    private Response emailNotificationAnnotatedNever(String serviceEndpoint, double amount, String accountId) throws URISyntaxException {
         String emailEndpoint = UriBuilder.fromUri(new URI(serviceEndpoint)).path("accounts").path(accountId).path("/emailNotify").queryParam("amount", amount).toString();
         Response response = emailClient.target(emailEndpoint).request().post(Entity.text(""));
         logger.info("email Response: \n" + response.toString());

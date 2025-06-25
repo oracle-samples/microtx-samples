@@ -1,4 +1,4 @@
-package com.oracle.mtm.sample.resource;
+package com.oracle.mtm.sample.helpers;
 
 import com.oracle.mtm.sample.AllTrustingClientBuilder;
 import com.oracle.mtm.sample.entity.Transfer;
@@ -36,7 +36,7 @@ public class DepositHelper {
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Transactional(Transactional.TxType.REQUIRED)
-    public Response depositNested(Transfer transferDetails) throws CustomCheckedException1 {
+    public Response depositNested_AnnotatedRequired(Transfer transferDetails) throws CustomCheckedException1 {
         logger.error("Deposit initiated:" + transferDetails.toString());
         Response depositResponse = null;
         try {
@@ -59,7 +59,7 @@ public class DepositHelper {
     }
 
     @Transactional(Transactional.TxType.REQUIRED)
-    public Response depositRequiredNestedIC(Transfer transferDetails) throws CustomCheckedException1 {
+    public Response depositRequiredNestedIC_AnnotatedRequired(Transfer transferDetails) throws CustomCheckedException1 {
         logger.error("Deposit initiated:" + transferDetails.toString());
         Response depositResponse = null;
         try {
@@ -82,7 +82,7 @@ public class DepositHelper {
     }
 
     @Transactional(Transactional.TxType.MANDATORY)
-    public Response depositMandatoryNestedIC(Transfer transferDetails) {
+    public Response depositMandatoryNestedIC_AnnotatedMandatory(Transfer transferDetails) {
         logger.error("Deposit initiated:" + transferDetails.toString());
         Response depositResponse = null;
         try {
@@ -102,7 +102,7 @@ public class DepositHelper {
     }
 
     @Transactional(Transactional.TxType.SUPPORTS)
-    public Response depositSupportsNestedIC(Transfer transferDetails) {
+    public Response depositSupportsNestedIC_AnnotatedSupports(Transfer transferDetails) {
         logger.error("Deposit initiated:" + transferDetails.toString());
         Response depositResponse = null;
         try {

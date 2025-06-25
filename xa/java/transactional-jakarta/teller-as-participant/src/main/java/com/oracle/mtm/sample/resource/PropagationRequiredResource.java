@@ -22,17 +22,12 @@
 package com.oracle.mtm.sample.resource;
 
 import com.oracle.mtm.sample.AllTrustingClientBuilder;
-import com.oracle.mtm.sample.Configuration;
 import com.oracle.mtm.sample.entity.Transfer;
 import com.oracle.mtm.sample.exception.CustomCheckedException1;
 import com.oracle.mtm.sample.exception.CustomCheckedException2;
 import com.oracle.mtm.sample.exception.CustomUnCheckedException;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
-import org.eclipse.microprofile.openapi.annotations.info.Info;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.oracle.mtm.sample.helpers.NotificationHelpers;
+import com.oracle.mtm.sample.helpers.TransferHelpers;
 import jakarta.inject.Inject;
 import jakarta.transaction.*;
 import jakarta.ws.rs.Consumes;
@@ -44,6 +39,12 @@ import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
+import org.eclipse.microprofile.openapi.annotations.info.Info;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -51,7 +52,7 @@ import java.sql.SQLException;
 
 @Path("/containermanagedtxn")
 @OpenAPIDefinition(info = @Info(title = "Amount Transfer endpoint", version = "1.0"))
-public class ContainerTransferResource {
+public class PropagationRequiredResource {
 
     private static Client withdrawClient = AllTrustingClientBuilder.newClient();
     private static Client depositClient = AllTrustingClientBuilder.newClient();
@@ -117,8 +118,8 @@ public class ContainerTransferResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional(Transactional.TxType.REQUIRED)
     public Response transferTransactionalRequiredIC(Transfer transferDetails) {
-        Response withdrawResponse = transferHelpers.withdrawRequiredIC(transferDetails);
-        Response depositResponse = transferHelpers.depositRequiredIC(transferDetails);
+        Response withdrawResponse = transferHelpers.withdrawRequiredIC_AnnotatedRequired(transferDetails);
+        Response depositResponse = transferHelpers.depositRequiredIC_AnnotatedRequired(transferDetails);
         if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode() && depositResponse.getStatus() == Response.Status.OK.getStatusCode()) {
             return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
         }
@@ -129,7 +130,7 @@ public class ContainerTransferResource {
     @Path("REQUIRED/nested/insideContext")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response transferTransactionalRequiredNestedTxn(Transfer transferDetails) throws CustomCheckedException1 {
-        Response withdrawResponse = transferHelpers.withdrawRequiredNestedIC(transferDetails);
+        Response withdrawResponse = transferHelpers.withdrawRequiredNestedIC_AnnotatedRequired(transferDetails);
 
         if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode()) {
             return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
@@ -142,8 +143,8 @@ public class ContainerTransferResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional(Transactional.TxType.REQUIRED)
     public Response transferTransactionalRequiredICAutomic(Transfer transferDetails) {
-        Response withdrawResponse = transferHelpers.withdrawRequiredIC(transferDetails);
-        Response depositResponse = transferHelpers.depositRequiresNewIC(transferDetails);
+        Response withdrawResponse = transferHelpers.withdrawRequiredIC_AnnotatedRequired(transferDetails);
+        Response depositResponse = transferHelpers.depositRequiresNewIC_AnnotatedRequiresNew(transferDetails);
         if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode() && depositResponse.getStatus() == Response.Status.OK.getStatusCode()) {
             return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
         }
@@ -151,192 +152,29 @@ public class ContainerTransferResource {
     }
 
     @POST
-    @Path("REQUIRES_NEW/outsideContext")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
-    public Response transferTransactionalRequiresNewOC(Transfer transferDetails, @QueryParam("throwException") boolean throwException) throws CustomCheckedException1, SQLException {
-        logger.info( "Transfer initiated:" + transferDetails.toString());
-        Response withdrawResponse = null;
-        Response depositResponse = null;
-        try {
-            withdrawResponse = withdraw(departmentOneEndpoint, transferDetails.getAmount(), transferDetails.getFrom());
-            if (withdrawResponse.getStatus() != Response.Status.OK.getStatusCode()) {
-                logger.error("Withdraw failed: " + transferDetails.toString() + "Reason: " + withdrawResponse.getStatusInfo().getReasonPhrase());
-                throw new RuntimeException("Withdraw failed: " + transferDetails.toString() + "Reason: " + withdrawResponse.getStatusInfo().getReasonPhrase());
-            }
-            depositResponse = deposit(departmentTwoEndpoint, transferDetails.getAmount(), transferDetails.getTo());
-            if (depositResponse.getStatus() != Response.Status.OK.getStatusCode()) {
-                logger.error("Deposit failed: " + transferDetails.toString() + "Reason: " + depositResponse.getStatusInfo().getReasonPhrase());
-                throw new RuntimeException("Deposit failed: " + transferDetails.toString() + "Reason: " + depositResponse.getStatusInfo().getReasonPhrase());
-            }
-            logger.info( "Transfer successful:" + transferDetails.toString());
-
-            if (throwException) {
-                throw new RuntimeException("this is runtime exception");
-            }
-            return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
-        } catch (URISyntaxException e) {
-            logger.error(e.getLocalizedMessage());
-            throw new RuntimeException("Transfer failed " + e.getLocalizedMessage());
-        } finally {
-            if (withdrawResponse != null) withdrawResponse.close();
-            if (depositResponse != null) depositResponse.close();
-        }
-    }
-
-    // This is failing
-    @POST
-    @Path("REQUIRES_NEW/insideContext")
+    @Path("REQUIRED/outsideContext/rollback")
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional(Transactional.TxType.REQUIRED)
-    public Response transferTransactionalRequiresNewIC(Transfer transferDetails) {
-        Response withdrawResponse = transferHelpers.withdrawRequiresNewIC(transferDetails);
-        Response depositResponse = transferHelpers.depositRequiresNewIC(transferDetails);
-        //Response deposit2Response = transferHelpers.withdraw2(transferDetails);
-
-        if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode() && depositResponse.getStatus() == Response.Status.OK.getStatusCode()
-            //&& deposit2Response.getStatus() == Response.Status.OK.getStatusCode()
-        ) {
+    public Response transferTransactionalRequiredOCRollback(Transfer transferDetails) {
+        Response withdrawResponse = transferHelpers.withdraw_NoAnnotation(transferDetails);
+        Response depositResponse = transferHelpers.deposit_NoAnnotation_Exception(transferDetails);
+        if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode() && depositResponse.getStatus() == Response.Status.OK.getStatusCode()) {
             return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
         }
         throw new RuntimeException("Transfer failed ");
     }
 
-    // This should fail
     @POST
-    @Path("MANDATORY/outsideContext")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response transferTransactionalMandatoryTxnOC(Transfer transferDetails) {
-        Response withdrawResponse = transferHelpers.withdrawMandatoryOC(transferDetails);
-        Response depositResponse = transferHelpers.depositMandatoryOC(transferDetails);
-        if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode() && depositResponse.getStatus() == Response.Status.OK.getStatusCode()) {
-            return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
-        }
-        throw new RuntimeException("Transfer failed as expected, as  depositMandatoryOC is annotated with MANDATORY, but caller does not have Txn context");
-    }
-
-    @POST
-    @Path("MANDATORY/insideContext")
+    @Path("REQUIRED/outsideContext/nestedtxn/rollback")
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional(Transactional.TxType.REQUIRED)
-    public Response transferTransactionalMandatoryTxnIC(Transfer transferDetails) {
-        Response withdrawResponse = transferHelpers.withdrawMandatoryIC(transferDetails);
-        Response depositResponse = transferHelpers.depositMandatoryIC(transferDetails);
+    public Response transferTransactionalRequiredOCNestedTxnRollback(Transfer transferDetails) {
+        Response withdrawResponse = transferHelpers.withdrawRequiredIC_AnnotatedRequired(transferDetails);
+        Response depositResponse = transferHelpers.depositRequiresNewIC_AnnotatedRequiresNew_Exception(transferDetails);
         if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode() && depositResponse.getStatus() == Response.Status.OK.getStatusCode()) {
             return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
         }
         throw new RuntimeException("Transfer failed ");
-    }
-
-    @POST
-    @Path("MANDATORY/nested/insideContext")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response transferTransactionalMandatoryTxnICNested(Transfer transferDetails) {
-        Response withdrawResponse = transferHelpers.withdrawMandatoryNestedIC(transferDetails);
-        if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode()) {
-            return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
-        }
-        throw new RuntimeException("Transfer failed ");
-    }
-
-    @POST
-    @Path("SUPPORTS/outsideContext")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response transferTransactionalSupportsOC(Transfer transferDetails) throws SystemException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
-
-        Response withdrawResponse = transferHelpers.withdrawSupportsOC(transferDetails);
-        Response depositResponse = transferHelpers.depositSupportsOC(transferDetails);
-        if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode() && depositResponse.getStatus() == Response.Status.OK.getStatusCode()) {
-            return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
-        }
-        throw new RuntimeException("Transfer failed ");
-    }
-
-    @POST
-    @Path("SUPPORTS/nested/insideContext")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response transferTransactionalSupportsTxnIC(Transfer transferDetails) {
-        Response withdrawResponse = transferHelpers.withdrawSupportsNestedIC(transferDetails);
-        if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode()) {
-            return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
-        }
-        throw new RuntimeException("Transfer failed ");
-    }
-
-    // Failing, need to debug
-    @POST
-    @Path("SUPPORTS/insideContext")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Transactional(Transactional.TxType.REQUIRED)
-    public Response transferTransactionalSupportsTxnIC2(Transfer transferDetails) throws CustomCheckedException1 {
-        Response withdrawResponse = transferHelpers.withdrawSupportsIC(transferDetails);
-        Response depositResponse = transferHelpers.depositSupportsIC(transferDetails);
-        if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode() && depositResponse.getStatus() == Response.Status.OK.getStatusCode()) {
-            return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
-        }
-        throw new RuntimeException("Transfer failed ");
-    }
-
-
-    // Need to try
-    @POST
-    @Path("NOT_SUPPORTED/outsideContext")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response transferTransactionalNotSupportsOC(Transfer transferDetails) throws SystemException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
-
-        Response withdrawResponse = transferHelpers.withdrawNotSupportedOC(transferDetails);
-        Response depositResponse = transferHelpers.depositNotSupportedOC(transferDetails);
-        Response emailResponse = notificationHelpers.emailNotifyNotSupportedOC(transferDetails);
-        if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode() && depositResponse.getStatus() == Response.Status.OK.getStatusCode()
-                && emailResponse.getStatus() == Response.Status.OK.getStatusCode()) {
-            return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
-        }
-        throw new RuntimeException("Transfer failed ");
-    }
-
-    @POST
-    @Path("NOT_SUPPORTED/insideContext")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Transactional(value = Transactional.TxType.REQUIRED)
-    public Response transferTransactionalNotSupportsIC(Transfer transferDetails) throws SystemException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
-
-        Response withdrawResponse = transferHelpers.withdrawNotSupportedIC(transferDetails);
-        Response depositResponse = transferHelpers.depositNotSupportedIC(transferDetails);
-        Response emailResponse = notificationHelpers.emailNotifyNotSupportedIC(transferDetails);
-        if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode() && depositResponse.getStatus() == Response.Status.OK.getStatusCode()
-                && emailResponse.getStatus() == Response.Status.OK.getStatusCode()) {
-            return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
-        }
-        throw new RuntimeException("Transfer failed ");
-    }
-
-    @POST
-    @Path("NEVER/outsideContext")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response transferTransactionalNeverOC(Transfer transferDetails) {
-        Response withdrawResponse = transferHelpers.withdrawNeverOC(transferDetails);
-        Response depositResponse = transferHelpers.depositNeverOC(transferDetails);
-        Response emailResponse = notificationHelpers.emailNotifyNeverOC(transferDetails);
-        if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode() && depositResponse.getStatus() == Response.Status.OK.getStatusCode()
-                && emailResponse.getStatus() == Response.Status.OK.getStatusCode()) {
-            return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
-        }
-        throw new RuntimeException("Transfer failed ");
-    }
-
-    @POST
-    @Path("NEVER/insideContext")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Transactional(value = Transactional.TxType.REQUIRED)
-    public Response transferTransactionalNeverIC(Transfer transferDetails) {
-        Response withdrawResponse = transferHelpers.withdrawNeverIC(transferDetails);
-        Response depositResponse = transferHelpers.depositNeverIC(transferDetails);
-        Response emailResponse = notificationHelpers.emailNotifyNeverIC(transferDetails);
-        if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode() && depositResponse.getStatus() == Response.Status.OK.getStatusCode()
-                && emailResponse.getStatus() == Response.Status.OK.getStatusCode()) {
-            return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
-        }
-        throw new RuntimeException("Transfer failed");
     }
 
     /**
