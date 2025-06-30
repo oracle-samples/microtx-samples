@@ -257,3 +257,27 @@ public class TransferResourceAsync {
         return new FutureTask<>(task);
     }
 }
+
+/**
+ *
+ * CA
+ *  IN-> CA-GTRID
+ *       Branch -> RMID:CB
+ *       Branch -> RMID:CC -> failed- RM codes
+ *
+ *    CB -> CB.P1, CB.P2
+ *       CB-GTRID, super:CA-GTRID
+ *    CC -> CC.P1, CC.P2
+ *       CC-GTRID, super:CA-GTRID
+ *
+ * Scenrio2: CA -> IN -> PB -> PC
+ *
+ *
+ *
+ * 1. NO Retries to subordinate participant - n/w issue - non- retryable code,
+ * 2. Security - forward token which initiator passes
+ * 3. Timeouts - spawned across
+ * 4. Console changes - any ? - diff to show sub and superordinate txn
+ * 5. Helm changes ?
+ *
+ */

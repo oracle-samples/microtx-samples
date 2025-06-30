@@ -170,7 +170,7 @@ public class PropagationRequiredResource {
     @Transactional(Transactional.TxType.REQUIRED)
     public Response transferTransactionalRequiredOCNestedTxnRollback(Transfer transferDetails) {
         Response withdrawResponse = transferHelpers.withdrawRequiredIC_AnnotatedRequired(transferDetails);
-        Response depositResponse = transferHelpers.depositRequiresNewIC_AnnotatedRequiresNew_Exception(transferDetails);
+        Response depositResponse = transferHelpers.depositRequiresNewIC_AnnotatedRequiresNew(transferDetails);
         if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode() && depositResponse.getStatus() == Response.Status.OK.getStatusCode()) {
             return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
         }

@@ -92,10 +92,8 @@ public class PropagationSupportsResource {
     }
 
     // Failing, need to debug
-
     /**
-     * TrmTransactionalInterceptor exception: class jakarta.transaction.SystemException : {"txid":"http://localhost:9000/api/v1/xa-transaction/fa2c45a2-7006-4bac-b5d9-82415a2e15e9","status":"TX_FAIL","error":"transaction in wrong state: Committed"}
-     * TrmTransactionalInterceptor detected checked exception not marked for rollback. By default transaction will be committed: class jakarta.transaction.SystemException. Transaction will be marked for commit
+     * If called inside a transaction context, the managed bean method execution must then continue inside this transaction context.
      */
     @POST
     @Path("SUPPORTS/insideContext")

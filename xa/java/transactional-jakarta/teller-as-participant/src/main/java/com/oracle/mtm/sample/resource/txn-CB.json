@@ -1,0 +1,48 @@
+{
+  "more": false,
+  "transactions": [
+    {
+      "gtrid": "GTRID-CA-dd6a-48b4-9b68-88adaf233588",
+      "userId": "",
+      "hostname": "",
+      "begin": 1750930155593,
+      "end": 1750930188584,
+      "timeout": 300000,
+      "status": "Committed",
+      "branches": [
+        {
+          "branchId": "TCS01-0001",
+          "url": "http://SERVICE-A:8080",
+          "resourceManagerId": "<SERVICE-NAME>-HELIDON-RM",
+          "status": "Committed",
+          "returnCode": "XA_OK",
+          "llrBranch": false,
+          "lrcBranch": false,
+          "wlsTxnSupport": false,
+          "encryptedEntry": "",
+          "nonce": "",
+          "keyVersion": "",
+          "thumbprint": ""
+        },
+        {
+          "branchId": "TCS01-0002",
+          "url": "http://SERVICE-B:8080",
+          "resourceManagerId": "<SERVICE-NAME>-HELIDON-RM",
+          "status": "Committed",
+          "returnCode": "XA_OK",
+          "llrBranch": false,
+          "lrcBranch": false,
+          "wlsTxnSupport": false,
+          "encryptedEntry": "",
+          "nonce": "",
+          "keyVersion": "",
+          "thumbprint": ""
+        }
+      ],
+      "encryptedEntry": "",
+      "nonce": "",
+      "keyVersion": "",
+      "thumbprint": ""
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 package com.oracle.mtm.sample.data;
 
-import com.oracle.mtm.sample.entity.EmailDetails;
+import com.oracle.mtm.sample.entity.RewardPointsDetails;
 import jakarta.inject.Inject;
 import oracle.tmm.jta.common.TrmSQLConnection;
 import org.slf4j.Logger;
@@ -17,7 +17,7 @@ import java.sql.SQLException;
  * @author Bharath.MC
  */
 @RequestScoped
-public class EmailService {
+public class RewardPointService {
 
     /**
      * The Database Connection injected by the TMM Library. Use this connection object to execute SQLs (DMLs) within the application code.
@@ -28,19 +28,20 @@ public class EmailService {
 
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    public EmailDetails emailDetails(String accountId) throws SQLException {
-        EmailDetails emailDetails = null;
+    public RewardPointsDetails rewardPointsDetails(String accountId) throws SQLException {
+        RewardPointsDetails rewardPointsDetails = null;
         PreparedStatement statement = null;
         try {
             if (connection == null) {
+                logger.error("Connection is null");
                 return null;
             }
-            String query = "SELECT * FROM EmailDetails where account_id=?";
+            String query = "SELECT * FROM RewardPoints where account_id=?";
             statement = connection.prepareStatement(query);
             statement.setString(1, accountId);
             ResultSet dataSet = statement.executeQuery();
             if (dataSet.next()) {
-                emailDetails = new EmailDetails(dataSet.getString("account_id"), dataSet.getString("message"));
+                rewardPointsDetails = new RewardPointsDetails(dataSet.getString("account_id"), dataSet.getInt("reward_points"));
             }
         } catch (SQLException e) {
             logger.error( e.getLocalizedMessage());
@@ -54,20 +55,19 @@ public class EmailService {
                 connection.close();
             }
         }
-        return emailDetails;
+        return rewardPointsDetails;
     }
 
-    public boolean updateEmail(String accountId, String operation, double amount) throws SQLException {
+    public boolean updateRewardPoints(String accountId, Integer rewardPoints) throws SQLException {
         PreparedStatement statement = null;
-        Connection connection = null;
         try {
             if (connection == null) {
+                logger.error("Connection is null");
                 throw new SQLException("Connection is null");
             }
-            String message = String.format("amount %s$ %s from account %s at %s", amount, operation,  accountId, new java.util.Date());
-            String query = "UPDATE EmailDetails SET message =? where account_id=?";
+            String query = "UPDATE RewardPoints SET reward_points=reward_points+? where account_id=?";
             statement = connection.prepareStatement(query);
-            statement.setString(1, message);
+            statement.setInt(1, rewardPoints);
             statement.setString(2, accountId);
             return statement.executeUpdate() > 0;
         } catch (SQLException e) {

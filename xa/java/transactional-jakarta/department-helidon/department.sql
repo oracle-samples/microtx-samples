@@ -35,7 +35,7 @@ insert into accounts values('account4', 'account4', 4000.00);
 insert into accounts values('account5', 'account5', 5000.00);
 
 create table EmailDetails(
-                             account_id VARCHAR(10) not null,
+                             account_id VARCHAR(15) not null,
                              message VARCHAR(1024) not null,
                              PRIMARY KEY (account_id)
 );
@@ -45,3 +45,16 @@ insert into EmailDetails values('account2', 'text');
 insert into EmailDetails values('account3', 'text');
 insert into EmailDetails values('account4', 'text');
 insert into EmailDetails values('account5', 'text');
+
+CREATE TABLE RewardPoints (
+    account_id VARCHAR(15) NOT NULL,
+    reward_points INT DEFAULT 0 NOT NULL
+);
+
+INSERT INTO RewardPoints (account_id, reward_points)
+VALUES
+    ('account1', 100),
+    ('account2', 200),
+    ('account3', 500),
+    ('account4', 150),
+    ('account5', 250);

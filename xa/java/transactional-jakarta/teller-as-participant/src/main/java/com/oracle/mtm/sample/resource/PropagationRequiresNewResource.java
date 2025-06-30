@@ -24,6 +24,7 @@ package com.oracle.mtm.sample.resource;
 import com.oracle.mtm.sample.AllTrustingClientBuilder;
 import com.oracle.mtm.sample.entity.Transfer;
 import com.oracle.mtm.sample.exception.CustomCheckedException1;
+import com.oracle.mtm.sample.helpers.FeeHelpers;
 import com.oracle.mtm.sample.helpers.NotificationHelpers;
 import com.oracle.mtm.sample.helpers.TransferHelpers;
 import jakarta.inject.Inject;
@@ -68,6 +69,9 @@ public class PropagationRequiresNewResource {
 
     @Inject
     NotificationHelpers notificationHelpers;
+
+    @Inject
+    FeeHelpers feeHelpers;
 
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -114,7 +118,9 @@ public class PropagationRequiresNewResource {
     public Response transferTransactionalRequiresNewIC(Transfer transferDetails) {
         Response withdrawResponse = transferHelpers.withdrawRequiresNewIC_AnnotatedRequiresNew(transferDetails);
         Response depositResponse = transferHelpers.depositRequiresNewIC_AnnotatedRequiresNew(transferDetails);
+        //Response depositResponse = transferHelpers.depositRequiresNewIC_AnnotatedRequiresNew_Exception(transferDetails);
         Response deposit2Response = transferHelpers.withdraw2(transferDetails);
+        //Response deposit2Response = transferHelpers.withdraw_NoAnnotation_Exception(transferDetails);
 
         if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode()
                 //&& depositResponse.getStatus() == Response.Status.OK.getStatusCode()
@@ -124,6 +130,128 @@ public class PropagationRequiresNewResource {
         }
         throw new RuntimeException("Transfer failed ");
     }
+
+    /**
+     * Multiple nesting Scenario
+     *
+     * @Transactional(REQUIRED) -- Tx1(ACTIVE)
+     * transfer() {
+     *     withdraw();
+     *     deposit();
+     * }
+     *
+     * @Transactional(REQUIRES_NEW) -- Tx1(SUSPEND).Tx2(ACTIVE)
+     * withdraw(){
+     *    - external participant call
+     * }
+     *
+     * @Transactional(REQUIRES_NEW) -- Tx1(SUSPEND).Tx3(ACTIVE)
+     * deposit(){
+     *   - external participant call
+     *   doSomething();
+     * }
+     *
+     * @Transactional(REQUIRES_NEW) -- Tx1(SUSPEND).Tx3(SUSPEND).Tx4(ACTIVE)
+     * doSomething(){
+     *    -- external participant call
+     * }
+     *
+     */
+    // Fails
+    @POST
+    @Path("REQUIRES_NEW/nested/insideContext")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional(Transactional.TxType.REQUIRED)
+    public Response transferTransactionalRequiresNewIC_Nested(Transfer transferDetails) {
+        Response withdrawResponse = transferHelpers.withdrawRequiresNewIC_AnnotatedRequiresNew(transferDetails);
+        Response depositResponse = transferHelpers.depositRequiresNewIC_Nested_AnnotatedRequiresNew(transferDetails);
+
+        if (withdrawResponse.getStatus() == Response.Status.OK.getStatusCode()
+            && depositResponse.getStatus() == Response.Status.OK.getStatusCode()
+        ) {
+            return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
+        }
+        throw new RuntimeException("Transfer failed ");
+    }
+
+    /**
+     * @Transactional(REQUIRED)
+     * transfer() {
+     *     withdraw(); // external participant
+     *     deposit();  // external participant
+     *     feeDeposit(); // internal RM
+     * }
+     *
+     * @Transactional(REQUIRES_NEW)
+     * withdraw(){
+     *    - creditfees(); // internal RM
+     *    - external participant call
+     * }
+     *
+     * @Transactional(REQUIRES_NEW)
+     * deposit(){
+     *   // external call
+     * }
+     *
+     * feeDeposit(){
+     *    // internal call to internal RM
+     * }
+     *
+     */
+    @POST
+    @Path("REQUIRES_NEW/IAP/insideContext") //IAP = Initiator as partitipant
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional(Transactional.TxType.REQUIRED)
+    public Response transferIAPTransactionalRequiresNewIC(Transfer transferDetails) {
+        Response withdrawResponse = transferHelpers.withdrawRequiresNewIC_AnnotatedRequiresNew(transferDetails);
+        Response depositResponse = transferHelpers.depositRequiresNewIC_AnnotatedRequiresNew(transferDetails);
+        feeHelpers.feeDeposit(transferDetails);
+
+        if ( true
+            //&& withdrawResponse.getStatus() == Response.Status.OK.getStatusCode()
+            //&& depositResponse.getStatus() == Response.Status.OK.getStatusCode()
+            //&& deposit2Response.getStatus() == Response.Status.OK.getStatusCode()
+        ) {
+            return Response.status(Response.Status.OK.getStatusCode(), "Transfer completed successfully").build();
+        }
+        throw new RuntimeException("Transfer failed ");
+    }
+
+
+    // scenario 2
+
+    /**
+     * @Transactional(REQUIRED)
+     * transfer() {
+     *     withdraw(); // external participant
+     *     deposit();  // external participant
+     *     feeDeposit(); // internal RM1
+     *     taxDeposit(); // internal RM2
+     * }
+     *
+     * @Transactional(REQUIRES_NEW)
+     * withdraw(){
+     *    - creditfees(); // internal RM1
+     *    - external participant call
+     * }
+     *
+     * @Transactional(REQUIRES_NEW)
+     * deposit(){
+     *   taxDeposit(); // internal RM2
+     *   // external call
+     * }
+     *
+     * feeDeposit(){
+     *    // internall call to internal RM1
+     * }
+     *
+     * feeDeposit(){
+     *    taxDeposit(); // internal RM2
+     * }
+     *
+     */
+
+
 
     /**
      * Send an HTTP request to the service to withdraw amount from the provided account identity

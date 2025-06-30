@@ -48,11 +48,20 @@ public class TransferHelpers {
     @Inject
     private DepositHelper depositHelper;
 
+    @Inject
+    private RewardPointsHelpers rewardPointsHelpers;
+
     final static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 
     public Response withdraw_NoAnnotation(Transfer transferDetails) {
         return withdraw(transferDetails);
+    }
+
+    public Response withdraw_NoAnnotation_Exception(Transfer transferDetails) {
+        Response withdrawRespose = withdraw(transferDetails);
+        System.out.println("withdrawRespose: " + withdrawRespose);
+        throw new RuntimeException("Rollback explicitly");
     }
 
     public Response deposit_NoAnnotation(Transfer transferDetails) {
@@ -82,6 +91,13 @@ public class TransferHelpers {
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     public Response depositRequiresNewIC_AnnotatedRequiresNew(Transfer transferDetails) {
         return deposit(transferDetails);
+    }
+
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    public Response depositRequiresNewIC_Nested_AnnotatedRequiresNew(Transfer transferDetails) {
+        Response depositRespose =  deposit(transferDetails);
+        rewardPointsHelpers.updateRewardPoint_AnnotatedRequiresNew(transferDetails);
+        return depositRespose;
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)

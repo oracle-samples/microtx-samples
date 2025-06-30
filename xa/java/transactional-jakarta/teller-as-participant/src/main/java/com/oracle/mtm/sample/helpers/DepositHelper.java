@@ -128,4 +128,25 @@ public class DepositHelper {
         logger.error("Deposit Response Body: \n" + response.readEntity(String.class));
         return response;
     }
+
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    public Response depositNested_AnnotatedRequiresNew(Transfer transferDetails) {
+        logger.error("Deposit initiated:" + transferDetails.toString());
+        Response depositResponse = null;
+        try {
+            depositResponse = deposit(departmentTwoEndpoint, transferDetails.getAmount(), transferDetails.getTo());
+            if (depositResponse.getStatus() != Response.Status.OK.getStatusCode()) {
+                logger.error("Deposit failed: "+ transferDetails.toString() + "Reason: " + depositResponse.getStatusInfo().getReasonPhrase());
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Deposit failed").build();
+            }
+            logger.error("Deposit successful:" + transferDetails.toString());
+            return Response.status(Response.Status.OK.getStatusCode(), "Deposit completed successfully").build();
+        } catch(URISyntaxException e){
+            logger.error(e.getLocalizedMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Deposit failed").build();
+        } finally {
+            if(depositResponse != null) depositResponse.close();
+        }
+    }
+
 }

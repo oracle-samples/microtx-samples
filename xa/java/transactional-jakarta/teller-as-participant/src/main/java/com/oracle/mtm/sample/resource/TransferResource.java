@@ -110,13 +110,13 @@ public class TransferResource {
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Withdraw failed").build();
             }
             // Fee processing
-            /*if (transferFeeService.depositFee(transferDetails.getFrom(), transferDetails.getTransferFee())) {
+            if (transferFeeService.depositFee(transferDetails.getFrom(), transferDetails.getTransferFee())) {
                 logger.info("Fee deposited successful" + transferDetails);
             }else{
                 transaction.rollback();
                 logger.error("Fee deposited failed" + transferDetails);
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Fee deposit failed").build();
-            }*/
+            }
 
 
             // Deposit processing
@@ -161,7 +161,7 @@ public class TransferResource {
             @APIResponse(responseCode = "500", description = "Internal Server Error")
     })
     @GET
-    @Path("{accountId}")
+    @Path("/fee/{accountId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAccountFeeDetails(@PathParam("accountId") String accountId) {
         try {
