@@ -1,19 +1,6 @@
-## Keys
+## PAR URL
 
-### key 1
-```
-abcgelsfhsdjfwgjpg
-```
-
-### key 2 
-```
-ghgoeivnveijgrpmeb
-```
-
-### key 3
-```
-vgeheqogbvpdjfbpqe
-```
+[HOL-Resource](https://objectstorage.us-ashburn-1.oraclecloud.com/p/aPLJo5Zzd8KKE1SHr8CSXrmkcqoRuvLk3NgD4n0Kc-_B9nVl-9DQJJsEFwQeU-Vb/n/oabcs1/b/MicroTx-Share/o/HOL-2025-ResourceAI-World.txt)
 
 
 ## Troubleshooting: UI Server is unresponsive
