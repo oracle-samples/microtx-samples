@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.workflowSampleServices.notificationService.name }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.workflowSampleServices.notificationService.name }}
+  ports:
+    - port: 8085
+      targetPort: 8085
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.workflowSampleServices.notificationService.name }}
+spec:
+  replicas: {{ .Values.workflowSampleServices.notificationService.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.workflowSampleServices.notificationService.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.workflowSampleServices.notificationService.name }}
+    spec:
+{{- if .Values.workflowSampleServices.notificationService.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.workflowSampleServices.notificationService.imagePullSecret }}
+{{- end }}
+      containers:
+        - name: {{ .Values.workflowSampleServices.notificationService.name }}
+          image: {{ .Values.workflowSampleServices.notificationService.image }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SPRING_MAIL_HOST
+              value: "host.minikube.internal"
+          ports:
+            - containerPort: 8085
