@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.workflowSampleServices.docProcessMcpServer.name }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.workflowSampleServices.docProcessMcpServer.name }}
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.workflowSampleServices.docProcessMcpServer.name }}
+spec:
+  replicas: {{ .Values.workflowSampleServices.docProcessMcpServer.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.workflowSampleServices.docProcessMcpServer.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.workflowSampleServices.docProcessMcpServer.name }}
+    spec:
+{{- if .Values.workflowSampleServices.docProcessMcpServer.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.workflowSampleServices.docProcessMcpServer.imagePullSecret }}
+{{- end }}
+      containers:
+        - name: {{ .Values.workflowSampleServices.docProcessMcpServer.name }}
+          image: {{ .Values.workflowSampleServices.docProcessMcpServer.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000

@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.workflowSampleServices.loanComplianceService.name }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.workflowSampleServices.loanComplianceService.name }}
+  ports:
+    - port: 8001
+      targetPort: 8001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.workflowSampleServices.loanComplianceService.name }}
+spec:
+  replicas: {{ .Values.workflowSampleServices.loanComplianceService.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.workflowSampleServices.loanComplianceService.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.workflowSampleServices.loanComplianceService.name }}
+    spec:
+{{- if .Values.workflowSampleServices.loanComplianceService.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.workflowSampleServices.loanComplianceService.imagePullSecret }}
+{{- end }}
+      containers:
+        - name: {{ .Values.workflowSampleServices.loanComplianceService.name }}
+          image: {{ .Values.workflowSampleServices.loanComplianceService.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8001
