@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.workflowSampleServices.loanProcessingAgent.name }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.workflowSampleServices.loanProcessingAgent.name }}
+  ports:
+    - port: 8002
+      targetPort: 8002
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.workflowSampleServices.loanProcessingAgent.name }}
+spec:
+  replicas: {{ .Values.workflowSampleServices.loanProcessingAgent.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.workflowSampleServices.loanProcessingAgent.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.workflowSampleServices.loanProcessingAgent.name }}
+    spec:
+{{- if .Values.workflowSampleServices.loanProcessingAgent.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.workflowSampleServices.loanProcessingAgent.imagePullSecret }}
+{{- end }}
+      containers:
+        - name: {{ .Values.workflowSampleServices.loanProcessingAgent.name }}
+          image: {{ .Values.workflowSampleServices.loanProcessingAgent.image }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CONDUCTOR_SERVER_URL
+              value: "http://workflow-server:8080/workflow-server/api"
+          ports:
+            - containerPort: 8002

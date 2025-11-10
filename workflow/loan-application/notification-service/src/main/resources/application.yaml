@@ -1,0 +1,18 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: notification-service
+  mail:
+    host: localhost
+    port: 25
+    username: ""
+    password: ""
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
