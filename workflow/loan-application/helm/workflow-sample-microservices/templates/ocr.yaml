@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.workflowSampleServices.ocrService.name }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.workflowSampleServices.ocrService.name }}
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.workflowSampleServices.ocrService.name }}
+spec:
+  replicas: {{ .Values.workflowSampleServices.ocrService.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.workflowSampleServices.ocrService.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.workflowSampleServices.ocrService.name }}
+    spec:
+{{- if .Values.workflowSampleServices.ocrService.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.workflowSampleServices.ocrService.imagePullSecret }}
+{{- end }}
+      containers:
+        - name: {{ .Values.workflowSampleServices.ocrService.name }}
+          image: {{ .Values.workflowSampleServices.ocrService.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000

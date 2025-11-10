@@ -1,0 +1,6 @@
+apiVersion: v2
+name: workflow-sample-microservices
+description: A Helm chart to deploy workflow microservices (doc-process-mcp-server, loan-compliance-service, loan-processing-agent, notification-service, ocr-microservice)
+type: application
+version: 0.1.0
+appVersion: "1.0"
