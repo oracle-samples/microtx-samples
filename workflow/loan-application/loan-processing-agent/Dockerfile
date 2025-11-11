@@ -12,7 +12,7 @@ RUN pip install --upgrade pip && \
 COPY . .
 
 # Confirm uv installs to /usr/local/bin and is executable
-RUN which uv && uv --help
+# RUN which uv && uv --help
 
 # Default command
 CMD ["uv", "run", "loan_processing_agent.py"]
