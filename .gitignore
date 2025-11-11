@@ -34,3 +34,8 @@ build/
 ### VS Code ###
 .vscode/
 
+venv
+.venv
+.gradle
+build
+.mvn
