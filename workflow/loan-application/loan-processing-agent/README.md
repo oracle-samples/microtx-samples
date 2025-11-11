@@ -57,7 +57,7 @@ You may want to create a venv for local dev:
 python -m venv .venv
 source .venv/bin/activate
 pip3 install langgraph conductor-python
-export CONDUCTOR_SERVER_URL=http://localhost:8080/workflow-server/api
+export CONDUCTOR_SERVER_URL=http://localhost:9010/workflow-server/api
 uv run loan_processing_agent.py
 ```
 

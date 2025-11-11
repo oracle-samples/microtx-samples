@@ -42,31 +42,3 @@ public class EmailController {
         return ResponseEntity.ok("Hello " + name);
     }
 }
-
-
-/**
- * Cache -> LRU and time
-
- DB Profile1 : PooledConn1 -> Cache(Conn1)
- DB Profile2 : PooledConn2 -> Cache(Conn2)
- DB Profile3 : PooledConn3 -> Cache(Conn3)
-
- DB Profile4 : PooledConn4 -> Cache(Conn4)
-
- **/
-
-
-
-/**
- *
- * Blockchain Instance: transfer chaincode (API: /sendMoney)
- * RestProxy : /sendMoney
- *
- * [SpringBoot Service - Ms + MicroTx lib]
- *
- * [SpringBoot Service] -> calls -> RestProxy : /sendMoney
- *
- * /sendMoney : [SpringBoot Service] -> RestProxy -> Blockchain Instance
- *
- *
- */
