@@ -1,0 +1,450 @@
+{
+  "createTime": 1758732909565,
+  "updateTime": 1762881760894,
+  "name": "acme_bank_loan_processing_workflow_v3",
+  "description": "Acme bank Loan processing workflow with multi agent orchestration",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "Extract Loan Application details",
+      "taskReferenceName": "extract_loan_details",
+      "inputParameters": {
+        "llmProfile": {
+          "name": "llm-oci",
+          "model": "openai.gpt-4o-mini"
+        },
+        "promptTemplate": "loan_application_nl_2_json",
+        "promptVariables": {
+          "loan_application_text": "${workflow.input.loan_application_text}"
+        }
+      },
+      "type": "GENAI_TASK",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "Check loan application completeness",
+      "taskReferenceName": "check_loan_application_completeness",
+      "inputParameters": {
+        "switchCaseValue": "${extract_loan_details.output.status}"
+      },
+      "type": "SWITCH",
+      "decisionCases": {
+        "FAILED": [
+          {
+            "name": "Notify incomplete loan application",
+            "taskReferenceName": "notify_incomplete_loan_application",
+            "inputParameters": {
+              "method": "POST",
+              "uri": "http://notification-service:8085/email-service/sendMail?isMockSendMail=true",
+              "headers": {
+                "Content-Type": "application/json"
+              },
+              "body": {
+                "from": "microtx.user@localhost",
+                "to": "microtx.user@microtx.com",
+                "cc": "",
+                "subject": "Loan application rejected!",
+                "body": "Loan application rejected due to incomplete details. ${workflow.input.loan_application_text}",
+                "isEmailBodyText": true
+              }
+            },
+            "type": "HTTP",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          },
+          {
+            "name": "terminate",
+            "taskReferenceName": "terminate_ref",
+            "inputParameters": {
+              "terminationStatus": "TERMINATED",
+              "terminationReason": "Incomplete loan application details",
+              "workflowOutput": "${extract_loan_details.output}"
+            },
+            "type": "TERMINATE",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          }
+        ]
+      },
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "evaluatorType": "value-param",
+      "expression": "switchCaseValue",
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "auditLoanOracleSql",
+      "taskReferenceName": "audit_loan_oracle_sql_task_ref",
+      "inputParameters": {
+        "databaseProfile": "oracle-database",
+        "sqlStatement": "INSERT INTO LOAN_APPLICATIONS (APPLICATION_ID, USER_SSN, LOAN_AMOUNT, TENURE_MONTHS, APPLICATION_STATUS) VALUES (?, ?, ?, ?, ?);",
+        "parameters": [
+          "${workflow.workflowId}",
+          "${extract_loan_details.output.ssn}",
+          "${extract_loan_details.output.loanAmount}",
+          "${extract_loan_details.output.tenure}",
+          "PENDING"
+        ],
+        "type": "UPDATE"
+      },
+      "type": "SQL",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "Agentic Planner",
+      "taskReferenceName": "agentic_planner",
+      "inputParameters": {
+        "llmProfile": {
+          "name": "llm-oci",
+          "model": "openai.gpt-4o"
+        },
+        "promptTemplate": "loan_process_planner",
+        "promptVariables": {
+          "workflowId": "${workflow.workflowId}"
+        },
+        "mcpServers": [
+          "doc_mcp"
+        ],
+        "tasks": [
+          {
+            "name": "Loan Document Verification Task",
+            "taskReferenceName": "document_verification",
+            "inputParameters": {
+              "agentProfile": "loan_document_verification_agent",
+              "promptVariables": {
+                "document": "${workflow.input.document}"
+              }
+            },
+            "type": "AGENTIC_TASK"
+          },
+          {
+            "name": "Compliance Agent",
+            "taskReferenceName": "compliance_agent",
+            "type": "HTTP",
+            "inputParameters": {
+              "method": "POST",
+              "uri": "http://loan-compliance-service:8001/api/compliance/check",
+              "headers": {
+                "Content-Type": "application/json"
+              },
+              "body": {
+                "socialSecurityNumber": "${extract_loan_details.output.ssn}"
+              }
+            }
+          },
+          {
+            "name": "loan_processing_agent_task",
+            "taskReferenceName": "loan_processing_agent_task",
+            "inputParameters": {
+              "applicantId": "12345"
+            },
+            "type": "SIMPLE"
+          },
+          {
+            "name": "Notify AML verification failure for reverification",
+            "taskReferenceName": "notify_aml_check_failure_to_admin",
+            "type": "HTTP",
+            "inputParameters": {
+              "method": "POST",
+              "uri": "http://notification-service:8085/email-service/sendMail",
+              "headers": {
+                "Content-Type": "application/json"
+              },
+              "body": {
+                "from": "microtx.user@localhost",
+                "to": "microtx.user@microtx.com",
+                "cc": "",
+                "subject": "Loan application rejected!",
+                "body": "Loan application rejected. User is flagged in Anti-money laundering (AML) database. Do reverify and accept/reject application. \nUser laon request : ${workflow.input.loan_application_text}",
+                "isEmailBodyText": true
+              }
+            },
+            "readResponse": false
+          },
+          {
+            "name": "human_aml_verification_task",
+            "taskReferenceName": "human_aml_verification",
+            "type": "HUMAN",
+            "inputParameters": {
+              "applicant": "${extract_loan_details.output}"
+            }
+          }
+        ],
+        "tools": [
+          "oracle-database-tool"
+        ]
+      },
+      "type": "AGENTIC_PLANNER",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "Check planner execution status",
+      "taskReferenceName": "check_planner_execution_status",
+      "inputParameters": {
+        "switchCaseValue": "${agentic_planner.output.status}"
+      },
+      "type": "SWITCH",
+      "decisionCases": {
+        "FAILED": [
+          {
+            "name": "Notify loan application rejection",
+            "taskReferenceName": "notify_loan_application_rejection",
+            "inputParameters": {
+              "method": "POST",
+              "uri": "http://notification-service:8085/email-service/sendMail?isMockSendMail=true",
+              "headers": {
+                "Content-Type": "application/json"
+              },
+              "body": {
+                "from": "microtx.user@localhost",
+                "to": "microtx.user@microtx.com",
+                "cc": "",
+                "subject": "Loan application rejected!",
+                "body": "Loan application rejected due to planner failure. ${agentic_planner.output}",
+                "isEmailBodyText": true
+              }
+            },
+            "type": "HTTP",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          },
+          {
+            "name": "terminate loan application",
+            "taskReferenceName": "terminate_loan_application_ref",
+            "inputParameters": {
+              "terminationStatus": "TERMINATED",
+              "terminationReason": "loan application rejected",
+              "workflowOutput": "${agentic_planner.output}"
+            },
+            "type": "TERMINATE",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          }
+        ]
+      },
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "evaluatorType": "value-param",
+      "expression": "switchCaseValue",
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "Send Email notification",
+      "taskReferenceName": "email_notify",
+      "inputParameters": {
+        "method": "POST",
+        "uri": "http://notification-service:8085/email-service/sendMail?isMockSendMail=true",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "from": "microtx.user@localhost",
+          "to": "microtx.user@microtx.com",
+          "cc": "",
+          "subject": "Loan approval request!",
+          "body": "Please approve loan req ${workflow.workflowId}",
+          "isEmailBodyText": true
+        }
+      },
+      "type": "HTTP",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "human_approval_task",
+      "taskReferenceName": "wait_for_approval",
+      "inputParameters": {
+        "applicant": "${extract_loan_details.output}",
+        "formData": {
+          "approved": false
+        }
+      },
+      "type": "HUMAN",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "Check Loan Approval By Admin",
+      "taskReferenceName": "check_loan_approval_from_admin",
+      "inputParameters": {
+        "switchCaseValue": "${wait_for_approval.output.approved}"
+      },
+      "type": "SWITCH",
+      "decisionCases": {
+        "true": [
+          {
+            "name": "auditFInalLoanOracleSql Approved",
+            "taskReferenceName": "audit_final_loan_oracle_sql_task_approved_ref",
+            "inputParameters": {
+              "databaseProfile": "oracle-database",
+              "sqlStatement": "UPDATE LOAN_APPLICATIONS SET APPLICATION_STATUS = 'APPROVED' WHERE APPLICATION_ID = ?;",
+              "parameters": [
+                "${workflow.workflowId}"
+              ],
+              "type": "UPDATE"
+            },
+            "type": "SQL",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          }
+        ],
+        "false": [
+          {
+            "name": "auditFInalLoanOracleSql Rejected",
+            "taskReferenceName": "audit_final_loan_oracle_sql_task_rejected_ref",
+            "inputParameters": {
+              "databaseProfile": "oracle-database",
+              "sqlStatement": "UPDATE LOAN_APPLICATIONS SET APPLICATION_STATUS = 'REJECTED' WHERE APPLICATION_ID = ?;",
+              "parameters": [
+                "${workflow.workflowId}"
+              ],
+              "type": "UPDATE"
+            },
+            "type": "SQL",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          }
+        ]
+      },
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "evaluatorType": "value-param",
+      "expression": "switchCaseValue",
+      "onStateChange": {},
+      "permissive": false
+    }
+  ],
+  "inputParameters": [],
+  "outputParameters": {},
+  "schemaVersion": 2,
+  "restartable": true,
+  "workflowStatusListenerEnabled": false,
+  "timeoutPolicy": "ALERT_ONLY",
+  "timeoutSeconds": 0,
+  "variables": {},
+  "inputTemplate": {},
+  "enforceSchema": true,
+  "metadata": {}
+}

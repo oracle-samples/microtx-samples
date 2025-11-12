@@ -3,6 +3,9 @@ import os
 import logging
 import re
 import easyocr
+import requests
+import cv2
+import numpy as np
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -94,4 +97,43 @@ def perform_ocr(file_path: str) -> str:
 
     except Exception as e:
         logger.error(f"An unexpected error occurred while processing {file_path}: {e}")
+        raise
+
+
+def perform_ocr2(source: str) -> dict:
+    """
+    Performs in-house OCR using EasyOCR on a local file path or URL.
+    """
+    image = None
+    is_url = source.startswith(('http://', 'https://'))
+
+    if is_url:
+        try:
+            response = requests.get(source, timeout=30)
+            response.raise_for_status()
+            image_data = np.frombuffer(response.content, np.uint8)
+            image = cv2.imdecode(image_data, cv2.IMREAD_COLOR)
+            if image is None:
+                raise ValueError("Invalid image data received from URL")
+        except requests.RequestException as e:
+            logger.error(f"Failed to download image from URL: {source}, error: {e}")
+            raise ValueError(f"Failed to download image from {source}: {e}")
+    else:
+        if not os.path.exists(source):
+            logger.error(f"File not found at path: {source}")
+            raise FileNotFoundError(f"The specified file was not found: {source}")
+        image = cv2.imread(source)
+        if image is None:
+            raise FileNotFoundError(f"Could not read image file: {source}")
+
+    try:
+        reader = easyocr.Reader(['en'], model_storage_directory='.EasyOCR')
+        result = reader.readtext(image)
+        full_text = "\n".join([res[1] for res in result])
+        
+        structured_data = _parse_text_to_json(full_text)
+        return structured_data
+
+    except Exception as e:
+        logger.error(f"An unexpected error occurred while processing {source}: {e}")
         raise
