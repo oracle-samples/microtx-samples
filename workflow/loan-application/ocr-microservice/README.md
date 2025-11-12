@@ -82,7 +82,7 @@ The service will be available at [http://localhost:8000](http://localhost:8000)
 ### Perform OCR
 
 - **GET /ocr**
-  - **Query Parameter:** `filepath` (string, required) — Path to the image or PDF file accessible on disk
+  - **Query Parameter:** `filepath` (string, required) — Local file path or URL to the image file
 
   **Example Request:**
   ```
@@ -92,6 +92,11 @@ The service will be available at [http://localhost:8000](http://localhost:8000)
   *** on mounted volumes ***
   ```
   curl http://localhost:8000/ocr?filepath=/app/mounted_images/driving-license.png
+  ```
+
+  *** via URL ***
+  ```
+  curl http://localhost:8000/ocr?filepath=https://raw.githubusercontent.com/oracle-samples/microtx-samples/2fc203578ddd544af796aaf0bf270ae3978b78e7/workflow/loan-application/ocr-microservice/samples_for_ocr/driving-license.png
   ```
 
   **Response:**
@@ -123,6 +128,7 @@ The service will be available at [http://localhost:8000](http://localhost:8000)
 ## File Access Notes
 
 - The `filepath` must be accessible to the server process, with correct permissions.
+- For URLs, the container must have internet access to download the image.
 - Network file locations/mounted drives may require additional configuration.
 
 ## ⚠️ Notes on Hardware Acceleration & Torch/EasyOCR Warnings
