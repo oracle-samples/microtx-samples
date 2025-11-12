@@ -2,19 +2,19 @@
 import logging
 from fastapi import APIRouter, HTTPException, Query
 from models.ocr_models import OcrResponse, ExtractedData
-from services.ocr_service import perform_ocr
+from services.ocr_service import perform_ocr2
 
 # Create a router instance, not the main app
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 @router.get("/ocr", response_model=OcrResponse)
-async def process_image_for_ocr(filepath: str = Query(..., description="Path of the image to process with OCR")):
+async def process_image_for_ocr(filepath: str = Query(..., description="Local path or URL of the image to process with OCR")):
     """
     Accepts a filepath as a query parameter, performs OCR, and returns the extracted text.
     """
     try:
-        extracted_dict = perform_ocr(filepath)
+        extracted_dict = perform_ocr2(filepath)
         data_model = ExtractedData(**extracted_dict)
         return OcrResponse(status="success", extracted_data=data_model)
 

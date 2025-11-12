@@ -1,0 +1,43 @@
+{
+  "createTime": 1762888049432,
+  "updateTime": 1762889241303,
+  "name": "Create_Table_For_Loan_Application",
+  "description": "",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "CREATE_LOAN_APPLICATIONS_TABLE",
+      "taskReferenceName": "CREATE_LOAN_APPLICATIONS_TABLE_ref",
+      "inputParameters": {
+        "databaseProfile": "oracle-database",
+        "sqlStatement": "CREATE TABLE IF NOT EXISTS LOAN_APPLICATIONS (\n    APPLICATION_ID      VARCHAR2(255),\n    USER_SSN            VARCHAR2(11)    NOT NULL,\n    LOAN_AMOUNT         NUMBER(12, 2)   NOT NULL,\n    TENURE_MONTHS       NUMBER(3)       NOT NULL,\n    APPLICATION_STATUS  VARCHAR2(20)    NOT NULL\n      CHECK (APPLICATION_STATUS IN ('PENDING', 'APPROVED', 'REJECTED', 'UNDER_REVIEW', 'CLOSED'))\n);",
+        "parameters": [],
+        "type": "UPDATE"
+      },
+      "type": "SQL",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    }
+  ],
+  "inputParameters": [],
+  "outputParameters": {},
+  "failureWorkflow": "",
+  "schemaVersion": 2,
+  "restartable": true,
+  "workflowStatusListenerEnabled": false,
+  "timeoutPolicy": "ALERT_ONLY",
+  "timeoutSeconds": 0,
+  "variables": {},
+  "inputTemplate": {},
+  "enforceSchema": true,
+  "metadata": {}
+}
