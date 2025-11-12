@@ -1,0 +1,52 @@
+{
+  "name": "Fact_to_Social_Post",
+  "description": "Calls the public Useless Facts API to fetch a random fact, then uses GenAI to rephrase it into an engaging social media post with hashtags.",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "get_random_fact",
+      "taskReferenceName": "http_0",
+      "inputParameters": {
+        "uri": "https://uselessfacts.jsph.pl/api/v2/facts/random",
+        "method": "GET",
+        "accept": "application/json",
+        "contentType": "application/json",
+        "connectionTimeOut": 0,
+        "readTimeOut": 0
+      },
+      "type": "HTTP"
+    },
+    {
+      "name": "create_social_post",
+      "taskReferenceName": "genai_0",
+      "inputParameters": {
+        "llmProfile": {
+          "name": "oci_models",
+          "model": "openai.gpt-4.1"
+        },
+        "promptVariables": {},
+        "temperature": 0.8,
+        "maxTokens": 1024,
+        "top_k": 40,
+        "top_p": 0.9,
+        "prompt": "You are a witty social media manager. Take the following fact and turn it into an engaging social media post. Be creative and add 2-3 relevant hashtags. Fact: ${http_0.output.response.body.text}}\""
+      },
+      "type": "GENAI_TASK"
+    }
+  ],
+  "inputParameters": [],
+  "outputParameters": {
+    "original_fact": "${http_0.output.response.body.text}",
+    "social_media_post": "${genai_0.output.response}"
+  },
+  "failureWorkflow": "",
+  "schemaVersion": 2,
+  "restartable": true,
+  "workflowStatusListenerEnabled": false,
+  "timeoutPolicy": "ALERT_ONLY",
+  "timeoutSeconds": 0,
+  "variables": {},
+  "inputTemplate": {},
+  "enforceSchema": true,
+  "metadata": {}
+}

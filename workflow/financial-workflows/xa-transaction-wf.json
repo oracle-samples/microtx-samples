@@ -1,0 +1,122 @@
+{
+  "name": "transaction_xa",
+  "description": "XA transaction workflow",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "check_balance_fork",
+      "taskReferenceName": "check_balance_fork_ref",
+      "inputParameters": {},
+      "type": "FORK_JOIN",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [
+        [
+          {
+            "name": "check_bal_dept1",
+            "taskReferenceName": "check_bal_dept1_ref",
+            "inputParameters": {
+              "uri": "http://host.docker.internal:8081/accounts/${workflow.input.from}",
+              "method": "GET"
+            },
+            "type": "HTTP"
+          }
+        ],
+        [
+          {
+            "name": "check_bal_dept2",
+            "taskReferenceName": "check_bal_dept2_ref",
+            "inputParameters": {
+              "uri": "http://host.docker.internal:8082/accounts/${workflow.input.to}",
+              "method": "GET"
+            },
+            "type": "HTTP"
+          }
+        ]
+      ],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "check_balance_join",
+      "taskReferenceName": "check_balance_join_ref",
+      "inputParameters": {},
+      "type": "JOIN",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [
+        "check_bal_dept1_ref",
+        "check_bal_dept2_ref"
+      ],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "begin_tx",
+      "taskReferenceName": "begin_tx",
+      "inputParameters": {
+        "coordinatorUrl": "http://host.docker.internal:9000/api/v1",
+        "transactionType": "XA",
+        "action": "BEGIN"
+      },
+      "type": "TRANSACTION"
+    },
+    {
+      "name": "withdraw",
+      "taskReferenceName": "withdraw_ref",
+      "inputParameters": {
+        "uri": "http://host.docker.internal:8081/accounts/${workflow.input.from}/withdraw?amount=${workflow.input.amount}",
+        "method": "POST"
+      },
+      "type": "HTTP"
+    },
+    {
+      "name": "deposit",
+      "taskReferenceName": "deposit_ref",
+      "inputParameters": {
+        "uri": "http://host.docker.internal:8082/accounts/${workflow.input.to}/deposit?amount=${workflow.input.amount}",
+        "method": "POST"
+      },
+      "type": "HTTP"
+    },
+    {
+      "name": "commit_tx",
+      "taskReferenceName": "commit_tx",
+      "inputParameters": {
+        "coordinatorUrl": "http://host.docker.internal:9000/api/v1",
+        "transactionType": "XA",
+        "action": "COMMIT"
+      },
+      "type": "TRANSACTION"
+    }
+  ],
+  "inputParameters": [
+    "from",
+    "to",
+    "amount"
+  ],
+  "outputParameters": {},
+  "failureWorkflow": "rollback_txn",
+  "schemaVersion": 2,
+  "restartable": true,
+  "workflowStatusListenerEnabled": false,
+  "ownerEmail": "example@email.com",
+  "timeoutPolicy": "ALERT_ONLY",
+  "timeoutSeconds": 0,
+  "variables": {},
+  "inputTemplate": {},
+  "enforceSchema": true,
+  "metadata": {}
+}
