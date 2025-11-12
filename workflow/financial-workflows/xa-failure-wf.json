@@ -1,0 +1,29 @@
+{
+  "name": "rollback_txn",
+  "description": "Failure workflow for transfer transaction",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "rollback_tx",
+      "taskReferenceName": "rollback_tx",
+      "inputParameters": {
+          "coordinatorUrl": "http://host.docker.internal:9000/api/v1",
+          "transactionType": "XA",
+          "action": "ROLLBACK"
+      },
+      "type": "TRANSACTION"
+    }
+  ],
+  "inputParameters": [],
+  "outputParameters": {},
+  "schemaVersion": 2,
+  "restartable": true,
+  "workflowStatusListenerEnabled": false,
+  "ownerEmail": "example@email.com",
+  "timeoutPolicy": "ALERT_ONLY",
+  "timeoutSeconds": 0,
+  "variables": {},
+  "inputTemplate": {},
+  "enforceSchema": true,
+  "metadata": {}
+}
