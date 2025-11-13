@@ -31,6 +31,6 @@ spec:
       containers:
         - name: {{ .Values.workflowSampleServices.docProcessMcpServer.name }}
           image: {{ .Values.workflowSampleServices.docProcessMcpServer.image }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: {{ .Values.workflowSampleServices.docProcessMcpServer.imagePullPolicy }}
           ports:
             - containerPort: 8000

@@ -31,6 +31,6 @@ spec:
       containers:
         - name: {{ .Values.workflowSampleServices.loanComplianceService.name }}
           image: {{ .Values.workflowSampleServices.loanComplianceService.image }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: {{ .Values.workflowSampleServices.loanComplianceService.imagePullPolicy }}
           ports:
             - containerPort: 8001

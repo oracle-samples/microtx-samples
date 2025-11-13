@@ -31,9 +31,9 @@ spec:
       containers:
         - name: {{ .Values.workflowSampleServices.loanProcessingAgent.name }}
           image: {{ .Values.workflowSampleServices.loanProcessingAgent.image }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: {{ .Values.workflowSampleServices.loanProcessingAgent.imagePullPolicy }}
           env:
             - name: CONDUCTOR_SERVER_URL
-              value: "http://workflow-server:8080/workflow-server/api"
+              value: "http://workflow-server:9010/workflow-server/api"
           ports:
             - containerPort: 8002
