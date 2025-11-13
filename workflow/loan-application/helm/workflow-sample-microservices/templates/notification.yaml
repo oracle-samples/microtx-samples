@@ -31,7 +31,7 @@ spec:
       containers:
         - name: {{ .Values.workflowSampleServices.notificationService.name }}
           image: {{ .Values.workflowSampleServices.notificationService.image }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: {{ .Values.workflowSampleServices.notificationService.imagePullPolicy }}
           env:
             - name: SPRING_MAIL_HOST
               value: "host.minikube.internal"
