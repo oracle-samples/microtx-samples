@@ -31,6 +31,6 @@ spec:
       containers:
         - name: {{ .Values.workflowSampleServices.ocrService.name }}
           image: {{ .Values.workflowSampleServices.ocrService.image }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: {{ .Values.workflowSampleServices.ocrService.imagePullPolicy }}
           ports:
             - containerPort: 8000
