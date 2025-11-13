@@ -2,29 +2,34 @@ workflowSampleServices:
   docProcessMcpServer:
     name: doc-process-mcp-server
     image: docker.io/library/doc-process-mcp-server:latest
+    imagePullPolicy: IfNotPresent
     imagePullSecret: regcred
     replicaCount: 1
 
   loanComplianceService:
     name: loan-compliance-service
     image: docker.io/library/loan-compliance-service:latest
+    imagePullPolicy: IfNotPresent
     imagePullSecret: regcred
     replicaCount: 1
 
   loanProcessingAgent:
     name: loan-processing-agent
     image: docker.io/library/loan-processing-agent:latest
+    imagePullPolicy: IfNotPresent
     imagePullSecret: regcred
     replicaCount: 1
 
   notificationService:
     name: notification-service
     image: docker.io/library/notification-service:latest
+    imagePullPolicy: IfNotPresent
     imagePullSecret: regcred
     replicaCount: 1
 
   ocrService:
     name: ocr-service
     image: docker.io/library/ocr-microservice:latest
+    imagePullPolicy: IfNotPresent
     imagePullSecret: regcred
     replicaCount: 1
