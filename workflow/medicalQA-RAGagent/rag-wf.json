@@ -1,0 +1,45 @@
+{
+  "name": "medical_history_qa",
+  "description": "RAG agent that answers natural language questions",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "query",
+      "taskReferenceName": "query_rag_task",
+      "inputParameters": {
+        "llmProfile": {
+          "name": "oci_models",
+          "model": "openai.gpt-4.1"
+        },
+        "temperature": 0.8,
+        "maxTokens": 1024,
+        "top_k": 40,
+        "embeddingModelProfile": {
+          "name": "oci_models",
+          "model": "cohere.embed-multilingual-image-v3.0"
+        },
+        "dataStoreProfile": "oracle-atp",
+        "tableName": "test_vectors",
+        "query": "${workflow.input.query}",
+        "dimensions": "512",
+        "topK": 5,
+        "ragType": "naive",
+        "indexType": "HNSW",
+        "distanceType": "COSINE"
+      },
+      "type": "GENAI_RETRIEVE"
+    }
+  ],
+  "inputParameters": [
+    "query"
+  ],
+  "outputParameters": {
+    "answer": "${query_rag_task.output.response}"
+  },
+  "schemaVersion": 2,
+  "restartable": true,
+  "workflowStatusListenerEnabled": false,
+  "failureWorkflow": "",
+  "timeoutPolicy": "ALERT_ONLY",
+  "timeoutSeconds": 0
+}
