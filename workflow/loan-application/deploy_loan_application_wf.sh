@@ -468,36 +468,49 @@ cleanup() {
 
   # Delete workflows first (dependencies)
   curl -s -X DELETE "$WF_SERVER_URL/api/metadata/workflow/acme_bank_loan_processing_workflow_v3/1" || true
+  printf "\n"
   curl -s -X DELETE "$WF_SERVER_URL/api/metadata/workflow/Create_Table_For_Loan_Application/1" || true
+  printf "\n"
 
   # Delete task definitions
   curl -s -X DELETE "$WF_SERVER_URL/api/metadata/taskdefs/loan_processing_agent_task" || true
+  printf "\n"
 
   # Delete agents
   curl -s -X DELETE "$WF_SERVER_URL/api/metadata/ai/agents/loan_document_verification_agent" || true
+  printf "\n"
   curl -s -X DELETE "$WF_SERVER_URL/api/metadata/ai/agents/oracle_db_agent" || true
+  printf "\n"
 
   # Delete prompts
   curl -s -X DELETE "$WF_SERVER_URL/api/metadata/ai/prompts/loan_application_nl_2_json" || true
+  printf "\n"
   curl -s -X DELETE "$WF_SERVER_URL/api/metadata/ai/prompts/loan_process_planner" || true
+  printf "\n"
 
   # Delete MCP servers
   curl -s -X DELETE "$WF_SERVER_URL/api/connectors/ai/mcp-servers/doc_mcp" || true
+  printf "\n"
 
   # Delete tools
   curl -s -X DELETE "$WF_SERVER_URL/api/connectors/ai/tool-configs/custom_http" || true
+  printf "\n"
   curl -s -X DELETE "$WF_SERVER_URL/api/connectors/ai/tool-configs/oracle-database-tool" || true
+  printf "\n"
 
   # Delete profiles
   curl -s -X DELETE "$WF_SERVER_URL/api/connectors/database/database-profiles/oracle-database" || true
+  printf "\n"
   curl -s -X DELETE "$WF_SERVER_URL/api/connectors/ai/llm-profiles/llm-oci" || true
+  printf "\n"
 
   echo "✅ Cleanup completed"
 }
 
 start() {
   handle_deployment_type
-  echo "Do you want to cleanup all the profiles, connectors, workflows and redeploy the workflow ? Warning: this will clear all the data related to loan application and reset to default data."
+  echo "Do you want to cleanup all the profiles, connectors, workflows and redeploy the workflow ?"
+  echo "Warning: This will clear all the data related to loan application and reset to default data. If you are running this first time, ignore this warning."
   select yn in "Yes" "No"; do
       case $yn in
           Yes ) cleanup; break;;
