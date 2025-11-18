@@ -1,6 +1,6 @@
 {
-  "createTime": 1758732909565,
-  "updateTime": 1762881760894,
+  "createTime": 1763452764394,
+  "updateTime": 1763456253600,
   "name": "acme_bank_loan_processing_workflow_v3",
   "description": "Acme bank Loan processing workflow with multi agent orchestration",
   "version": 1,
@@ -141,7 +141,7 @@
       "inputParameters": {
         "llmProfile": {
           "name": "llm-oci",
-          "model": "openai.gpt-4o"
+          "model": "openai.gpt-4.1"
         },
         "promptTemplate": "loan_process_planner",
         "promptVariables": {
@@ -169,9 +169,7 @@
             "inputParameters": {
               "method": "POST",
               "uri": "http://loan-compliance-service:8001/api/compliance/check",
-              "headers": {
-                "Content-Type": "application/json"
-              },
+              "headers": {},
               "body": {
                 "socialSecurityNumber": "${extract_loan_details.output.ssn}"
               }
@@ -192,9 +190,7 @@
             "inputParameters": {
               "method": "POST",
               "uri": "http://notification-service:8085/email-service/sendMail",
-              "headers": {
-                "Content-Type": "application/json"
-              },
+              "headers": {},
               "body": {
                 "from": "microtx.user@localhost",
                 "to": "microtx.user@microtx.com",
@@ -247,9 +243,7 @@
             "inputParameters": {
               "method": "POST",
               "uri": "http://notification-service:8085/email-service/sendMail?isMockSendMail=true",
-              "headers": {
-                "Content-Type": "application/json"
-              },
+              "headers": {},
               "body": {
                 "from": "microtx.user@localhost",
                 "to": "microtx.user@microtx.com",
@@ -314,9 +308,7 @@
       "inputParameters": {
         "method": "POST",
         "uri": "http://notification-service:8085/email-service/sendMail?isMockSendMail=true",
-        "headers": {
-          "Content-Type": "application/json"
-        },
+        "headers": {},
         "body": {
           "from": "microtx.user@localhost",
           "to": "microtx.user@microtx.com",
@@ -442,7 +434,7 @@
   "restartable": true,
   "workflowStatusListenerEnabled": false,
   "timeoutPolicy": "ALERT_ONLY",
-  "timeoutSeconds": 0,
+  "timeoutSeconds": 900,
   "variables": {},
   "inputTemplate": {},
   "enforceSchema": true,
