@@ -9,7 +9,7 @@ This folder includes a small Synthea-like dataset and a helper script to build a
 
 ## What's in this folder
 - `ingestion-wf.json` — Ingestion workflow (`ingest_data`) that chunks, embeds, and stores vectors in `test_vectors`
-- `rag-wf.json` — Query workflow (`medical_history_qa`) that performs retrieve-and-generate
+- `retrieve-wf.json` — Query workflow (`medical_history_qa`) that performs retrieve-and-generate
 - `data/` — Sample data
   - `patients.csv`, `conditions.csv`, `observations.csv` — Source CSVs
   - `patient_records.json` — Generated record bundle (default `filePath` for ingestion)
@@ -32,7 +32,7 @@ Clinical data is largely unstructured across multiple sources (EHR notes, lab re
    - Effect: Reads local file, chunks text, creates embeddings, and upserts into `test_vectors`.
 
 2. Ask questions (RAG query workflow: `medical_history_qa`)
-   - Configuration (from `rag-wf.json`):
+   - Configuration (from `retrieve-wf.json`):
      - `llmProfile`: `oci_models` with `model: openai.gpt-4.1`
      - `embeddingModelProfile`: `oci_models` with `model: cohere.embed-multilingual-image-v3.0`
      - `dataStoreProfile`: `oracle-atp`, `tableName: test_vectors`
@@ -69,7 +69,7 @@ Clinical data is largely unstructured across multiple sources (EHR notes, lab re
   - `oci_models` profile pointing to:
     - Embeddings: `cohere.embed-multilingual-image-v3.0` (512 dims)
     - LLM: `openai.gpt-4.1`
-  - If you use different providers/models, update `ingestion-wf.json` and `rag-wf.json` accordingly (including `dimensions` and `tableName` compatibility).
+  - If you use different providers/models, update `ingestion-wf.json` and `retrieve-wf.json` accordingly (including `dimensions` and `tableName` compatibility).
 - Register both workflows in your workflow engine.
 
 ## Using the included sample data
@@ -175,7 +175,7 @@ Ans: Preventive Healthcare Plan for Ezequiel972 Hyatt152:
   - Embeddings: `cohere.embed-multilingual-image-v3.0` (dims 512)
   - Data source: `local` file at `data.filePath`
   - Vector store: `oracle-atp`, table `test_vectors`, index `HNSW` (COSINE)
-- `rag-wf.json`:
+- `retrieve-wf.json`:
   - `name: medical_history_qa`, `type: GENAI_RETRIEVE`
   - LLM: `openai.gpt-4.1`, Embeddings: same as ingestion
   - Inputs: `query`
