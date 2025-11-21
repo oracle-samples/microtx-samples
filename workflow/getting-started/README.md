@@ -8,7 +8,7 @@ A minimal workflow that fetches a random fact from a public API and then uses a 
 
 - Public API used: https://uselessfacts.jsph.pl/api/v2/facts/random
 - File in this folder:
-  - `sample-workflow.json` — Workflow definition (`Fact_to_Social_Post`)
+  - [sample-workflow.json](./sample-workflow.json) — Workflow definition (`Fact_to_Social_Post`)
 
 ## How it works
 1. Fetch a fact (HTTP task)
