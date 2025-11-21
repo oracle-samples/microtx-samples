@@ -16,7 +16,7 @@
             "name": "check_bal_dept1",
             "taskReferenceName": "check_bal_dept1_ref",
             "inputParameters": {
-              "uri": "http://host.docker.internal:8081/accounts/${workflow.input.from}",
+              "uri": "http://dept1:8081/accounts/${workflow.input.from}",
               "method": "GET"
             },
             "type": "HTTP"
@@ -27,7 +27,7 @@
             "name": "check_bal_dept2",
             "taskReferenceName": "check_bal_dept2_ref",
             "inputParameters": {
-              "uri": "http://host.docker.internal:8082/accounts/${workflow.input.to}",
+              "uri": "http://dept2:8082/accounts/${workflow.input.to}",
               "method": "GET"
             },
             "type": "HTTP"
@@ -67,7 +67,7 @@
       "name": "begin_tx",
       "taskReferenceName": "begin_tx",
       "inputParameters": {
-        "coordinatorUrl": "http://host.docker.internal:9000/api/v1",
+        "coordinatorUrl": "http://otmm-tcs:9000/api/v1",
         "transactionType": "XA",
         "action": "BEGIN"
       },
@@ -77,7 +77,7 @@
       "name": "withdraw",
       "taskReferenceName": "withdraw_ref",
       "inputParameters": {
-        "uri": "http://host.docker.internal:8081/accounts/${workflow.input.from}/withdraw?amount=${workflow.input.amount}",
+        "uri": "http://dept1:8081/accounts/${workflow.input.from}/withdraw?amount=${workflow.input.amount}",
         "method": "POST"
       },
       "type": "HTTP"
@@ -86,7 +86,7 @@
       "name": "deposit",
       "taskReferenceName": "deposit_ref",
       "inputParameters": {
-        "uri": "http://host.docker.internal:8082/accounts/${workflow.input.to}/deposit?amount=${workflow.input.amount}",
+        "uri": "http://dept2:8082/accounts/${workflow.input.to}/deposit?amount=${workflow.input.amount}",
         "method": "POST"
       },
       "type": "HTTP"
@@ -95,7 +95,7 @@
       "name": "commit_tx",
       "taskReferenceName": "commit_tx",
       "inputParameters": {
-        "coordinatorUrl": "http://host.docker.internal:9000/api/v1",
+        "coordinatorUrl": "http://otmm-tcs:9000/api/v1",
         "transactionType": "XA",
         "action": "COMMIT"
       },

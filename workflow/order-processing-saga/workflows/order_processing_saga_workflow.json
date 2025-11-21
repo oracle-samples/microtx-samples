@@ -1,0 +1,88 @@
+{
+  "name": "order_processing_saga_workflow",
+  "description": "Main workflow for order processing using Saga pattern",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "receive_order",
+      "taskReferenceName": "receive_order_ref",
+      "inputParameters": {
+        "uri": "${workflow.input.baseUri}/api/orders",
+        "method": "POST",
+        "body": {
+          "orderId": "${workflow.input.orderId}",
+          "items": "${workflow.input.items}",
+          "amount": "${workflow.input.amount}",
+          "deliveryAddress": "${workflow.input.deliveryAddress}"
+        }
+      },
+      "type": "HTTP"
+    },
+    {
+      "name": "execute_payment_for_order",
+      "taskReferenceName": "execute_payment_ref",
+      "inputParameters": {
+        "uri": "${workflow.input.baseUri}/api/payments",
+        "method": "POST",
+        "body": {
+          "orderId": "${workflow.input.orderId}",
+          "amount": "${workflow.input.amount}"
+        }
+      },
+      "type": "HTTP"
+    },
+    {
+      "name": "get_order_items_from_inventory",
+      "taskReferenceName": "get_items_ref",
+      "inputParameters": {
+        "uri": "${workflow.input.baseUri}/api/inventory/debit",
+        "method": "POST",
+        "headers": {
+          "x-mock-response-code": "${workflow.input.statusCode}"
+        },
+        "body": {
+          "orderId": "${workflow.input.orderId}",
+          "items": "${workflow.input.items}"
+        }
+      },
+      "type": "HTTP"
+    },
+    {
+      "name": "deliver_order",
+      "taskReferenceName": "deliver_order_ref",
+      "inputParameters": {
+        "uri": "${workflow.input.baseUri}/api/shipments",
+        "method": "POST",
+        "body": {
+          "orderId": "${workflow.input.orderId}",
+          "deliveryAddress": "${workflow.input.deliveryAddress}"
+        }
+      },
+      "type": "HTTP"
+    }
+  ],
+  "inputParameters": [
+    "baseUri",
+    "orderId",
+    "items",
+    "amount",
+    "deliveryAddress",
+    "statusCode"
+  ],
+  "outputParameters": {
+    "orderId": "${workflow.input.orderId}",
+    "shipmentDetails": "${deliver_order_ref.output.response.body}"
+  },
+  "failureWorkflow": "order_processing_compensation_workflow",
+  "schemaVersion": 2,
+  "restartable": true,
+  "workflowStatusListenerEnabled": false,
+  "timeoutPolicy": "ALERT_ONLY",
+  "timeoutSeconds": 0,
+  "variables": {},
+  "inputTemplate": {
+    "statusCode": 200
+  },
+  "enforceSchema": true,
+  "metadata": {}
+}

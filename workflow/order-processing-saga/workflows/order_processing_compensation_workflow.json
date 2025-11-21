@@ -1,0 +1,104 @@
+{
+  "name": "order_processing_compensation_workflow",
+  "description": "Compensation workflow for order processing saga",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "decide_compensation_path",
+      "taskReferenceName": "decide_compensation_path_ref",
+      "inputParameters": {
+        "failedTaskName": "${workflow.input.failedTaskName}"
+      },
+      "type": "SWITCH",
+      "decisionCases": {
+        "deliver_order_ref": [
+          {
+            "name": "release_inventory",
+            "taskReferenceName": "release_inventory_ref",
+            "inputParameters": {
+              "uri": "${workflow.input.baseUri}/api/inventory/credit",
+              "method": "POST",
+              "body": {
+                "orderId": "${workflow.input.orderId}",
+                "items": "${workflow.input.items}",
+                "reason": "Compensation due to delivery failure"
+              }
+            },
+            "type": "HTTP"
+          },
+          {
+            "name": "refund_payment",
+            "taskReferenceName": "refund_from_delivery_failure_ref",
+            "inputParameters": {
+              "uri": "${workflow.input.baseUri}/api/payments/refund",
+              "method": "POST",
+              "body": {
+                "orderId": "${workflow.input.orderId}",
+                "reason": "Compensation due to delivery failure"
+              }
+            },
+            "type": "HTTP"
+          }
+        ],
+        "get_items_ref": [
+          {
+            "name": "refund_payment",
+            "taskReferenceName": "refund_from_inventory_failure_ref",
+            "inputParameters": {
+              "uri": "${workflow.input.baseUri}/api/payments/refund",
+              "method": "POST",
+              "body": {
+                "orderId": "${workflow.input.orderId}",
+                "reason": "Compensation due to inventory failure"
+              }
+            },
+            "type": "HTTP"
+          }
+        ]
+      },
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "evaluatorType": "value-param",
+      "expression": "failedTaskName",
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "compensate_receive_order",
+      "taskReferenceName": "compensate_receive_order_final_ref",
+      "inputParameters": {
+        "uri": "${workflow.input.baseUri}/api/orders/cancel",
+        "method": "POST",
+        "body": {
+          "orderId": "${workflow.input.orderId}",
+          "reason": "Rolling back failed Saga transaction"
+        }
+      },
+      "type": "HTTP"
+    }
+  ],
+  "inputParameters": [
+    "baseUri",
+    "orderId",
+    "items",
+    "failedTaskName"
+  ],
+  "outputParameters": {},
+  "schemaVersion": 2,
+  "restartable": true,
+  "workflowStatusListenerEnabled": false,
+  "timeoutPolicy": "ALERT_ONLY",
+  "timeoutSeconds": 0,
+  "variables": {},
+  "inputTemplate": {
+    "failedTaskName": "get_items_ref"
+  },
+  "enforceSchema": true,
+  "metadata": {}
+}
