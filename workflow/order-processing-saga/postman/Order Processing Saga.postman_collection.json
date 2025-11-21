@@ -1,0 +1,618 @@
+{
+	"info": {
+		"_postman_id": "0587cfb7-f309-4c30-b0ee-48f31c2c952a",
+		"name": "Order Processing Saga",
+		"description": "A complete Postman collection for the Order Processing Saga, including the main workflow and the corresponding compensation (rollback) APIs. All requests have example responses for mocking.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21477326",
+		"_collection_link": "https://microtx.postman.co/workspace/9d7bbf7f-9127-405d-9104-b7177fd39ff7/collection/21477326-0587cfb7-f309-4c30-b0ee-48f31c2c952a?action=share&source=collection_link&creator=21477326"
+	},
+	"item": [
+		{
+			"name": "Main Workflow",
+			"item": [
+				{
+					"name": "Receive Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"items\": {{items}},\n  \"amount\": {{amount}},\n  \"deliveryAddress\": \"{{deliveryAddress}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url_order_service}}/api/orders",
+							"host": [
+								"{{base_url_order_service}}"
+							],
+							"path": [
+								"api",
+								"orders"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Order Received",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"items\": {{items}},\n  \"amount\": {{amount}},\n  \"deliveryAddress\": \"{{deliveryAddress}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url_order_service}}/api/orders",
+									"host": [
+										"{{base_url_order_service}}"
+									],
+									"path": [
+										"api",
+										"orders"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"orderId\": \"{{orderId}}\",\n  \"status\": \"RECEIVED\",\n  \"message\": \"Order has been successfully received and is pending payment.\",\n  \"receivedAt\": \"{{$isoTimestamp}}\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Execute Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"amount\": {{amount}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url_payment_service}}/api/payments",
+							"host": [
+								"{{base_url_payment_service}}"
+							],
+							"path": [
+								"api",
+								"payments"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Payment Processed",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"amount\": {{amount}}\n}"
+								},
+								"url": {
+									"raw": "{{base_url_payment_service}}/api/payments",
+									"host": [
+										"{{base_url_payment_service}}"
+									],
+									"path": [
+										"api",
+										"payments"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"transactionId\": \"txn_{{$guid}}\",\n  \"orderId\": \"{{orderId}}\",\n  \"status\": \"PAID\",\n  \"amount\": {{amount}},\n  \"paymentMethod\": \"Credit Card\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Debit Inventory",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"items\": {{items}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url_inventory_service}}/api/inventory/debit",
+							"host": [
+								"{{base_url_inventory_service}}"
+							],
+							"path": [
+								"api",
+								"inventory",
+								"debit"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Inventory Debited",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"items\": {{items}}\n}"
+								},
+								"url": {
+									"raw": "{{base_url_inventory_service}}/api/inventory/debit",
+									"host": [
+										"{{base_url_inventory_service}}"
+									],
+									"path": [
+										"api",
+										"inventory",
+										"debit"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"orderId\": \"{{orderId}}\",\n  \"status\": \"INVENTORY_UPDATED\",\n  \"itemsDebited\": {{items}},\n  \"message\": \"Inventory has been successfully updated for the order.\"\n}"
+						},
+						{
+							"name": "Failure - Out of Stock",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"items\": {{items}}\n}"
+								},
+								"url": {
+									"raw": "{{base_url_inventory_service}}/api/inventory/debit",
+									"host": [
+										"{{base_url_inventory_service}}"
+									],
+									"path": [
+										"api",
+										"inventory",
+										"debit"
+									]
+								}
+							},
+							"status": "Conflict",
+							"code": 409,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"error\": \"InventoryConflict\",\n  \"message\": \"One or more items are out of stock and could not be debited.\",\n  \"failedItems\": [\n    {\n      \"itemId\": \"{{items}}\",\n      \"reason\": \"Insufficient stock\"\n    }\n  ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Deliver Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"deliveryAddress\": \"{{deliveryAddress}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url_delivery_service}}/api/shipments",
+							"host": [
+								"{{base_url_delivery_service}}"
+							],
+							"path": [
+								"api",
+								"shipments"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Shipment Created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"deliveryAddress\": \"{{deliveryAddress}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url_delivery_service}}/api/shipments",
+									"host": [
+										"{{base_url_delivery_service}}"
+									],
+									"path": [
+										"api",
+										"shipments"
+									]
+								}
+							},
+							"status": "Accepted",
+							"code": 202,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"shipmentId\": \"shp_{{$randomInt}}\",\n  \"trackingNumber\": \"1Z999AA10123456784\",\n  \"orderId\": \"{{orderId}}\",\n  \"status\": \"SHIPPED\",\n  \"estimatedDelivery\": \"2025-09-29\",\n  \"message\": \"Shipment has been created and is pending pickup.\"\n}"
+						}
+					]
+				}
+			],
+			"description": "APIs for the primary order processing flow."
+		},
+		{
+			"name": "Compensation Workflow",
+			"item": [
+				{
+					"name": "Refund Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"orderId\": \"{{orderId}}\",\n    \"reason\": \"Compensation due to a failure in the workflow\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url_payment_service}}/api/payments/refund",
+							"host": [
+								"{{base_url_payment_service}}"
+							],
+							"path": [
+								"api",
+								"payments",
+								"refund"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Payment Refunded",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"orderId\": \"{{orderId}}\",\n    \"reason\": \"Compensation due to a failure in the workflow\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url_payment_service}}/api/payments/refund",
+									"host": [
+										"{{base_url_payment_service}}"
+									],
+									"path": [
+										"api",
+										"payments",
+										"refund"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"refundId\": \"ref_{{$guid}}\",\n    \"orderId\": \"{{orderId}}\",\n    \"status\": \"REFUNDED\",\n    \"message\": \"Payment has been successfully refunded.\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Release Inventory (Credit)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"orderId\": \"{{orderId}}\",\n    \"items\": {{items}},\n    \"reason\": \"Compensation due to delivery failure\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url_inventory_service}}/api/inventory/credit",
+							"host": [
+								"{{base_url_inventory_service}}"
+							],
+							"path": [
+								"api",
+								"inventory",
+								"credit"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Inventory Released",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"orderId\": \"{{orderId}}\",\n    \"items\": {{items}},\n    \"reason\": \"Compensation due to delivery failure\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url_inventory_service}}/api/inventory/credit",
+									"host": [
+										"{{base_url_inventory_service}}"
+									],
+									"path": [
+										"api",
+										"inventory",
+										"credit"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"orderId\": \"{{orderId}}\",\n    \"status\": \"INVENTORY_RESTORED\",\n    \"message\": \"Inventory has been credited back successfully.\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Cancel Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"orderId\": \"{{orderId}}\",\n    \"reason\": \"Rolling back failed Saga transaction\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url_order_service}}/api/orders/cancel",
+							"host": [
+								"{{base_url_order_service}}"
+							],
+							"path": [
+								"api",
+								"orders",
+								"cancel"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success - Order Cancelled",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"orderId\": \"{{orderId}}\",\n    \"reason\": \"Rolling back failed Saga transaction\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url_order_service}}/api/orders/cancel",
+									"host": [
+										"{{base_url_order_service}}"
+									],
+									"path": [
+										"api",
+										"orders",
+										"cancel"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"orderId\": \"{{orderId}}\",\n    \"status\": \"CANCELLED\",\n    \"message\": \"The order has been successfully cancelled.\"\n}"
+						}
+					]
+				}
+			],
+			"description": "APIs for rolling back a failed transaction."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url_order_service",
+			"value": "https://your-order-service.com"
+		},
+		{
+			"key": "base_url_payment_service",
+			"value": "https://your-payment-service.com"
+		},
+		{
+			"key": "base_url_inventory_service",
+			"value": "https://your-inventory-service.com"
+		},
+		{
+			"key": "base_url_delivery_service",
+			"value": "https://your-delivery-service.com"
+		},
+		{
+			"key": "orderId",
+			"value": "ORD-12345"
+		},
+		{
+			"key": "items",
+			"value": "[{\"itemId\": \"ITEM-A\", \"quantity\": 2}, {\"itemId\": \"ITEM-B\", \"quantity\": 1}]"
+		},
+		{
+			"key": "amount",
+			"value": "99.99"
+		},
+		{
+			"key": "deliveryAddress",
+			"value": "123 Main St, Anytown, USA"
+		}
+	]
+}
