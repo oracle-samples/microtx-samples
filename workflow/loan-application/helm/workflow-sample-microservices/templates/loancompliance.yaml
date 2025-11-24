@@ -34,3 +34,8 @@ spec:
           imagePullPolicy: {{ .Values.workflowSampleServices.loanComplianceService.imagePullPolicy }}
           ports:
             - containerPort: 8001
+          resources:
+            requests:
+              ephemeral-storage: 256Mi
+            limits:
+              ephemeral-storage: 5Gi

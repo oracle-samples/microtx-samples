@@ -34,3 +34,8 @@ spec:
           imagePullPolicy: {{ .Values.workflowSampleServices.ocrService.imagePullPolicy }}
           ports:
             - containerPort: 8000
+          resources:
+            requests:
+              ephemeral-storage: 256Mi
+            limits:
+              ephemeral-storage: 5Gi
