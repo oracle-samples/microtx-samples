@@ -37,3 +37,8 @@ spec:
               value: "http://workflow-server:9010/workflow-server/api"
           ports:
             - containerPort: 8002
+          resources:
+            requests:
+              ephemeral-storage: 256Mi
+            limits:
+              ephemeral-storage: 5Gi
