@@ -37,3 +37,8 @@ spec:
               value: "host.minikube.internal"
           ports:
             - containerPort: 8085
+          resources:
+            requests:
+              ephemeral-storage: 256Mi
+            limits:
+              ephemeral-storage: 5Gi
