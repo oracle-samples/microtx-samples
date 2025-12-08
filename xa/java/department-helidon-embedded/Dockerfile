@@ -38,6 +38,7 @@ WORKDIR /app
 # Copy the binary built in the 1st stage
 COPY --from=build /app/target/department-helidon-embedded.jar ./
 COPY --from=build /app/target/libs ./libs
+COPY Create.sql ./
 
 CMD ["java", "-jar", "department-helidon-embedded.jar"]
 
