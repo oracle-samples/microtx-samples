@@ -32,6 +32,7 @@ WORKDIR /app
 
 # Copy the binary built in the 1st stage
 COPY --from=build /app/target/department-spring-embedded.jar ./
+COPY Create.sql ./
 
 CMD ["java", "-jar", "department-spring-embedded.jar"]
 
