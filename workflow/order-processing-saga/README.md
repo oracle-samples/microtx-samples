@@ -48,6 +48,16 @@ Follow the general steps in [../README.md](../README.md) (Definitions -> Workflo
 
 Ensure the `failureWorkflow` in the main workflow points to `order_processing_compensation_workflow` (it does by default in this sample).
 
+## Mock Service Options
+
+You have multiple options for running the mock services for this saga sample:
+
+- **Option 1: Postman Mock Server** (cloud, no code needed)
+- **Option 2: Local Python Mock Server** (run with Flask on your machine)
+- **Option 3: Dockerized Mock Server** (build and run in a container, suitable for Docker Compose/Kubernetes)
+
+Choose the approach that best fits your environment and proceed with the respective instructions below.
+
 ## Run Mock Services with Postman
 
 You can run this sample entirely with Postman Mock Servers. The provided collection includes example responses for success and failure.
@@ -83,6 +93,60 @@ curl -X POST "https://...mock.pstmn.io/api/orders" -H "Content-Type: application
 
 Note on hosts and variables in the collection:
 - Requests resolve their base URL from the per-service variables listed above. Set each of them to the same mock base URL to use Postman mocks.
+
+---
+
+### Run Mock Services Locally with Python (Flask)
+
+You can also run a mock server locally using Python and Flask (file: `mock_saga_server.py`).
+
+**1. Create and activate a Python virtual environment (optional but recommended):**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+**2. Install Flask:**
+```bash
+pip install flask
+```
+
+**3. Run the mock server:**
+```bash
+python mock_saga_server.py
+```
+This will start the server on [http://localhost:8485](http://localhost:8485) by default.
+
+**To deactivate the virtual environment:**
+```bash
+deactivate
+```
+
+- Set your workflow `baseUri` to `http://localhost:8485` (or container IP if running in Docker/Kubernetes).
+- Supports the same endpoints as the service: `/api/orders`, `/api/payments`, `/api/inventory/debit`, `/api/shipments`.
+
+---
+
+### Run Mock Service with Docker
+
+You can also build and run the mock server as a Docker container (suitable for local development, Docker Compose, or Kubernetes/OKE):
+
+**1. Build the Docker image**
+(from the `workflow/order-processing-saga` directory):
+```bash
+docker build -t order-mock-server:latest .
+```
+
+**2. Run the container**
+```bash
+docker run --rm -p 8485:8485 order-mock-server:latest
+```
+
+The mock server will be accessible at [http://localhost:8485](http://localhost:8485) on your host machine.
+
+- Update your workflow `baseUri` to `http://localhost:8485` (or use the container/service address if running on Kubernetes/OKE).
+- For OKE or Kubernetes clusters, use this image and expose port 8485 via a Service/Ingress as needed.
+
 
 ## Execute the Workflow
 
