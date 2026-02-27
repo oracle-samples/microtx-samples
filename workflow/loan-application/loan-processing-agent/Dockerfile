@@ -5,9 +5,13 @@ RUN apt-get update && \
     apt-get install -y gcc curl && \
     rm -rf /var/lib/apt/lists/*
 
+COPY conductor_python-1.2.4-py3-none-any.whl .    
+
 # Prefer pip-based UV install for guaranteed compatibility:
 RUN pip install --upgrade pip && \
-    pip install uv langgraph conductor-python
+    pip install uv langgraph && \
+    pip install ./conductor_python-1.2.4-py3-none-any.whl
+
 
 COPY . .
 

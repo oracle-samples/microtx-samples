@@ -19,6 +19,11 @@ workflowSampleServices:
     imagePullPolicy: IfNotPresent
     imagePullSecret: regcred
     replicaCount: 1
+    enable_security: false
+    # if security is enabled, provide token_url, client_id and client_secret
+    token_url: http://<idp_root_url>:8080/realms/<realm_name>/protocol/openid-connect/token
+    client_id: client_id
+    client_secret: client_secret
 
   notificationService:
     name: notification-service
