@@ -314,8 +314,18 @@ def loan_processing_agent_task(task_input):
 
 if __name__ == "__main__":
     logger.info("Starting Loan Processing Agent worker.")
-    api_config = Configuration()
-    # api_config = Configuration(base_url = "http://localhost:9010/workflow-server")
-        # Starting the worker polling mechanism
+
+    if os.environ.get("CONDUCTOR_SECURITY_ENABLED", "false").lower() == "true":
+        logger.info("Conductor security enabled. Initializing Configuration with security parameters.")
+        api_config = Configuration(
+            server_api_url = os.environ.get("CONDUCTOR_SERVER_URL", "http://localhost:9010/workflow-server/api"),
+            token_url = os.environ.get("TOKEN_URL", "http://localhost:8080/realms/conductor-qa/protocol/openid-connect/token"),
+            key = os.environ.get("CLIENT_ID", "client-id"),
+            secret = os.environ.get("CLIENT_SECRET", "client-secret")
+        )
+    else:
+        logger.info("Conductor security disabled or not configured. Using default Configuration.")
+        api_config = Configuration()
+    # Starting the worker polling mechanism
     task_handler = TaskHandler(configuration=api_config)
     task_handler.start_processes()

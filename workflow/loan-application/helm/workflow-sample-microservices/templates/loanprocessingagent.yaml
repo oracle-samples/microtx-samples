@@ -35,6 +35,14 @@ spec:
           env:
             - name: CONDUCTOR_SERVER_URL
               value: "http://workflow-server:9010/workflow-server/api"
+            - name: CONDUCTOR_SECURITY_ENABLED
+              value: {{ .Values.workflowSampleServices.security.enable_security| quote }}
+            - name: TOKEN_URL
+              value: {{ .Values.workflowSampleServices.security.token_url }}
+            - name: CLIENT_ID
+              value: {{ .Values.workflowSampleServices.security.client_id }}
+            - name: CLIENT_SECRET
+              value: {{ .Values.workflowSampleServices.security.client_secret }}
           ports:
             - containerPort: 8002
           resources:
