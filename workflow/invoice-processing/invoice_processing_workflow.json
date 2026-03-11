@@ -1,0 +1,233 @@
+{
+  "name": "invoice_processing_workflow",
+  "description": "End-to-end invoice processing with human-in-the-loop validation",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "image_to_text",
+      "taskReferenceName": "image_to_text",
+      "inputParameters": {
+        "method": "GET",
+        "uri": "https://api.ocr.space/parse/imageurl?url=${workflow.input.url}&language=eng&isOverlayRequired=false",
+        "contentType": "application/json",
+        "body": {},
+        "headers": {
+          "apikey": "helloworld"
+        },
+        "readTimeout": 0,
+        "connectTimeout": 0
+      },
+      "type": "HTTP",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "genai_extract_invoice_fields",
+      "taskReferenceName": "extract_invoice_fields",
+      "inputParameters": {
+        "profileRef": "genai-invoice-profile",
+        "prompt": "You are an invoice parser.\n\nExtract structured data from the invoice text.\n\nInvoice: ${image_to_text.output.response.body.ParsedResults[0].ParsedText}\n\nIf any of the below fields cannot be extracted, set status to NEEDS_REVIEW.\n\nReturn STRICT JSON only:\n\n{\n \"status\":\"VALID|NEEDS_REVIEW\",\n \"biller\":\"\",\n \"billerAddress\":\"\",\n \"amountDue\":0,\n \"currency\":\"\",\n \"date\":\"YYYY-MM-DD\"\n}\n\nRules:\n- Do not add explanations\n- Do not wrap JSON in markdown\n- If currency is missing infer from symbols",
+        "llmProfile": {
+          "name": "oci_models",
+          "model": "openai.gpt-5"
+        }
+      },
+      "type": "GENAI_TASK",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "review_decision",
+      "taskReferenceName": "review_decision",
+      "inputParameters": {
+        "switchCaseValue": "${extract_invoice_fields.output.status}"
+      },
+      "type": "SWITCH",
+      "decisionCases": {
+        "NEEDS_REVIEW": [
+          {
+            "name": "human_review",
+            "taskReferenceName": "human_review",
+            "inputParameters": {
+              "formData": "${extract_invoice_fields.output}",
+              "url": "${workflow.input.url}"
+            },
+            "type": "HUMAN",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          },
+          {
+            "name": "set_final_from_human",
+            "taskReferenceName": "set_final_from_human",
+            "inputParameters": {
+              "finalInvoice": "${human_review.output}"
+            },
+            "type": "SET_VARIABLE",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          }
+        ],
+        "VALID": [
+          {
+            "name": "set_final_from_ai",
+            "taskReferenceName": "set_final_from_ai",
+            "inputParameters": {
+              "finalInvoice": "${extract_invoice_fields.output}"
+            },
+            "type": "SET_VARIABLE",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          }
+        ]
+      },
+      "defaultCase": [
+        {
+          "name": "set_default",
+          "taskReferenceName": "set_default",
+          "inputParameters": {
+            "finalInvoice": "${extract_invoice_fields.output.result}"
+          },
+          "type": "SET_VARIABLE",
+          "decisionCases": {},
+          "defaultCase": [],
+          "forkTasks": [],
+          "startDelay": 0,
+          "joinOn": [],
+          "optional": false,
+          "defaultExclusiveJoinTask": [],
+          "asyncComplete": false,
+          "loopOver": [],
+          "onStateChange": {},
+          "permissive": false
+        }
+      ],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "evaluatorType": "value-param",
+      "expression": "switchCaseValue",
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "persist_invoice",
+      "taskReferenceName": "persist_invoice",
+      "inputParameters": {
+        "databaseProfile": "oracle-atp-janaki-2",
+        "sqlStatement": "INSERT INTO INVOICES (invoice_id,biller,address,amount_due,currency,due_date,source_file) VALUES (?,?,?,?,?,?,?)",
+        "parameters": [
+          "${workflow.input.invoiceId}",
+          "${workflow.variables.finalInvoice.biller}",
+          "${workflow.variables.finalInvoice.billerAddress}",
+          "${workflow.variables.finalInvoice.amountDue}",
+          "${workflow.variables.finalInvoice.currency}",
+          "${workflow.variables.finalInvoice.date}",
+          "${workflow.input.url}"
+        ],
+        "type": "UPDATE"
+      },
+      "type": "SQL",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "publish_invoice_created_event",
+      "taskReferenceName": "publish_invoice_created_event",
+      "inputParameters": {
+        "databaseProfile": "oracle-atp-janaki-2",
+        "topic": "INVOICE_EVENT_Q",
+        "value": "${workflow.input.invoiceId}",
+        "publisherAgentName": "${workflow.input.sourceSystem}"
+      },
+      "type": "TXEVENTQ_PUBLISH",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    }
+  ],
+  "inputParameters": [
+    "invoiceId",
+    "url",
+    "sourceSystem"
+  ],
+  "outputParameters": {
+    "invoiceId": "${workflow.input.invoiceId}",
+    "extractedFields": "${workflow.variables.finalInvoice}"
+  },
+  "schemaVersion": 2,
+  "restartable": true,
+  "workflowStatusListenerEnabled": false,
+  "timeoutPolicy": "ALERT_ONLY",
+  "timeoutSeconds": 0,
+  "variables": {},
+  "inputTemplate": {},
+  "enforceSchema": true,
+  "metadata": {},
+  "maskedFields": []
+}
