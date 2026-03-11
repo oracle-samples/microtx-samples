@@ -53,3 +53,5 @@ Use this guide to register or import any workflow JSON from the samples in this 
 - RAG ingestion and retrieval (Medical QA)
   - [RAG-ingestion-retrieval-workflows/ingestion-wf.json](./RAG-ingestion-retrieval-workflows/ingestion-wf.json)
   - [RAG-ingestion-retrieval-workflows/retrieve-wf.json](./RAG-ingestion-retrieval-workflows/retrieve-wf.json)
+- Invoice processing (OCR + GenAI + Human review)
+  - [invoice-processing/invoice_processing_workflow.json](./invoice-processing/invoice_processing_workflow.json)
