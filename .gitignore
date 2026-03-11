@@ -39,3 +39,14 @@ venv
 .gradle
 build
 .mvn
+
+# Python bytecode / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Gradle
+.gradle/
+.gradle/
+build/
+out/
