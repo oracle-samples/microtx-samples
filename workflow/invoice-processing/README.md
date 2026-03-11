@@ -1,6 +1,6 @@
 # Invoice processing (OCR + GenAI + Human review)
 
-![Invoice processing workflow](./wf.png)
+![Invoice processing workflow](./invoice_processing.png)
 
 This sample turns an invoice image into structured fields, optionally routes to a human for validation, then stores the result and publishes an event.
 
@@ -43,7 +43,7 @@ Human-in-the-loop path (AI returns `NEEDS_REVIEW`):
 - OCR uses an OCR.space test key (`apikey: helloworld`). If you hit rate limits, generate your own API key at https://ocr.space/.
 - Configure the referenced profiles/connectors:
   - GenAI: `genai-invoice-profile` (LLM profile `oci_models`)
-  - DB: `oracle-atp-janaki-2` and table `INVOICES`
+  - DB: `oracle-db-profile` and table `INVOICES`
   - EventQ topic: `INVOICE_EVENT_Q`
 
 ## Create the EventQ topic

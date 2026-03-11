@@ -162,7 +162,7 @@
       "name": "persist_invoice",
       "taskReferenceName": "persist_invoice",
       "inputParameters": {
-        "databaseProfile": "oracle-atp-janaki-2",
+        "databaseProfile": "oracle-db-profile",
         "sqlStatement": "INSERT INTO INVOICES (invoice_id,biller,address,amount_due,currency,due_date,source_file) VALUES (?,?,?,?,?,?,?)",
         "parameters": [
           "${workflow.input.invoiceId}",
@@ -192,7 +192,7 @@
       "name": "publish_invoice_created_event",
       "taskReferenceName": "publish_invoice_created_event",
       "inputParameters": {
-        "databaseProfile": "oracle-atp-janaki-2",
+        "databaseProfile": "oracle-db-profile",
         "topic": "INVOICE_EVENT_Q",
         "value": "${workflow.input.invoiceId}",
         "publisherAgentName": "${workflow.input.sourceSystem}"
