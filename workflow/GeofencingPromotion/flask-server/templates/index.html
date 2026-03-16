@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Geofenced Promotion</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"/>
+    <style>
+        :root {
+            --background: #0a0b0e;
+            --background-light: #f6f6fb;
+            --foreground: #fff;
+            --foreground-dark: #0a0b0e;
+            --panel: #16171d;
+            --select-bg: #23232b;
+            --select-fg: #f5f6fb;
+        }
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: var(--background);
+            color: var(--foreground);
+            margin: 0;
+            padding: 0;
+            transition: background 0.3s, color 0.3s;
+        }
+        .light-mode {
+            --background: #f6f6fb;
+            --foreground: #181920;
+            --panel: #fafafe;
+            --select-bg: #f1f2f8;
+            --select-fg: #23232b;
+        }
+        .app-container {
+            display: flex; margin: 40px auto 0 auto; max-width: 1700px; align-items: flex-start;
+        }
+        .map-panel { flex: 3; padding: 0 30px; display: flex; flex-direction: column; }
+        .phone-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        .iphone-frame-simple {
+            width: 370px; height: 730px; border-radius: 47px;
+            border: 10px solid #333941; background: #11141a;
+            box-shadow: 0 16px 40px rgba(40,40,70,0.13);
+            margin: -20px auto 0 auto; display: flex; flex-direction: column; align-items: center; position: relative;
+        }
+        .iphone-notch-simple {
+            height: 26px; width: 144px;
+            background: #2a2f36; border-radius: 13px;
+            margin: 0 auto 16px auto; position: absolute;
+            left: 50%; transform: translateX(-50%); top: 12px;
+        }
+        .iphone-screen-simple {
+            background: #fff; border-radius: 32px; margin-top: 54px;
+            width: 318px; height: 640px; padding: 40px 18px 18px 18px;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: flex-start; box-shadow: 0 3px 24px rgba(100,110,140,0.08);
+            overflow: hidden;
+        }
+        .banner-event {
+            display:flex; align-items:center; justify-content:center;
+            background:#e9f6ff; color:#1766a0; border-radius:14px;
+            margin-bottom:15px; padding:10px 18px 10px 12px;
+            font-size:15px; font-weight:600; box-shadow:0 2px 10px rgba(25,91,145,0.09);
+            width:100%; overflow-wrap:break-word;
+        }
+        .banner-event .icon { font-size:20px; margin-right:7px; }
+        .notification-banner {
+            min-width: 0;
+            background: rgba(240,242,247,0.97);
+            border-radius: 19px;
+            box-shadow: 0 2px 10px rgba(40,40,70,0.09);
+            padding: 18px 24px 18px 20px;
+            margin: 0 auto 28px auto;
+            width: 92%;
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .notification-banner .notif-head {
+            display:inline-flex; align-items:center;
+            font-size:13px; color:#7b7b98; font-weight:600;
+            letter-spacing:.05em; margin-bottom: 5px;
+        }
+        .notification-banner .notif-head .icon {
+            font-size:17px; margin-right:5px; color:#d1b321;
+        }
+        .notification-banner .notif-body {
+            font-size:18px; color:#1a1a20; font-weight:500; line-height:1.65;
+        }
+        .clock-container {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; width: 100%; height: 300px;
+        }
+        .clock-time {
+            font-size:48px; font-weight:700; color:#222; margin-bottom:14px; line-height:1;
+        }
+        .clock-date {
+            font-size:18px; font-weight:500; color:#888;
+        }
+        #map { width: 950px; height: 700px; border-radius:16px; margin-top: 50px; }
+    </style>
+    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"></script>
+</head>
+<body>
+    <script>
+        // Expose user list to JS; customize as needed
+        const allUsers = [
+            {user_id: 1, user_name: "Alice"},
+            {user_id: 2, user_name: "Bob"},
+            {user_id: 3, user_name: "Carol"},
+            {user_id: 4, user_name: "Dave"},
+            {user_id: 5, user_name: "Emily"}
+        ];
+        let selectedUserId = 1;
+    </script>
+<!-- Theme toggle button removed -->
+    <div class="app-container">
+        <div class="map-panel">
+            <!-- Heading row with title, subtitle, and user select -->
+            <div style="margin-bottom: 30px; display: flex; align-items: flex-end; justify-content: space-between;">
+                <div>
+                    <h1 style="color:#fff; font-size:3.0em; margin:0 0 10px 0; font-weight:800; font-family:'Inter',Arial,sans-serif; letter-spacing:-1.5px;">
+                        Geofenced Promotion
+                    </h1>
+                    <div style="color: #b7c8dd; font-size: 1.1em; margin-bottom: 2px; font-family:'Inter',Arial,sans-serif;">
+                        Select a user on the right, then click a location on the map to publish a TxEventQ notification
+                    </div>
+                </div>
+                <!-- moved user dropdown to above iPhone for new UI placement -->
+            </div>
+            <div style="display:flex; flex-direction:row; margin-top: 25px;">
+                <div id="map"></div>
+                <div style="width:32px;"></div>
+                <div class="phone-panel" style="align-self: flex-start;">
+    <select id="user-dropdown"
+        style="width: 375px; font-size: 1.17em; padding: 13px 18px; border-radius: 14px; background: #23232b; color:#f5f6fb; border: none; font-family:'Inter', Arial, sans-serif; box-shadow:0 4px 24px rgba(20, 22, 27, 0.18); outline:none; margin-top: -20px; margin-bottom: 35px;">
+        <option value="1">Alice</option>
+        <option value="2">Bob</option>
+        <option value="3">Carol</option>
+        <option value="4">Dave</option>
+        <option value="5">Emily</option>
+    </select>
+    <div class="iphone-frame-simple">
+        <div class="iphone-notch-simple"></div>
+        <div class="iphone-screen-simple" id="phone-screen">
+            <div id="event-message-js"></div>
+            <div id="notification-js"></div>
+            <div id="clock-container-js">
+                <div class="clock-time" id="clock-time-js">--:--</div>
+                <div class="clock-date" id="clock-date-js">-- ---- ----</div>
+            </div>
+        </div>
+    </div>
+</div>
+            </div>
+        </div>
+    </div>
+    <script>
+    // Theme toggle script removed
+    // ===== Map and Event Logic =====
+    // Demo map and seeded locations (match Python config)
+    const seededEvents = [
+        {event_id:1, label:"Event 1 (Alice)", user_id:1, lat:37.775000, lon:-122.419000},
+        {event_id:2, label:"Event 2 (Bob)", user_id:2, lat:37.775030, lon:-122.418970},
+        {event_id:3, label:"Event 3 (Carol)", user_id:3, lat:37.777500, lon:-122.415000},
+        {event_id:4, label:"Event 4 (Dave)", user_id:4, lat:37.777600, lon:-122.415100},
+        {event_id:5, label:"Event 5 (Emily)", user_id:5, lat:37.775500, lon:-122.419500}
+    ];
+    selectedUserId = 1; // default user
+    let pollIntervalId = null;
+    document.addEventListener('DOMContentLoaded', function() {
+        // Always use user_id from URL as first step
+        const params = new URLSearchParams(window.location.search);
+        const fromUrl = parseInt(params.get('user_id'));
+        // Dynamically check if user_id exists in allUsers for robust selection
+        const userIds = allUsers.map(u => u.user_id);
+        if (!isNaN(fromUrl) && userIds.includes(fromUrl)) {
+            selectedUserId = fromUrl;
+        }
+
+        const userDropdown = document.getElementById("user-dropdown");
+        userDropdown.value = String(selectedUserId);
+        userDropdown.addEventListener("change", function(e) {
+            selectedUserId = parseInt(e.target.value);
+            // Safely stop current polling before switching user
+            if (pollIntervalId !== null) clearInterval(pollIntervalId);
+            // Reload page with selected user for backend polling synchronization
+            const params = new URLSearchParams(window.location.search);
+            params.set('user_id', selectedUserId);
+            window.location.search = params.toString();
+        });
+
+        // Only after correct user is selected, start notification polling
+        pollNotification();
+        pollIntervalId = setInterval(pollNotification, 60000); // 60s poll
+    });
+
+    // Init map
+    const map = L.map('map').setView([37.7772, -122.4220], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Add rectangle overlays for geofences (from your DB)
+    const geofences = [
+        {
+            name: "Downtown Mall",
+            bounds: [
+                [37.774000, -122.420500], // SW
+                [37.776000, -122.417500]  // NE
+            ],
+            color: "#2980b9",
+            zone: "downtown",
+            // Used to uniquely identify for event
+            event_id: 1
+        },
+        {
+            name: "VIP Lounge",
+            bounds: [
+                [37.777000, -122.416000], // SW
+                [37.778000, -122.414000]  // NE
+            ],
+            color: "#16a085",
+            zone: "vip",
+            // Used to uniquely identify for event
+            event_id: 3
+        }
+    ];
+
+    const rectangles = [];
+    for (const gf of geofences) {
+        const rect = L.rectangle(gf.bounds, {
+            color: gf.color,
+            weight: 2,
+            fillOpacity: 0.11
+        }).addTo(map);
+        // Tooltip shows on hover only (not permanent)
+        rect.bindTooltip(gf.name, {
+            direction: "center",
+            className: "map-label",
+            permanent: false,
+            sticky: true,
+            opacity: 0.95
+        });
+        rectangles.push({...gf, rect});
+    }
+
+    // No-offers location circle
+    const noOffersLat = 37.780000, noOffersLon = -122.430000;
+    const noOffersMarker = L.circleMarker([noOffersLat, noOffersLon], {
+        color: "#888",
+        fillColor: "#e4e5ef",
+        fillOpacity: 0.6,
+        radius: 13,
+        weight: 3,
+        opacity: 0.86,
+        dashArray: "2,5"
+    }).addTo(map);
+    noOffersMarker.bindTooltip("No Offers Location", {
+        direction: "top", className: "map-label", permanent: false, sticky: true, opacity: 0.85
+    });
+
+    // Helper function to check if a point is in bounds
+    function pointInBounds(lat, lon, b) {
+        // b: [[minLat, minLon], [maxLat, maxLon]]
+        const minLat = Math.min(b[0][0], b[1][0]), maxLat = Math.max(b[0][0], b[1][0]);
+        const minLon = Math.min(b[0][1], b[1][1]), maxLon = Math.max(b[0][1], b[1][1]);
+        return minLat <= lat && lat <= maxLat && minLon <= lon && lon <= maxLon;
+    }
+
+    // On map click, fire publishEvent for geofence zone or no-offers location
+    map.on('click', function(e) {
+        const clickLat = e.latlng.lat, clickLon = e.latlng.lng;
+        let found = null;
+        // Priority: geofence zones
+        for (const gf of rectangles) {
+            if (pointInBounds(clickLat, clickLon, gf.bounds)) {
+                found = gf;
+                // Optionally flash/border the rectangle for feedback
+                found.rect.setStyle({fillOpacity: 0.30, color: "#ffd700"});
+                setTimeout(() => found.rect.setStyle({fillOpacity: 0.18, color: found.color}), 250);
+                publishEvent(found.event_id, selectedUserId);
+                return;
+            }
+        }
+        // Then check: click near no-offers point (within 40m, about 0.00036 deg)
+        function degDist(lat1, lon1, lat2, lon2) {
+            const dLat = lat1 - lat2, dLon = lon1 - lon2;
+            return Math.sqrt(dLat*dLat + dLon*dLon);
+        }
+        const distToNoOffers = degDist(clickLat, clickLon, noOffersLat, noOffersLon);
+        if (distToNoOffers < 0.00036) { // About 40 meters
+            noOffersMarker.setStyle({fillColor: "#ffd700", color: "#456"});
+            setTimeout(() => noOffersMarker.setStyle({fillColor: "#e4e5ef", color: "#888"}), 250);
+            publishEvent(-1, selectedUserId); // Use event_id=-1 to indicate "no offers"
+            return;
+        }
+        alert("Please click inside a geofence zone or the 'No Offers' marker to publish an event.");
+    });
+
+    // ===== Event Publishing (AJAX) =====
+    function publishEvent(event_id, user_id) {
+        fetch('/publish_event', {
+            method: 'POST',
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({event_id: event_id, user_id: user_id})
+        }).then(res => res.json())
+        .then(resp => {
+            if (resp.status === "success") {
+                showEventMessage("Sent user location");
+            } else {
+                showEventMessage("Error publishing event: " + (resp.reason || "Unknown"));
+            }
+        }).catch(err => {
+            showEventMessage("Publish error: " + err);
+        });
+    }
+
+    function showEventMessage(msg) {
+        const msgDiv = document.getElementById("event-message-js");
+        if (msg) {
+            msgDiv.innerHTML = '<div class="banner-event"><span class="icon">📍</span>' + msg + '</div>';
+            // Keep location sent event message visible for 20 seconds
+            setTimeout(() => { msgDiv.innerHTML = ""; }, 20000);
+        } else {
+            msgDiv.innerHTML = "";
+        }
+    }
+
+    // ===== Notification Polling =====
+    function pollNotification() {
+        console.log("[pollNotification] selectedUserId being polled: " + selectedUserId);
+        fetch('/fetch_notification?user_id=' + selectedUserId)
+        .then(res => res.json())
+        .then(data => {
+            let html = "";
+            // Hide notification if message missing, empty, or some form of "no notification found"
+            if (
+                data.message &&
+                typeof data.message === "string" &&
+                data.message.trim().toLowerCase() !== "no notification found." &&
+                data.message.trim() !== ""
+            ) {
+                html = '<div class="notification-banner">'
+                    + '<div class="notif-head"><span class="icon">🔔</span>Notification</div>'
+                    + '<div class="notif-body">' + data.message + '</div>'
+                    + '</div>';
+                document.getElementById("notification-js").innerHTML = html;
+                document.getElementById("notification-js").style.display = "block";
+                document.getElementById("clock-container-js").style.display = "none";
+            } else {
+                // Explicitly clear and hide the notification UI and event message banner
+                document.getElementById("notification-js").innerHTML = "";
+                document.getElementById("notification-js").style.display = "none";
+                document.getElementById("event-message-js").innerHTML = "";
+                document.getElementById("clock-container-js").style.display = "block";
+            }
+        })
+        .catch(() => { /* ignore errors for now */ });
+    }
+    // Periodically fetch notification updates for the selected user (align this with backend poll_interval_seconds)
+    setInterval(pollNotification, 10000);
+    pollNotification(); // Initial load
+
+    // ===== Clock at idle =====
+    function zeroPad(n) { return n < 10 ? "0" + n : n; }
+    function updateClock() {
+        const now = new Date();
+        const clockTime = document.getElementById("clock-time-js");
+        const clockDate = document.getElementById("clock-date-js");
+        if (clockTime && clockDate) {
+            clockTime.textContent = zeroPad(now.getHours()) + ":" + zeroPad(now.getMinutes());
+            clockDate.textContent = now.getDate() + " " +
+                now.toLocaleString("default", {month: "long"}) + " " + now.getFullYear();
+        }
+    }
+    // Update the digital clock display every second
+    setInterval(updateClock, 1000);
+    updateClock();
+    </script>
+</body>
+</html>

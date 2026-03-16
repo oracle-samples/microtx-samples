@@ -1,0 +1,34 @@
+[oracle]
+# Username for Oracle DB (set your own value)
+username = ""
+
+# Password for Oracle DB (set your own value)
+password = ""
+
+# Connection string (TNS alias or host:port/service_name, see tnsnames.ora)
+connect_descriptor = ""
+
+# Wallet directory for Autonomous or TCPS/SSL DB (optional)
+wallet_location = ""
+
+# Wallet password (leave empty if not required)
+wallet_password = ""
+
+# TxEventQ / TEQ details (fill in per your deployment)
+topic_name = "NOTIFICATION_TOPIC"
+publisher_name = "my_subscription"
+subscriber_name = "my_subscriber"
+
+[app]
+# Default user id to show in demo app
+default_user_id = 1
+
+[workflow_server]
+# Base URL for the workflow-server used to retrieve geofenced notifications. Optional.
+base_url = ""
+
+[notifications]
+# Polling / inbox behavior
+poll_interval_seconds = 10
+# Fetch the latest notification created within the last N seconds.
+lookback_seconds = 120
