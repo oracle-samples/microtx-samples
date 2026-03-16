@@ -1,0 +1,398 @@
+{
+  "createTime": 1773140737885,
+  "updateTime": 1773644633140,
+  "name": "geofenced_promotion_trigger_workflow_v2",
+  "description": "Detect geofence entry, evaluate promotion eligibility, log event, personalize promotion message, and send notification",
+  "version": 16,
+  "tasks": [
+    {
+      "name": "check_geofence_containment",
+      "taskReferenceName": "check_geofence_ref",
+      "inputParameters": {
+        "databaseProfile": "oracle-db-profile",
+        "sqlStatement": "DECLARE\n  v_event_id    NUMBER;\n  v_geofence_id NUMBER;\n  v_match_flag  VARCHAR2(3);\nBEGIN\n  sp_check_geofence_containment(\n    p_event_id    => ?,\n    p_geofence_id => v_geofence_id,\n    p_match_flag  => v_match_flag\n  );\n  ? := v_geofence_id;\n  ? := v_match_flag;\nEND;",
+        "outParams": {
+          "p_geofence_id": "NUMBER",
+          "p_match_flag": "CHAR"
+        },
+        "type": "PLSQL",
+        "plSqlParameters": [
+          {
+            "mode": "IN",
+            "value": "${workflow.input.eventId}"
+          },
+          {
+            "mode": "OUT",
+            "name": "p_geofence_id",
+            "dataType": "NUMERIC"
+          },
+          {
+            "mode": "OUT",
+            "name": "p_match_flag",
+            "dataType": "CHAR"
+          }
+        ]
+      },
+      "type": "SQL",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "route_on_geofence_match",
+      "taskReferenceName": "route_on_match_ref",
+      "inputParameters": {
+        "matchFlag": "${check_geofence_ref.output.response.outParameters.p_match_flag}"
+      },
+      "type": "SWITCH",
+      "decisionCases": {
+        "Yes": [
+          {
+            "name": "evaluate_promotion_eligibility",
+            "taskReferenceName": "evaluate_eligibility_ref",
+            "inputParameters": {
+              "databaseProfile": "oracle-db-profile",
+              "sqlStatement": "DECLARE\n  v_event_id      NUMBER := ?; \n  v_user_id       NUMBER := ?;\n  v_geofence_id   NUMBER := ?;\n\n  v_promotion_id  NUMBER;\n  v_eligible_flag VARCHAR2(3);\n  v_reason        VARCHAR2(4000);\nBEGIN\n  sp_evaluate_promo_eligibility(\n    p_event_id      => v_event_id,\n    p_user_id       => v_user_id,\n    p_geofence_id   => v_geofence_id,\n    p_promotion_id  => v_promotion_id,\n    p_eligible_flag => v_eligible_flag,\n    p_reason        => v_reason\n  );\n  ? := v_promotion_id;\n  ? := v_eligible_flag;\n  ? := v_reason;\nEND;",
+              "parameters": [],
+              "type": "PLSQL",
+              "plSqlParameters": [
+                {
+                  "mode": "IN",
+                  "value": "${workflow.input.eventId}"
+                },
+                {
+                  "mode": "IN",
+                  "value": "${workflow.input.userId}"
+                },
+                {
+                  "mode": "IN",
+                  "value": "${check_geofence_ref.output.response.outParameters.p_geofence_id}"
+                },
+                {
+                  "mode": "OUT",
+                  "name": "p_promotion_id",
+                  "dataType": "NUMERIC"
+                },
+                {
+                  "mode": "OUT",
+                  "name": "p_eligible_flag",
+                  "dataType": "CHAR"
+                },
+                {
+                  "mode": "OUT",
+                  "name": "p_reason",
+                  "dataType": "VARCHAR"
+                }
+              ]
+            },
+            "type": "SQL",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          },
+          {
+            "name": "log_geofence_and_eligibility_event",
+            "taskReferenceName": "log_event_ref",
+            "inputParameters": {
+              "databaseProfile": "oracle-db-profile",
+              "sqlStatement": "DECLARE\n  v_event_id      NUMBER := ?;\n  v_user_id       NUMBER := ?;\n  v_geofence_id   NUMBER := ?;\n  v_promotion_id  NUMBER := ?;\n  v_eligible_flag VARCHAR2(3) := ?;\n  v_reason        VARCHAR2(4000) := ?;\n\n  v_action_taken  VARCHAR2(30);\nBEGIN\n  v_action_taken := CASE WHEN v_eligible_flag = 'Yes' THEN 'ELIGIBLE' ELSE 'NOT_ELIGIBLE' END;\n\n  sp_log_promotion_event(\n    p_event_id     => v_event_id,\n    p_user_id      => v_user_id,\n    p_geofence_id  => v_geofence_id,\n    p_promotion_id => v_promotion_id,\n    p_action_taken => v_action_taken,\n    p_details      => v_reason\n  );\nEND;",
+              "parameters": [],
+              "type": "PLSQL",
+              "plSqlParameters": [
+                {
+                  "mode": "IN",
+                  "value": "${workflow.input.eventId}"
+                },
+                {
+                  "mode": "IN",
+                  "value": "${workflow.input.userId}"
+                },
+                {
+                  "mode": "IN",
+                  "value": "${check_geofence_ref.output.response.outParameters.p_geofence_id}"
+                },
+                {
+                  "mode": "IN",
+                  "value": "${evaluate_eligibility_ref.output.response.outParameters.p_promotion_id}"
+                },
+                {
+                  "mode": "IN",
+                  "value": "${evaluate_eligibility_ref.output.response.outParameters.p_eligible_flag}"
+                },
+                {
+                  "mode": "IN",
+                  "value": "${evaluate_eligibility_ref.output.response.outParameters.p_reason}"
+                }
+              ]
+            },
+            "type": "SQL",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          },
+          {
+            "name": "notify_if_eligible",
+            "taskReferenceName": "notify_if_eligible_ref",
+            "inputParameters": {
+              "eligibleFlag": "${evaluate_eligibility_ref.output.response.outParameters.p_eligible_flag}"
+            },
+            "type": "SWITCH",
+            "decisionCases": {
+              "Yes": [
+                {
+                  "name": "load_promotion_message",
+                  "taskReferenceName": "load_promotion_message_ref",
+                  "inputParameters": {
+                    "databaseProfile": "oracle-db-profile",
+                    "sqlStatement": "DECLARE\n v_promotion_id NUMBER := ?;\n v_name VARCHAR2(4000);\n v_message VARCHAR2(4000);\nBEGIN\n sp_load_promotion_message(\n p_promotion_id => v_promotion_id,\n p_promotion_name => v_name,\n p_message_text => v_message\n );\n ? := v_name;\n ? := v_message;\nEND;",
+                    "parameters": [],
+                    "type": "PLSQL",
+                    "plSqlParameters": [
+                      {
+                        "mode": "IN",
+                        "value": "${evaluate_eligibility_ref.output.response.outParameters.p_promotion_id}"
+                      },
+                      {
+                        "mode": "OUT",
+                        "name": "p_promotion_name",
+                        "dataType": "VARCHAR"
+                      },
+                      {
+                        "mode": "OUT",
+                        "name": "p_message_text",
+                        "dataType": "VARCHAR"
+                      }
+                    ]
+                  },
+                  "type": "SQL",
+                  "decisionCases": {},
+                  "defaultCase": [],
+                  "forkTasks": [],
+                  "startDelay": 0,
+                  "joinOn": [],
+                  "optional": false,
+                  "defaultExclusiveJoinTask": [],
+                  "asyncComplete": false,
+                  "loopOver": [],
+                  "onStateChange": {},
+                  "permissive": false
+                },
+                {
+                  "name": "load_user_promo_context",
+                  "taskReferenceName": "load_user_context_ref",
+                  "inputParameters": {
+                    "databaseProfile": "oracle-db-profile",
+                    "sqlStatement": "DECLARE\n  v_user_id   NUMBER := ?;\n  v_name      VARCHAR2(4000);\n  v_tier      VARCHAR2(4000);\n  v_opted_in  VARCHAR2(3);\nBEGIN\n  sp_load_user_promo_context(\n    p_user_id      => v_user_id,\n    p_user_name    => v_name,\n    p_loyalty_tier => v_tier,\n    p_opted_in     => v_opted_in\n  );\n  ? := v_name;\n  ? := v_tier;\n  ? := v_opted_in;\nEND;",
+                    "parameters": [],
+                    "type": "PLSQL",
+                    "plSqlParameters": [
+                      {
+                        "mode": "IN",
+                        "value": "${workflow.input.userId}"
+                      },
+                      {
+                        "mode": "OUT",
+                        "name": "p_user_name",
+                        "dataType": "VARCHAR"
+                      },
+                      {
+                        "mode": "OUT",
+                        "name": "p_loyalty_tier",
+                        "dataType": "VARCHAR"
+                      },
+                      {
+                        "mode": "OUT",
+                        "name": "p_opted_in",
+                        "dataType": "CHAR"
+                      }
+                    ]
+                  },
+                  "type": "SQL",
+                  "decisionCases": {},
+                  "defaultCase": [],
+                  "forkTasks": [],
+                  "startDelay": 0,
+                  "joinOn": [],
+                  "optional": false,
+                  "defaultExclusiveJoinTask": [],
+                  "asyncComplete": false,
+                  "loopOver": [],
+                  "onStateChange": {},
+                  "permissive": false
+                },
+                {
+                  "name": "rewrite_promotion_message",
+                  "taskReferenceName": "rewrite_promotion_message_ref",
+                  "inputParameters": {
+                    "llmProfile": {
+                      "name": "openai-dev",
+                      "model": "gpt-4o"
+                    },
+                    "prompt": "",
+                    "promptTemplate": "geofence_promotion_prompt",
+                    "promptVariables": {
+                      "p_user_name": "${load_user_context_ref.output.response.outParameters.p_user_name}",
+                      "p_loyalty_tier": "${load_user_context_ref.output.response.outParameters.p_loyalty_tier}",
+                      "p_promotion_name": "${load_promotion_message_ref.output.response.outParameters.p_promotion_name}",
+                      "p_message_text": "${load_promotion_message_ref.output.response.outParameters.p_message_text}",
+                      "p_reason": "${evaluate_eligibility_ref.output.response.outParameters.p_reason}"
+                    },
+                    "temperature": 0.8,
+                    "maxTokens": 1024,
+                    "top_k": 40,
+                    "top_p": 0.9
+                  },
+                  "type": "GENAI_TASK",
+                  "decisionCases": {},
+                  "defaultCase": [],
+                  "forkTasks": [],
+                  "startDelay": 0,
+                  "joinOn": [],
+                  "optional": false,
+                  "defaultExclusiveJoinTask": [],
+                  "asyncComplete": false,
+                  "loopOver": [],
+                  "onStateChange": {},
+                  "permissive": false
+                },
+                {
+                  "name": "persist_user_notification",
+                  "taskReferenceName": "persist_user_notification_ref",
+                  "inputParameters": {
+                    "databaseProfile": "oracle-db-profile",
+                    "sqlStatement": "INSERT INTO notification (\n    user_id,\n    payload,\n    created_at\n  )\n  VALUES (\n    ?,\n    JSON_OBJECT(\n      'createdTime' VALUE SYSTIMESTAMP,\n      'message'     VALUE ?\n    ),\n    SYSDATE\n  );",
+                    "parameters": [
+                      "${workflow.input.userId}",
+                      "${rewrite_promotion_message_ref.output.response}"
+                    ],
+                    "type": "UPDATE"
+                  },
+                  "type": "SQL",
+                  "decisionCases": {},
+                  "defaultCase": [],
+                  "forkTasks": [],
+                  "startDelay": 0,
+                  "joinOn": [],
+                  "optional": false,
+                  "defaultExclusiveJoinTask": [],
+                  "asyncComplete": false,
+                  "loopOver": [],
+                  "onStateChange": {},
+                  "permissive": false
+                }
+              ]
+            },
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "evaluatorType": "javascript",
+            "expression": "($.eligibleFlag === 'Yes') ? 'Yes' : 'No'",
+            "onStateChange": {},
+            "permissive": false
+          }
+        ]
+      },
+      "defaultCase": [
+        {
+          "name": "log_no_geofence_match",
+          "taskReferenceName": "log_no_match_ref",
+          "inputParameters": {
+            "databaseProfile": "oracle-db-profile",
+            "sqlStatement": "BEGIN\n  sp_log_promotion_event(\n    p_event_id     => ?,  \n    p_user_id      => ?,  \n    p_geofence_id  => NULL,\n    p_promotion_id => NULL,\n    p_action_taken => 'NO_GEOFENCE_MATCH',\n    p_details      => 'User location did not match any active geofence'\n  );\nEND;",
+            "parameters": [],
+            "type": "PLSQL",
+            "plSqlParameters": [
+              {
+                "mode": "IN",
+                "value": "${workflow.input.eventId}"
+              },
+              {
+                "mode": "IN",
+                "value": "${workflow.input.userId}"
+              }
+            ]
+          },
+          "type": "SQL",
+          "decisionCases": {},
+          "defaultCase": [],
+          "forkTasks": [],
+          "startDelay": 0,
+          "joinOn": [],
+          "optional": false,
+          "defaultExclusiveJoinTask": [],
+          "asyncComplete": false,
+          "loopOver": [],
+          "onStateChange": {},
+          "permissive": false
+        }
+      ],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "evaluatorType": "javascript",
+      "expression": "($.matchFlag === 'Yes') ? 'Yes' : 'No'",
+      "onStateChange": {},
+      "permissive": false
+    }
+  ],
+  "inputParameters": [
+    "eventId",
+    "userId",
+    "notificationBaseUri"
+  ],
+  "outputParameters": {
+    "eventId": "${workflow.input.eventId}",
+    "userId": "${workflow.input.userId}",
+    "geofenceMatch": "${check_geofence_ref.output.p_match_flag}",
+    "geofenceId": "${check_geofence_ref.output.p_geofence_id}",
+    "promotionId": "${evaluate_eligibility_ref.output.p_promotion_id}",
+    "eligible": "${evaluate_eligibility_ref.output.p_eligible_flag}",
+    "eligibilityReason": "${evaluate_eligibility_ref.output.p_reason}",
+    "promotionName": "${load_promotion_message_ref.output.p_promotion_name}",
+    "defaultPromotionMessage": "${load_promotion_message_ref.output.p_message_text}",
+    "personalizedPromotionMessage": "${rewrite_promotion_message_ref.output.text}"
+  },
+  "schemaVersion": 2,
+  "restartable": true,
+  "workflowStatusListenerEnabled": false,
+  "timeoutPolicy": "ALERT_ONLY",
+  "timeoutSeconds": 0,
+  "variables": {},
+  "inputTemplate": {},
+  "enforceSchema": true,
+  "metadata": {},
+  "maskedFields": []
+}

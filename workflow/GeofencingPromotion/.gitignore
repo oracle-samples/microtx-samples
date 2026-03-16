@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+
+# Streamlit
+.streamlit/
+# Local secrets
+flask-server/dev_config.toml
+
+# Ignore workflow input variables
+workflows/variables.txt
+
+# Ignore DB workflow execution/playbook
+execute.md
+
+
+
