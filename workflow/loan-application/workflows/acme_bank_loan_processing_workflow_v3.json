@@ -1,12 +1,12 @@
 {
-  "createTime": 1763452764394,
-  "updateTime": 1763456253600,
+  "createTime": 1778165235325,
+  "updateTime": 1778165235325,
   "name": "acme_bank_loan_processing_workflow_v3",
   "description": "Acme bank Loan processing workflow with multi agent orchestration",
   "version": 1,
   "tasks": [
     {
-      "name": "Extract Loan Application details",
+      "name": "Extract_Loan_Application_Details",
       "taskReferenceName": "extract_loan_details",
       "inputParameters": {
         "llmProfile": {
@@ -32,7 +32,7 @@
       "permissive": false
     },
     {
-      "name": "Check loan application completeness",
+      "name": "Check_loan_application_completeness",
       "taskReferenceName": "check_loan_application_completeness",
       "inputParameters": {
         "switchCaseValue": "${extract_loan_details.output.status}"
@@ -41,7 +41,7 @@
       "decisionCases": {
         "FAILED": [
           {
-            "name": "Notify incomplete loan application",
+            "name": "Notify_Incomplete_Loan_Application",
             "taskReferenceName": "notify_incomplete_loan_application",
             "inputParameters": {
               "method": "POST",
@@ -136,7 +136,7 @@
       "permissive": false
     },
     {
-      "name": "Agentic Planner",
+      "name": "Agentic_Planner",
       "taskReferenceName": "agentic_planner",
       "inputParameters": {
         "llmProfile": {
@@ -152,7 +152,7 @@
         ],
         "tasks": [
           {
-            "name": "Loan Document Verification Task",
+            "name": "Loan_Document_Verification_Task",
             "taskReferenceName": "document_verification",
             "inputParameters": {
               "agentProfile": "loan_document_verification_agent",
@@ -163,7 +163,7 @@
             "type": "AGENTIC_TASK"
           },
           {
-            "name": "Compliance Agent",
+            "name": "Compliance_Agent",
             "taskReferenceName": "compliance_agent",
             "type": "HTTP",
             "inputParameters": {
@@ -184,7 +184,7 @@
             "type": "SIMPLE"
           },
           {
-            "name": "Notify AML verification failure for reverification",
+            "name": "Notify_AML_Verification_Failure_For_Reverification",
             "taskReferenceName": "notify_aml_check_failure_to_admin",
             "type": "HTTP",
             "inputParameters": {
@@ -229,7 +229,7 @@
       "permissive": false
     },
     {
-      "name": "Check planner execution status",
+      "name": "Check_Planner_Execution_Status",
       "taskReferenceName": "check_planner_execution_status",
       "inputParameters": {
         "switchCaseValue": "${agentic_planner.output.status}"
@@ -238,7 +238,7 @@
       "decisionCases": {
         "FAILED": [
           {
-            "name": "Notify loan application rejection",
+            "name": "Notify_loan_application_rejection",
             "taskReferenceName": "notify_loan_application_rejection",
             "inputParameters": {
               "method": "POST",
@@ -267,7 +267,7 @@
             "permissive": false
           },
           {
-            "name": "terminate loan application",
+            "name": "terminate_loan_application",
             "taskReferenceName": "terminate_loan_application_ref",
             "inputParameters": {
               "terminationStatus": "TERMINATED",
@@ -303,7 +303,7 @@
       "permissive": false
     },
     {
-      "name": "Send Email notification",
+      "name": "Send_Email_Notification",
       "taskReferenceName": "email_notify",
       "inputParameters": {
         "method": "POST",
@@ -354,7 +354,7 @@
       "permissive": false
     },
     {
-      "name": "Check Loan Approval By Admin",
+      "name": "Check_Loan_Approval_By_Admin",
       "taskReferenceName": "check_loan_approval_from_admin",
       "inputParameters": {
         "switchCaseValue": "${wait_for_approval.output.approved}"
@@ -363,7 +363,7 @@
       "decisionCases": {
         "true": [
           {
-            "name": "auditFInalLoanOracleSql Approved",
+            "name": "auditFInalLoanOracleSql_Approved",
             "taskReferenceName": "audit_final_loan_oracle_sql_task_approved_ref",
             "inputParameters": {
               "databaseProfile": "oracle-database",
@@ -389,7 +389,7 @@
         ],
         "false": [
           {
-            "name": "auditFInalLoanOracleSql Rejected",
+            "name": "auditFInalLoanOracleSql_Rejected",
             "taskReferenceName": "audit_final_loan_oracle_sql_task_rejected_ref",
             "inputParameters": {
               "databaseProfile": "oracle-database",
@@ -438,5 +438,6 @@
   "variables": {},
   "inputTemplate": {},
   "enforceSchema": true,
-  "metadata": {}
+  "metadata": {},
+  "maskedFields": []
 }

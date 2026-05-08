@@ -3,15 +3,101 @@
 # Global variable to control deployment type: "cluster" (default) or "local"
 DEPLOYMENT_TYPE="cluster"
 
+# Capture raw environment inputs for warning logs
+raw_istio_url="${istio_url-}"
+raw_istio_ip="${istio_ip-}"
+
+# istio_url="${istio_url:-127.0.0.1:80}"
+istio_url="${istio_url:-https://demo.microtx.dev:443}"
+
+istio_ip="${istio_ip:-129.153.235.126}"
+
+# Common curl options (work on macOS and Oracle Linux)
+CURL_COMMON_OPTS=(-L -k)
+CURL_RESOLVE_OPTS=()
+
+warn_on_missing_istio_env() {
+  if [[ -z "$raw_istio_url" ]]; then
+    echo "⚠️ Warning: 'istio_url' was empty or unset. Using default: ${istio_url}"
+  fi
+
+  if [[ -z "$raw_istio_ip" ]]; then
+    echo "⚠️ Warning: 'istio_ip' was empty or unset. Using default: ${istio_ip}"
+  fi
+}
+
+is_ipv4() {
+  local value="$1"
+  [[ "$value" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]
+}
+
+configure_curl_options() {
+  CURL_RESOLVE_OPTS=()
+
+  if [[ "$DEPLOYMENT_TYPE" != "cluster" ]]; then
+    echo "ℹ️ Local mode: using common curl options only (-L -k), no --resolve mapping"
+    return
+  fi
+
+  local url="$istio_url"
+  local scheme=""
+  local rest=""
+  local authority=""
+  local host=""
+  local port=""
+
+  if [[ "$url" == *"://"* ]]; then
+    scheme="${url%%://*}"
+    rest="${url#*://}"
+  else
+    rest="$url"
+    scheme="http"
+  fi
+
+  authority="${rest%%/*}"
+  host="${authority%%:*}"
+
+  if [[ "$authority" == *:* ]]; then
+    port="${authority##*:}"
+  else
+    if [[ "$scheme" == "https" ]]; then
+      port="443"
+    else
+      port="80"
+    fi
+  fi
+
+  if [[ "$scheme" == "https" ]]; then
+    echo "🔐 HTTPS Istio URL detected."
+    if [[ -n "$host" && -n "$port" && -n "$istio_ip" ]] && ! is_ipv4 "$host"; then
+      CURL_RESOLVE_OPTS=(--resolve "${host}:${port}:${istio_ip}")
+      echo "🔧 curl host override enabled: ${host}:${port}:${istio_ip}"
+    else
+      echo "ℹ️ curl host override not required (host is IP or host/port/istio_ip missing)."
+    fi
+  else
+    echo "🌐 HTTP Istio URL detected. Using direct URL (no --resolve mapping)."
+  fi
+}
+
+curl_with_common_opts() {
+  curl "${CURL_COMMON_OPTS[@]}" "${CURL_RESOLVE_OPTS[@]}" "$@"
+}
+
 # Function to set service endpoints based on deployment type
 handle_deployment_type() {
+  warn_on_missing_istio_env
+
   if [[ "$DEPLOYMENT_TYPE" == "cluster" ]]; then
-    WF_SERVER_URL="$istio_url/workflow-server"
+    local normalized_istio_url="${istio_url%/}"
+    WF_SERVER_URL="${normalized_istio_url}/workflow-server"
     DOC_MCP_SVC="http://doc-process-mcp-server:8000"
     LOAN_COMPLIANCE_SVC="http://loan-compliance-service:8001"
     LOAN_PROCESSING_AGENT_SVC="http://loan-processing-agent:8002"
     NOTIFICATION_SVC="http://notification-service:8085"
     OCR_SVC="http://ocr-service:8000"
+    echo "🚀 Deploying in CLUSTER mode"
+    echo "🔗 Effective workflow server url: $WF_SERVER_URL"
   else
     WF_SERVER_URL="http://localhost:9010/workflow-server"
     DOC_MCP_SVC="http://localhost:8010"
@@ -19,7 +105,11 @@ handle_deployment_type() {
     LOAN_PROCESSING_AGENT_SVC="http://localhost:8002"
     NOTIFICATION_SVC="http://localhost:8085"
     OCR_SVC="http://localhost:8000"
+    echo "🧪 Deploying in LOCAL mode"
+    echo "🔗 Effective workflow server url: $WF_SERVER_URL"
   fi
+
+  configure_curl_options
 
   # Export variables if needed
   export DOC_MCP_SVC
@@ -27,6 +117,13 @@ handle_deployment_type() {
   export LOAN_PROCESSING_AGENT_SVC
   export NOTIFICATION_SVC
   export OCR_SVC
+}
+
+check_previous_command_failure() {
+    if [ $? -ne 0 ]; then
+        printf "\nError: %s. Exiting.\n" "$1"
+        exit 1
+    fi
 }
 
 create_llm_profile() {
@@ -60,8 +157,7 @@ create_llm_profile() {
   }'
 
   # Call API
-  response=$(curl -s -w "%{http_code}" -o /tmp/create_llm_profile_resp.json \
-    -L \
+  response=$(curl_with_common_opts -s -w "%{http_code}" -o /tmp/create_llm_profile_resp.json \
     -X POST "$API_URL" \
     -H "Content-Type: application/json" \
     -H "Accept: */*" \
@@ -102,8 +198,8 @@ create_database_profile() {
   }'
 
   # Call API with form
-  response=$(curl -s -w "%{http_code}" -o /tmp/create_database_profile_resp.json \
-    -L "$API_URL" \
+  response=$(curl_with_common_opts -s -w "%{http_code}" -o /tmp/create_database_profile_resp.json \
+    "$API_URL" \
     --form "profile=${PROFILE_JSON}")
 
   if [ "$response" -eq 200 ]; then
@@ -131,8 +227,7 @@ create_http_tool() {
   }'
 
   # Call API
-  response=$(curl -s -w "%{http_code}" -o /tmp/create_http_tool_resp.json \
-    -L \
+  response=$(curl_with_common_opts -s -w "%{http_code}" -o /tmp/create_http_tool_resp.json \
     -X POST "$API_URL" \
     -H "Content-Type: application/json" \
     -d "$DATA")
@@ -164,8 +259,7 @@ create_database_tool() {
   }'
 
   # Call API
-  response=$(curl -s -w "%{http_code}" -o /tmp/create_database_tool_resp.json \
-    -L \
+  response=$(curl_with_common_opts -s -w "%{http_code}" -o /tmp/create_database_tool_resp.json \
     -X POST "$API_URL" \
     -H "Content-Type: application/json" \
     -d "$DATA")
@@ -198,8 +292,7 @@ create_doc_mcp_config() {
   }'
 
   # Call API
-  response=$(curl -s -w "%{http_code}" -o /tmp/create_doc_mcp_config_resp.json \
-    -L \
+  response=$(curl_with_common_opts -s -w "%{http_code}" -o /tmp/create_doc_mcp_config_resp.json \
     -X POST "$API_URL" \
     -H "Content-Type: application/json" \
     -d "$DATA")
@@ -228,8 +321,7 @@ create_prompt_loan_application_nl_2_json() {
     "promptTemplate": "'"$promptTemplate"'"
   }'
 
-  response=$(curl -s -w "%{http_code}" -o /tmp/create_loan_app_prompt_resp.json \
-    -L \
+  response=$(curl_with_common_opts -s -w "%{http_code}" -o /tmp/create_loan_app_prompt_resp.json \
     -X POST "$API_URL" \
     -H "Content-Type: application/json" \
     -d "$DATA")
@@ -258,8 +350,7 @@ create_prompt_loan_process_planner() {
     "promptTemplate": "'"$promptTemplate"'"
   }'
 
-  response=$(curl -s -w "%{http_code}" -o /tmp/create_loan_app_prompt_resp.json \
-    -L \
+  response=$(curl_with_common_opts -s -w "%{http_code}" -o /tmp/create_loan_app_prompt_resp.json \
     -X POST "$API_URL" \
     -H "Content-Type: application/json" \
     -d "$DATA")
@@ -295,17 +386,25 @@ create_agent_profile_for_loan_document_verification_agent() {
     "mcpServers": [
         "doc_mcp"
     ],
+    "capabilities": [
+        "WORKFLOW"
+    ],
     "llmProfile": {
         "name": "llm-oci",
         "model": "openai.gpt-4o"
     },
+    "promptVariables": {},
+    "temperature": 0.2,
+    "maxTokens": 1024,
+    "top_p": 0.9,
+    "top_k": 40,
+    "guardrails": {},
     "memory": true,
     "maxMessages": 20,
     "maxToolCalls": 10
   }'
 
-  response=$(curl -s -w "%{http_code}" -o /tmp/create_loan_doc_verif_agent_resp.json \
-    -L \
+  response=$(curl_with_common_opts -s -w "%{http_code}" -o /tmp/create_loan_doc_verif_agent_resp.json \
     -X POST "$API_URL" \
     -H "Content-Type: application/json" \
     -d "$DATA")
@@ -338,17 +437,25 @@ create_agent_profile_for_oracle_db_agent(){
       "custom_http"
     ],
     "mcpServers": [],
+    "capabilities": [
+        "WORKFLOW"
+    ],
     "llmProfile": {
       "name": "llm-oci",
       "model": "openai.gpt-4o"
     },
+    "promptVariables": {},
+    "temperature": 0.2,
+    "maxTokens": 1024,
+    "top_p": 0.9,
+    "top_k": 40,
+    "guardrails": {},
     "memory": true,
     "maxMessages": 20,
     "maxToolCalls": 10
   }'
 
-  response=$(curl -s -w "%{http_code}" -o /tmp/create_oracle_db_agent_resp.json \
-    -L \
+  response=$(curl_with_common_opts -s -w "%{http_code}" -o /tmp/create_oracle_db_agent_resp.json \
     -X POST "$API_URL" \
     -H "Content-Type: application/json" \
     -d "$DATA")
@@ -367,7 +474,7 @@ create_agent_profile_for_oracle_db_agent(){
   fi
 }
 
-create_simple_tas_for_loan_processing_agent(){
+create_simple_task_for_loan_processing_agent(){
   API_URL="$WF_SERVER_URL/api/metadata/taskdefs"
   TASKDEF_DATA='[
     {
@@ -391,8 +498,7 @@ create_simple_tas_for_loan_processing_agent(){
     }
   ]'
 
-  response=$(curl -s -w "%{http_code}" -o /tmp/create_loan_processing_agent_task_resp.json \
-    -L \
+  response=$(curl_with_common_opts -s -w "%{http_code}" -o /tmp/create_loan_processing_agent_task_resp.json \
     -X POST "$API_URL" \
     -H "Content-Type: application/json" \
     -d "$TASKDEF_DATA")
@@ -421,8 +527,7 @@ deploy_create_loan_app_table_workflow(){
     exit 1
   fi
 
-  response=$(curl -s -w "%{http_code}" -o /tmp/deploy_create_loan_app_table_workflow_resp.json \
-    -L \
+  response=$(curl_with_common_opts -s -w "%{http_code}" -o /tmp/deploy_create_loan_app_table_workflow_resp.json \
     -X POST "$API_URL" \
     -H "Content-Type: application/json" \
     -d @"$INPUT_FILE_PATH")
@@ -447,8 +552,7 @@ deploy_create_loan_app_workflow(){
     exit 1
   fi
 
-  response=$(curl -s -w "%{http_code}" -o /tmp/deploy_create_loan_app_workflow.json \
-    -L \
+  response=$(curl_with_common_opts -s -w "%{http_code}" -o /tmp/deploy_create_loan_app_workflow.json \
     -X POST "$API_URL" \
     -H "Content-Type: application/json" \
     -d @"$INPUT_FILE_PATH")
@@ -466,43 +570,72 @@ deploy_create_loan_app_workflow(){
 cleanup() {
   echo "🧹 Cleaning up existing profiles, connectors, workflows..."
 
+  cleanup_delete() {
+    local resource_name="$1"
+    local url="$2"
+    local response_file
+    local error_file
+    local http_code
+    local curl_exit
+
+    response_file=$(mktemp /tmp/cleanup_delete_resp.XXXXXX)
+    error_file=$(mktemp /tmp/cleanup_delete_err.XXXXXX)
+
+    echo "🗑️ Deleting ${resource_name}"
+    echo "   URL: ${url}"
+
+    http_code=$(curl_with_common_opts -sS --fail-with-body -w "%{http_code}" -o "$response_file" \
+      -X DELETE "$url" 2>"$error_file")
+    curl_exit=$?
+
+    echo "   HTTP code: ${http_code:-N/A}"
+
+    if [ -s "$response_file" ]; then
+      echo "   Response:"
+      cat "$response_file"
+      printf "\n"
+    else
+      echo "   Response: <empty>"
+    fi
+
+    if [ "$curl_exit" -ne 0 ]; then
+      echo "❌ Cleanup failed for ${resource_name} (curl_exit: ${curl_exit}, http_code: ${http_code})"
+      if [ -s "$error_file" ]; then
+        echo "   curl stderr:"
+        cat "$error_file"
+      fi
+    else
+      echo "✅ Cleanup request completed for ${resource_name}"
+    fi
+
+    rm -f "$response_file" "$error_file"
+  }
+
   # Delete workflows first (dependencies)
-  curl -s -X DELETE "$WF_SERVER_URL/api/metadata/workflow/acme_bank_loan_processing_workflow_v3/1" || true
-  printf "\n"
-  curl -s -X DELETE "$WF_SERVER_URL/api/metadata/workflow/Create_Table_For_Loan_Application/1" || true
-  printf "\n"
+  cleanup_delete "workflow acme_bank_loan_processing_workflow_v3" "$WF_SERVER_URL/api/metadata/workflow/acme_bank_loan_processing_workflow_v3/1"
+  cleanup_delete "workflow Create_Table_For_Loan_Application" "$WF_SERVER_URL/api/metadata/workflow/Create_Table_For_Loan_Application/1"
 
   # Delete task definitions
-  curl -s -X DELETE "$WF_SERVER_URL/api/metadata/taskdefs/loan_processing_agent_task" || true
-  printf "\n"
+  cleanup_delete "task definition loan_processing_agent_task" "$WF_SERVER_URL/api/metadata/taskdefs/loan_processing_agent_task"
 
   # Delete agents
-  curl -s -X DELETE "$WF_SERVER_URL/api/metadata/ai/agents/loan_document_verification_agent" || true
-  printf "\n"
-  curl -s -X DELETE "$WF_SERVER_URL/api/metadata/ai/agents/oracle_db_agent" || true
-  printf "\n"
+  cleanup_delete "agent loan_document_verification_agent" "$WF_SERVER_URL/api/metadata/ai/agents/loan_document_verification_agent"
+  cleanup_delete "agent oracle_db_agent" "$WF_SERVER_URL/api/metadata/ai/agents/oracle_db_agent"
 
   # Delete prompts
-  curl -s -X DELETE "$WF_SERVER_URL/api/metadata/ai/prompts/loan_application_nl_2_json" || true
-  printf "\n"
-  curl -s -X DELETE "$WF_SERVER_URL/api/metadata/ai/prompts/loan_process_planner" || true
-  printf "\n"
+  cleanup_delete "prompt loan_application_nl_2_json" "$WF_SERVER_URL/api/metadata/ai/prompts/loan_application_nl_2_json"
+  cleanup_delete "prompt loan_process_planner" "$WF_SERVER_URL/api/metadata/ai/prompts/loan_process_planner"
 
   # Delete MCP servers
-  curl -s -X DELETE "$WF_SERVER_URL/api/connectors/ai/mcp-servers/doc_mcp" || true
-  printf "\n"
+  cleanup_delete "MCP server doc_mcp" "$WF_SERVER_URL/api/connectors/ai/mcp-servers/doc_mcp"
 
   # Delete tools
-  curl -s -X DELETE "$WF_SERVER_URL/api/connectors/ai/tool-configs/custom_http" || true
-  printf "\n"
-  curl -s -X DELETE "$WF_SERVER_URL/api/connectors/ai/tool-configs/oracle-database-tool" || true
-  printf "\n"
+  cleanup_delete "tool custom_http" "$WF_SERVER_URL/api/connectors/ai/tool-configs/custom_http"
+  cleanup_delete "tool oracle-database-tool" "$WF_SERVER_URL/api/connectors/ai/tool-configs/oracle-database-tool"
 
   # Delete profiles
-  curl -s -X DELETE "$WF_SERVER_URL/api/connectors/database/database-profiles/oracle-database" || true
-  printf "\n"
-  curl -s -X DELETE "$WF_SERVER_URL/api/connectors/ai/llm-profiles/llm-oci" || true
-  printf "\n"
+  cleanup_delete "database profile oracle-database" "$WF_SERVER_URL/api/connectors/database/database-profiles/oracle-database"
+  cleanup_delete "LLM profile llm-oci" "$WF_SERVER_URL/api/connectors/ai/llm-profiles/llm-oci"
 
   echo "✅ Cleanup completed"
 }
@@ -525,9 +658,10 @@ start() {
   create_doc_mcp_config
   create_prompt_loan_application_nl_2_json
   create_prompt_loan_process_planner
+
   create_agent_profile_for_loan_document_verification_agent
   create_agent_profile_for_oracle_db_agent
-  create_simple_tas_for_loan_processing_agent
+  create_simple_task_for_loan_processing_agent
   deploy_create_loan_app_table_workflow
   deploy_create_loan_app_workflow
 }

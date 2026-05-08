@@ -1,18 +1,13 @@
 # Dockerfile for the On-Premise OCR Microservice (FastAPI + EasyOCR)
 FROM python:3.13-slim
 
-# Install optional build/system dependencies for some pip packages (e.g. opencv)
-RUN apt-get update && \
-    apt-get install -y gcc && \
-    rm -rf /var/lib/apt/lists/*
-
 # Set working directory
 WORKDIR /app
 
 # Copy requirements and install dependencies
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir --prefer-binary -r requirements.txt
 
 # Copy application code
 COPY . .
