@@ -1,15 +1,17 @@
 # Medical QA — Retrieval Augmented Generation (RAG) over patient records
 
 ## What this sample is
-A two-workflow sample that:
+A sample that:
 - Ingests a local document into a vector store using an embedding model.
 - Retrieves relevant chunks and uses an LLM to generate a response in natural language.
+- Optionally exposes the ingested data through a MicroTx conversational agent backed by a RAG retrieval tool.
 
 This folder includes a small Synthea-like dataset and a helper script to build a single file of patient records.
 
 ## What's in this folder
-- [ingestion-wf.json](./ingestion-wf.json) — Ingestion workflow (`ingest_data`) that chunks, embeds, and stores vectors in `test_vectors`
-- [retrieve-wf.json](./retrieve-wf.json) — Query workflow (`medical_history_qa`) that performs retrieve-and-generate
+- [workflows/ingestion-wf.json](./workflows/ingestion-wf.json) — Ingestion workflow (`ingest_data`) that chunks, embeds, and stores vectors in `test_vectors`
+- [workflows/retrieve-wf.json](./workflows/retrieve-wf.json) — Query workflow (`medical_history_qa`) that performs retrieve-and-generate
+- [conversational-agent-chat-ui](./conversational-agent-chat-ui) — Optional Streamlit chat UI for MicroTx conversational agents
 - `data/` — Sample data
   - `patients.csv`, `conditions.csv`, `observations.csv` — Source CSVs
   - `patient_records.json` — Generated record bundle (default `filePath` for ingestion)
@@ -20,9 +22,9 @@ Clinical data is largely unstructured across multiple sources (EHR notes, lab re
 
 ## How it works (high level)
 1. Ingest data to vectors (ingestion workflow: `ingest_data`)
-   - Configuration (from [ingestion-wf.json](./ingestion-wf.json)):
-     - `embeddingModelProfile`: `oci_models` with `model: cohere.embed-multilingual-image-v3.0`
-     - `dataStoreProfile`: `oracle-atp`
+   - Configuration (from [workflows/ingestion-wf.json](./workflows/ingestion-wf.json)):
+     - `embeddingModelProfile`: `medical_oci_llm_profile` with `model: cohere.embed-multilingual-image-v3.0`
+     - `dataStoreProfile`: `medical_vector_db_profile`
      - `tableName`: `test_vectors`
      - `data.source`: `local`
      - `data.filePath`: `patient_records.json`
@@ -31,23 +33,33 @@ Clinical data is largely unstructured across multiple sources (EHR notes, lab re
      - `dimensions: 512` (must match the embedding model)
    - Effect: Reads local file, chunks text, creates embeddings, and upserts into `test_vectors`.
    - Task: `genai_ingestion` (type: `GENAI_INGESTION`)
-     - Reads the source file, splits it into chunks, computes embeddings with `cohere.embed-multilingual-image-v3.0`, and upserts vectors into `oracle-atp`.`test_vectors` using an HNSW (COSINE) index.
+     - Reads the source file, splits it into chunks, computes embeddings with `cohere.embed-multilingual-image-v3.0`, and upserts vectors into `medical_vector_db_profile`.`test_vectors` using an HNSW (COSINE) index.
 
-2. Ask questions (RAG query workflow: `medical_history_qa`)
-   - Configuration (from [retrieve-wf.json](./retrieve-wf.json)):
-     - `llmProfile`: `oci_models` with `model: openai.gpt-4.1`
-     - `embeddingModelProfile`: `oci_models` with `model: cohere.embed-multilingual-image-v3.0`
-     - `dataStoreProfile`: `oracle-atp`, `tableName: test_vectors`
+2. Ask questions using either of these retrieval paths:
+   - Workflow path: run the RAG query workflow `medical_history_qa`.
+   - Conversational agent path: create a RAG retrieval tool config that points to the ingested vectors, create an agent profile with conversational capability, and chat with the agent through the MicroTx conversational-agent REST API or the included sample chat UI.
+
+3. RAG query workflow: `medical_history_qa`
+   - Configuration (from [workflows/retrieve-wf.json](./workflows/retrieve-wf.json)):
+     - `llmProfile`: `medical_oci_llm_profile` with `model: openai.gpt-4.1`
+     - `embeddingModelProfile`: `medical_oci_llm_profile` with `model: cohere.embed-multilingual-image-v3.0`
+     - `dataStoreProfile`: `medical_vector_db_profile`, `tableName: test_vectors`
      - Retrieval: `topK: 5`, `ragType: naive`, `indexType: HNSW`, `distanceType: COSINE`, `dimensions: "512"`
      - Generation: `temperature: 0.8`, `maxTokens: 1024`, `top_k: 40`
    - Effect: Embeds the query, retrieves nearest chunks from `test_vectors`, and has the LLM synthesize an answer.
    - Task: `query` (taskReferenceName: `query_rag_task`, type: `GENAI_RETRIEVE`)
      - Embeds the input query, retrieves the top-K nearest chunks from `test_vectors`, and sends the query plus retrieved context to the LLM to generate a response in natural language.
 
+4. Conversational agent chat
+   - RAG retrieval tool config: `medical_history_retrieval`
+   - Agent profile: `medical_history_agent`
+   - Chat API: `/api/conversational-agent/chat`
+   - Effect: The agent receives the user message, calls the RAG retrieval tool to fetch relevant medical-history context from the ingested vector table, and answers in a conversational session with optional memory.
+
 ## Inputs and outputs
 - Ingestion (`ingest_data`)
   - Inputs: none
-  - Outputs: N/A (populates `test_vectors` in `oracle-atp`)
+  - Outputs: N/A (populates `test_vectors` in `medical_vector_db_profile`)
 
 - RAG query (`medical_history_qa`)
   - Inputs:
@@ -76,10 +88,10 @@ CREATE TABLE TEST_VECTORS (
 );
 ```
 
-2. Create a database profile that contains the connection parameters to connect to the Oracle Database 26ai instance that contains the vector table. Note down this profile name. See:
+2. Create a database profile that contains the connection parameters to connect to the Oracle Database 26ai instance that contains the vector table. The sample uses `medical_vector_db_profile` as the database profile name. Create this profile under **Connectors** with your database credentials, or replace this sample name with your own database profile name. See:
 - Create a Database Profile: https://docs-uat.us.oracle.com/en/database/oracle/transaction-manager-for-microservices/25.3/aiwfg/managing-database-profiles.html
 
-3. Create an LLM definition that uses an embedding model. See:
+3. Create an LLM definition that can access the chat and embedding models. The sample uses `medical_oci_llm_profile` as the LLM profile name. Create this profile under **Connectors -> LLM Definitions** with your OCI LLM credentials, or replace this sample name with your own LLM profile name. See:
 - Create an LLM Definition: https://docs-uat.us.oracle.com/en/database/oracle/transaction-manager-for-microservices/25.3/aiwfg/llm-definition.html
 
 4. Upload files to the workflow file storage if you plan to use the LOCAL data source. See:
@@ -108,7 +120,7 @@ python3 script/transform_data.py
 3. Run the ingestion workflow
    - Start `ingest_data` (no inputs required).
    - Ensure the ingestion workflow Data Source is LOCAL and the File Path is the uploaded `patient_records.json`.
-   - Verify vectors are stored in your `test_vectors` table within `oracle-atp`.
+   - Verify vectors are stored in your `test_vectors` table within `medical_vector_db_profile`.
 
 4. Ask a question via the RAG workflow
    - Start `medical_history_qa` with a payload like:
@@ -119,6 +131,123 @@ python3 script/transform_data.py
 ```
    - The workflow returns `answer` containing the synthesized response.
 
+5. Or chat with a conversational agent
+   - Retrieval through an agent does not require the RAG query workflow.
+   - Create a RAG retrieval tool config that points to the vector table populated by the ingestion workflow.
+   - Create an agent profile that uses the retrieval tool.
+   - Chat through the MicroTx conversational-agent REST API or run the included [sample chat app](./conversational-agent-chat-ui).
+
+## Conversational agent chat
+Use this path when you want a chat experience over the ingested medical QA data instead of invoking the `medical_history_qa` retrieval workflow directly.
+
+### 1. Create the RAG retrieval tool config
+Create the tool from **Connectors -> Internal Tools** in the Workflow UI, or call the REST API:
+
+```http
+POST {{WorkflowServerUrl}}/connectors/ai/tool-configs
+Content-Type: application/json
+```
+
+```json
+{
+  "name": "medical_history_retrieval",
+  "description": "Medical History Retrieval tool",
+  "category": "RAG_RETRIEVAL",
+  "type": "NAIVE",
+  "databaseProfile": "medical_vector_db_profile",
+  "ragRetrievalToolConfig": {
+    "llmProfile": {
+      "name": "medical_oci_llm_profile",
+      "model": "openai.gpt-4.1"
+    },
+    "embeddingModelProfile": {
+      "name": "medical_oci_llm_profile",
+      "model": "cohere.embed-multilingual-image-v3.0"
+    },
+    "tableName": "test_vectors",
+    "dimensions": 512,
+    "indexType": "HNSW",
+    "distanceType": "COSINE",
+    "topK": 5,
+    "llmParams": {
+      "temperature": 0.4,
+      "maxTokens": 1024,
+      "llmTopK": 40
+    }
+  }
+}
+```
+
+The `databaseProfile`, `tableName`, `dimensions`, `indexType`, and `distanceType` values must match the ingestion configuration. `medical_vector_db_profile` is a sample database profile name; replace it with the profile you created under **Connectors**. `medical_oci_llm_profile` is a sample LLM profile name; replace it with the profile you created under **Connectors -> LLM Definitions**.
+
+### 2. Create the agent profile
+Create the profile from **Agentic AI -> Agent Profiles** in the Workflow UI, or call the REST API:
+
+```http
+POST {{WorkflowServerUrl}}/metadata/ai/agents
+Content-Type: application/json
+```
+
+```json
+{
+  "name": "medical_history_agent",
+  "description": "Medical History Conversational agent",
+  "role": "You are an expert in answering queries related to medical history",
+  "instruction": "- Answer the questions related to medical history\n- Make use of tool to get the relevant context about medical history\n\nUser Query: \"${query}\"",
+  "llmProfile": {
+    "name": "medical_oci_llm_profile",
+    "model": "openai.gpt-4.1"
+  },
+  "tools": [
+    "medical_history_retrieval"
+  ],
+  "mcpServers": [],
+  "memory": true,
+  "maxMessages": 20,
+  "maxToolCalls": 10,
+  "capabilities": [],
+  "promptVariables": {},
+  "temperature": 0.4,
+  "maxTokens": 1024,
+  "guardrails": {}
+}
+```
+
+The `tools` array must include the RAG retrieval tool config name created in the previous step.
+
+### 3. Chat with the agent through REST
+Use the conversational-agent API to send user messages. The response is streamed as server-sent events.
+
+```http
+POST {{WorkflowServerUrl}}/api/conversational-agent/chat
+Accept: text/event-stream
+Content-Type: application/json
+```
+
+```json
+{
+  "agentName": "medical_history_agent",
+  "chatSessionId": "session-001",
+  "userInput": "What cardiovascular risk factors are present for patient Donnell534 Dicki44?"
+}
+```
+
+Use the same `chatSessionId` for follow-up questions in the same conversation. The sample agent enables memory with `maxMessages: 20`.
+
+### 4. Or run the sample chat app
+The included Streamlit app is under [conversational-agent-chat-ui](./conversational-agent-chat-ui). It is preconfigured with `medical_history_agent` and calls the same conversational-agent API used above.
+
+```bash
+cd RAG-ingestion-retrieval-workflows/conversational-agent-chat-ui
+python3 -m venv .venv
+source .venv/bin/activate
+pip3 install -r requirements.txt
+export WORKFLOW_SERVER_URL="http://localhost:9010/workflow-server"
+streamlit run app.py
+```
+
+Customers can also build their own chat app by calling `/api/conversational-agent/chat` with the same payload shape.
+
 ## Bring Your Own Document (BYO doc)
 To replace the sample content with your own document and run end-to-end ingestion + RAG:
 
@@ -127,7 +256,7 @@ To replace the sample content with your own document and run end-to-end ingestio
 
 2. Point the ingestion workflow to your uploaded file
    - UI: Select Data Source: LOCAL and then choose your file in the File Path drop-down.
-   - JSON: Update [ingestion-wf.json](./ingestion-wf.json):
+   - JSON: Update [workflows/ingestion-wf.json](./workflows/ingestion-wf.json):
    - Ensure `dimensions` matches your chosen embedding model; adjust `chunkSize` and related parameters as needed.
 
 3. Alternative Data Sources
@@ -192,18 +321,23 @@ Summary: Patient is experiencing mild depressive symptoms, stage 2 chronic kidne
 10. Follow-up: Schedule follow-ups to monitor labs (especially kidney function and lipids) and reassess overall health status. Seek medical attention promptly if symptoms change or new concerns arise.
 
 ## Files reference
-- [ingestion-wf.json](./ingestion-wf.json):
+- [workflows/ingestion-wf.json](./workflows/ingestion-wf.json):
   - `name: ingest_data`, `type: GENAI_INGESTION`
   - Embeddings: `cohere.embed-multilingual-image-v3.0` (dims 512)
   - Data source: `local` file at `data.filePath`
-  - Vector store: `oracle-atp`, table `test_vectors`, index `HNSW` (COSINE)
-- [retrieve-wf.json](./retrieve-wf.json):
+  - Vector store: `medical_vector_db_profile`, table `test_vectors`, index `HNSW` (COSINE)
+- [workflows/retrieve-wf.json](./workflows/retrieve-wf.json):
   - `name: medical_history_qa`, `type: GENAI_RETRIEVE`
   - LLM: `openai.gpt-4.1`, Embeddings: same as ingestion
   - Inputs: `query`
   - Output: `answer` mapped from `query_rag_task.output.response`
+- [conversational-agent-chat-ui/app.py](./conversational-agent-chat-ui/app.py):
+  - Streamlit sample chat app for `medical_history_agent`
+  - Calls `/api/conversational-agent/chat`
+  - Supports chat sessions and agent history operations
 
 ## Notes
 - Ensure `dimensions` matches your embedding model; mismatches will cause retrieval issues.
-- If you change `tableName`, update it in both workflows.
+- If you change `tableName`, update it in the ingestion workflow, retrieval workflow, and RAG retrieval tool config.
+- The conversational agent path still depends on successful ingestion. The retrieval tool must point to the same vector table populated by `ingest_data`.
 - This sample is illustrative and not a substitute for clinical judgment or compliance workflows. De-identify PHI when required and follow applicable regulations.
