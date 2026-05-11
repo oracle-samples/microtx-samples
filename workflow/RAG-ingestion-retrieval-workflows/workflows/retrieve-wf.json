@@ -8,17 +8,17 @@
       "taskReferenceName": "query_rag_task",
       "inputParameters": {
         "llmProfile": {
-          "name": "oci_models",
+          "name": "medical_oci_llm_profile",
           "model": "openai.gpt-4.1"
         },
         "temperature": 0.8,
         "maxTokens": 1024,
         "top_k": 40,
         "embeddingModelProfile": {
-          "name": "oci_models",
+          "name": "medical_oci_llm_profile",
           "model": "cohere.embed-multilingual-image-v3.0"
         },
-        "dataStoreProfile": "oracle-atp",
+        "dataStoreProfile": "medical_vector_db_profile",
         "tableName": "test_vectors",
         "query": "${workflow.input.query}",
         "dimensions": "512",
