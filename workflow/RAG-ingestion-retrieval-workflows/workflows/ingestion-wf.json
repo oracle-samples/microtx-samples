@@ -8,10 +8,10 @@
       "taskReferenceName": "genai_ingestion",
       "inputParameters": {
         "embeddingModelProfile": {
-          "name": "oci_models",
+          "name": "medical_oci_llm_profile",
           "model": "cohere.embed-multilingual-image-v3.0"
         },
-        "dataStoreProfile": "oracle-atp",
+        "dataStoreProfile": "medical_vector_db_profile",
         "tableName": "test_vectors",
         "data": {
           "source": "local",
