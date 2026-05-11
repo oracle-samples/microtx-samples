@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 
 def load_synthea_data():
@@ -24,9 +26,9 @@ def load_synthea_data():
 
         patient_data.append((patient_id, profile))
 
-    import pickle
-    with open('data/patient_records.json', 'wb') as f:
-        pickle.dump(patient_data, f)
+    with open('data/patient_records.json', 'w', encoding='utf-8') as f:
+        json.dump(patient_data, f, ensure_ascii=False, indent=2)
+        f.write('\n')
 
     return patient_data
 
