@@ -10,7 +10,7 @@ raw_istio_ip="${istio_ip-}"
 # istio_url="${istio_url:-127.0.0.1:80}"
 istio_url="${istio_url:-https://demo.microtx.dev:443}"
 
-istio_ip="${istio_ip:-129.153.235.126}"
+istio_ip="${istio_ip:-127.0.0.1}"
 
 # Common curl options (work on macOS and Oracle Linux)
 CURL_COMMON_OPTS=(-L -k)
@@ -223,7 +223,8 @@ create_http_tool() {
     "name": "custom_http",
     "description": "Custom http tool",
     "category": "API",
-    "type": "HTTP"
+    "type": "HTTP",
+    "url": ""
   }'
 
   # Call API
@@ -253,9 +254,11 @@ create_database_tool() {
     "name": "oracle-database-tool",
     "description": "Tool to access oracle database",
     "category": "DATABASE",
-    "url": "",
-    "apiKey": "",
-    "databaseProfile": "oracle-database"
+    "databaseProfile": "oracle-database",
+    "databaseToolConfig": {
+      "allowWrite": true,
+      "allowDdl": false
+    }
   }'
 
   # Call API
