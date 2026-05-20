@@ -433,7 +433,7 @@
   "schemaVersion": 2,
   "restartable": true,
   "workflowStatusListenerEnabled": false,
-  "timeoutPolicy": "ALERT_ONLY",
+  "timeoutPolicy": "TIME_OUT_WF",
   "timeoutSeconds": 900,
   "variables": {},
   "inputTemplate": {},
