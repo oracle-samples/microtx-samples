@@ -113,7 +113,7 @@
   "restartable": true,
   "workflowStatusListenerEnabled": false,
   "ownerEmail": "example@email.com",
-  "timeoutPolicy": "ALERT_ONLY",
+  "timeoutPolicy": "TIME_OUT_WF",
   "timeoutSeconds": 0,
   "variables": {},
   "inputTemplate": {},
