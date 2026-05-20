@@ -33,6 +33,6 @@
   "restartable": true,
   "workflowStatusListenerEnabled": false,
   "failureWorkflow": "",
-  "timeoutPolicy": "ALERT_ONLY",
+  "timeoutPolicy": "TIME_OUT_WF",
   "timeoutSeconds": 0
 }
