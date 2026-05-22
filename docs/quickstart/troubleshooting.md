@@ -94,6 +94,32 @@ kubectl apply -f /tmp/coredns-modified.yaml
 kubectl rollout restart deployment coredns -n kube-system
 ```
 
+## 11) FREE edition package prerequisite
+
+If the distribution package is FREE edition, run this command where `quickstart.sh` script is present. Skip this if you are using Enterprise Edition.
+
+Linux:
+
+```bash
+sed -i \
+  -e 's|transaction-coordinator-amd\.tar\.gz|transaction-coordinator-free-amd.tar.gz|g' \
+  -e 's|transaction-coordinator-arm\.tar\.gz|transaction-coordinator-free-arm.tar.gz|g' \
+  -e 's|workflow-server-amd\.tar\.gz|workflow-server-free-amd.tar.gz|g' \
+  -e 's|workflow-server-arm\.tar\.gz|workflow-server-free-arm.tar.gz|g' \
+  quickstart.sh
+```
+
+macOS / BSD:
+
+```bash
+sed -i '' \
+  -e 's|transaction-coordinator-amd\.tar\.gz|transaction-coordinator-free-amd.tar.gz|g' \
+  -e 's|transaction-coordinator-arm\.tar\.gz|transaction-coordinator-free-arm.tar.gz|g' \
+  -e 's|workflow-server-amd\.tar\.gz|workflow-server-free-amd.tar.gz|g' \
+  -e 's|workflow-server-arm\.tar\.gz|workflow-server-free-arm.tar.gz|g' \
+  quickstart.sh
+```
+
 ---
 
 [← Back to Quickstart Home](./README.md)
