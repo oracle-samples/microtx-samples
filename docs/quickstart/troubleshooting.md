@@ -96,7 +96,7 @@ kubectl rollout restart deployment coredns -n kube-system
 
 ## 11) FREE edition package prerequisite
 
-If the distribution package is FREE edition, run this command where `quickstart.sh` script is present. Skip this if you are using Enterprise Edition.
+If the distribution package is FREE edition, run this command from the directory where `quickstart.sh` is present. Skip this step if you are using Enterprise Edition.
 
 Linux:
 
@@ -106,6 +106,12 @@ sed -i \
   -e 's|transaction-coordinator-arm\.tar\.gz|transaction-coordinator-free-arm.tar.gz|g' \
   -e 's|workflow-server-amd\.tar\.gz|workflow-server-free-amd.tar.gz|g' \
   -e 's|workflow-server-arm\.tar\.gz|workflow-server-free-arm.tar.gz|g' \
+  -e 's|localhost/transaction-coordinator-\${IMAGE_ARCH_VARIANT}:\${VERSION}|localhost/transaction-coordinator-free-${IMAGE_ARCH_VARIANT}:${VERSION}|g' \
+  -e 's|localhost/workflow-server-\${IMAGE_ARCH_VARIANT}:\${VERSION}|localhost/workflow-server-free-${IMAGE_ARCH_VARIANT}:${VERSION}|g' \
+  -e 's|localhost/transaction-coordinator-\${MANUAL_IMAGE_ARCH_VARIANT}:\${VERSION}|localhost/transaction-coordinator-free-${MANUAL_IMAGE_ARCH_VARIANT}:${VERSION}|g' \
+  -e 's|localhost/workflow-server-\${MANUAL_IMAGE_ARCH_VARIANT}:\${VERSION}|localhost/workflow-server-free-${MANUAL_IMAGE_ARCH_VARIANT}:${VERSION}|g' \
+  -e 's|COORDINATOR_K8S_IMAGE_REMOTE_RETAG="transaction-coordinator:${VERSION}"|COORDINATOR_K8S_IMAGE_REMOTE_RETAG="transaction-coordinator-free:${VERSION}"|g' \
+  -e 's|WORKFLOW_SERVER_K8S_IMAGE_REMOTE_RETAG="workflow-server:${VERSION}"|WORKFLOW_SERVER_K8S_IMAGE_REMOTE_RETAG="workflow-server-free:${VERSION}"|g' \
   quickstart.sh
 ```
 
@@ -117,6 +123,12 @@ sed -i '' \
   -e 's|transaction-coordinator-arm\.tar\.gz|transaction-coordinator-free-arm.tar.gz|g' \
   -e 's|workflow-server-amd\.tar\.gz|workflow-server-free-amd.tar.gz|g' \
   -e 's|workflow-server-arm\.tar\.gz|workflow-server-free-arm.tar.gz|g' \
+  -e 's|localhost/transaction-coordinator-\${IMAGE_ARCH_VARIANT}:\${VERSION}|localhost/transaction-coordinator-free-${IMAGE_ARCH_VARIANT}:${VERSION}|g' \
+  -e 's|localhost/workflow-server-\${IMAGE_ARCH_VARIANT}:\${VERSION}|localhost/workflow-server-free-${IMAGE_ARCH_VARIANT}:${VERSION}|g' \
+  -e 's|localhost/transaction-coordinator-\${MANUAL_IMAGE_ARCH_VARIANT}:\${VERSION}|localhost/transaction-coordinator-free-${MANUAL_IMAGE_ARCH_VARIANT}:${VERSION}|g' \
+  -e 's|localhost/workflow-server-\${MANUAL_IMAGE_ARCH_VARIANT}:\${VERSION}|localhost/workflow-server-free-${MANUAL_IMAGE_ARCH_VARIANT}:${VERSION}|g' \
+  -e 's|COORDINATOR_K8S_IMAGE_REMOTE_RETAG="transaction-coordinator:${VERSION}"|COORDINATOR_K8S_IMAGE_REMOTE_RETAG="transaction-coordinator-free:${VERSION}"|g' \
+  -e 's|WORKFLOW_SERVER_K8S_IMAGE_REMOTE_RETAG="workflow-server:${VERSION}"|WORKFLOW_SERVER_K8S_IMAGE_REMOTE_RETAG="workflow-server-free:${VERSION}"|g' \
   quickstart.sh
 ```
 
