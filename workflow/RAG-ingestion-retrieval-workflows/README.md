@@ -89,13 +89,13 @@ CREATE TABLE TEST_VECTORS (
 ```
 
 2. Create a database profile that contains the connection parameters to connect to the Oracle Database 26ai instance that contains the vector table. The sample uses `medical_vector_db_profile` as the database profile name. Create this profile under **Connectors** with your database credentials, or replace this sample name with your own database profile name. See:
-- Create a Database Profile: https://docs-uat.us.oracle.com/en/database/oracle/transaction-manager-for-microservices/25.3/aiwfg/managing-database-profiles.html
+- Create a Database Profile: https://docs.oracle.com/en/database/oracle/transaction-manager-for-microservices/26.1/aiwfg/managing-database-profiles.html
 
 3. Create an LLM definition that can access the chat and embedding models. The sample uses `medical_oci_llm_profile` as the LLM profile name. Create this profile under **Connectors -> LLM Definitions** with your OCI LLM credentials, or replace this sample name with your own LLM profile name. See:
-- Create an LLM Definition: https://docs-uat.us.oracle.com/en/database/oracle/transaction-manager-for-microservices/25.3/aiwfg/llm-definition.html
+- Create an LLM Definition: https://docs.oracle.com/en/database/oracle/transaction-manager-for-microservices/26.1/aiwfg/llm-definition.html
 
 4. Upload files to the workflow file storage if you plan to use the LOCAL data source. See:
-- Upload to file storage: https://docs-uat.us.oracle.com/en/database/oracle/transaction-manager-for-microservices/25.3/aiwfg/upload-file-storage.html
+- Upload to file storage: https://docs.oracle.com/en/database/oracle/transaction-manager-for-microservices/26.1/aiwfg/upload-file-storage.html
 
 Data Source options for GenAI Ingestion and Retrieve tasks:
 - WEB: Access data from the web by providing the complete URL.
@@ -114,7 +114,7 @@ python3 script/transform_data.py
    - Note: The output file name is `patient_records.json`. Ensure the ingestion workflow `data.filePath` matches this name and path (e.g., `patient_records.json`).
 
 2. Upload `patient_records.json` to the MicroTx Workflow file storage
-   - Follow: https://docs-uat.us.oracle.com/en/database/oracle/transaction-manager-for-microservices/25.3/aiwfg/upload-file-storage.html
+   - Follow: https://docs.oracle.com/en/database/oracle/transaction-manager-for-microservices/26.1/aiwfg/upload-file-storage.html
    - This makes the file available in the File Path drop-down when the Data Source is set to LOCAL.
 
 3. Run the ingestion workflow
@@ -252,7 +252,7 @@ Customers can also build their own chat app by calling `/api/conversational-agen
 To replace the sample content with your own document and run end-to-end ingestion + RAG:
 
 1. Upload your document to the MicroTx Workflow file storage.
-   - See: https://docs-uat.us.oracle.com/en/database/oracle/transaction-manager-for-microservices/25.3/aiwfg/upload-file-storage.html
+   - See: https://docs.oracle.com/en/database/oracle/transaction-manager-for-microservices/26.1/aiwfg/upload-file-storage.html
 
 2. Point the ingestion workflow to your uploaded file
    - UI: Select Data Source: LOCAL and then choose your file in the File Path drop-down.

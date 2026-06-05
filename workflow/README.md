@@ -33,9 +33,9 @@ Use this guide to register or import any workflow JSON from the samples in this 
 
 ### References
 - Create a workflow using the Workflow Builder:
-  https://docs-uat.us.oracle.com/en/database/oracle/transaction-manager-for-microservices/25.3/aiwfg/create-workflow-using-worflow-builder.html
+  https://docs.oracle.com/en/database/oracle/transaction-manager-for-microservices/26.1/aiwfg/create-workflow-using-worflow-builder.html
 - Define a workflow using JSON:
-  https://docs-uat.us.oracle.com/en/database/oracle/transaction-manager-for-microservices/25.3/aiwfg/define-workflow-using-json.html
+  https://docs.oracle.com/en/database/oracle/transaction-manager-for-microservices/26.1/aiwfg/define-workflow-using-json.html
 
 ## Where to find sample workflow JSON files in this repo
 - Getting started
