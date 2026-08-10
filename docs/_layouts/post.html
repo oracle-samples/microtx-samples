@@ -1,0 +1,14 @@
+---
+layout: default
+---
+<article class="post">
+  <header class="post-header">
+    <p class="article-date"><time datetime="{{ page.date | date_to_xmlschema }}">Published {{ page.date | date: "%B %-d, %Y" }}</time>{% if page.updated %} · Updated {{ page.updated | date: "%B %-d, %Y" }}{% endif %}</p>
+    <h1>{{ page.title }}</h1>
+    <p class="post-description">{{ page.description }}</p>
+    {% if page.tags %}<ul class="tags" aria-label="Article tags">{% for tag in page.tags %}<li>{{ tag }}</li>{% endfor %}</ul>{% endif %}
+    {% if page.author %}<p class="author">By {{ page.author }}</p>{% endif %}
+  </header>
+  <div class="post-content">{{ content }}</div>
+  <p class="issue-link"><a href="https://github.com/oracle-samples/microtx-samples/issues/new?title={{ 'Feedback%3A%20' | append: page.title | uri_escape }}&body={{ 'Feedback%20on%3A%20' | append: page.url | absolute_url | uri_escape }}" target="_blank" rel="noopener noreferrer">Suggest an improvement or report an issue</a></p>
+</article>

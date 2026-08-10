@@ -1,0 +1,24 @@
+title: Oracle MicroTx
+description: Practical articles about Oracle Transaction Manager for Microservices.
+url: "https://oracle-samples.github.io"
+baseurl: "/microtx-samples"
+lang: en
+timezone: UTC
+permalink: /:title/
+markdown: kramdown
+highlighter: rouge
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
