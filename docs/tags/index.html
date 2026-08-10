@@ -1,0 +1,20 @@
+---
+layout: default
+title: Tags
+description: Browse Oracle MicroTx articles by topic.
+---
+<section class="tag-index" aria-labelledby="tags-heading">
+  <p class="eyebrow">Browse by topic</p>
+  <h1 id="tags-heading">Tags</h1>
+  {% assign sorted_tags = site.tags | sort %}
+  {% for tag in sorted_tags %}
+  <section id="{{ tag[0] | slugify }}" class="tag-section" aria-labelledby="tag-{{ tag[0] | slugify }}">
+    <h2 id="tag-{{ tag[0] | slugify }}">{{ tag[0] }}</h2>
+    <ul>
+      {% for post in tag[1] %}
+      <li><a href="{{ post.url | relative_url }}">{{ post.title }}</a><span>{{ post.date | date: "%B %-d, %Y" }}</span></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endfor %}
+</section>

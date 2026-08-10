@@ -4,6 +4,7 @@ description: Deploy MicroTx Free on Oracle Kubernetes Engine using the Oracle Cl
 date: 2026-08-10
 updated: 2026-08-10
 author: Oracle MicroTx team
+author_id: oracle-microtx-team
 tags:
   - MicroTx
   - OCI
@@ -20,8 +21,8 @@ Prepare an OCI account with permission to create or use an OKE cluster and the r
 
 ## Deploy from Marketplace
 
-1. Open the Oracle Cloud Marketplace listing for Oracle MicroTx Free.
-2. Select **Get App**, then create a stack in OCI Resource Manager.
+1. Search Oracle Cloud Marketplace for **Oracle MicroTx**, then select **MicroTx Free Edition**.
+2. Select **Get App**, then launch the supplied stack in OCI Resource Manager.
 3. Supply the required Terraform variables for your OCI environment.
 4. Review the execution plan and apply the stack.
 5. When the job completes, use the stack outputs and the deployment instructions from the listing to access MicroTx.
@@ -32,4 +33,4 @@ After deployment, choose a transaction model or workflow sample from this reposi
 
 ## Next steps
 
-Use MicroTx to coordinate distributed transactions with XA, LRA, or TCC, or explore MicroTx Workflow samples for workflow-based orchestration. Select the pattern that fits the consistency and compensation needs of your services.
+Use MicroTx to coordinate distributed transactions with XA, LRA, or TCC, or explore MicroTx Workflow samples for workflow-based orchestration. Select the pattern that fits the consistency and compensation needs of your services. For the complete Marketplace procedure and every stack option, see the <a href="https://docs.oracle.com/en/database/oracle/transaction-manager-for-microservices/26.1/tmmmg/provision-microtx-oracle-cloud-marketplace.html" target="_blank" rel="noopener noreferrer">official Oracle deployment guide</a>.

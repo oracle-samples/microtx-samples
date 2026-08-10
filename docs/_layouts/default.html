@@ -1,35 +1,37 @@
 <!doctype html>
-<html lang="{{ site.lang | default: 'en' }}">
+<html lang="{{ site.lang | default: 'en' }}" data-theme="light">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
-    <meta name="description" content="{{ page.description | default: site.description | escape }}">
-    <link rel="canonical" href="{{ page.url | absolute_url }}">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="{{ site.title }}">
-    <meta property="og:title" content="{{ page.title | default: site.title | escape }}">
-    <meta property="og:description" content="{{ page.description | default: site.description | escape }}">
-    <meta property="og:url" content="{{ page.url | absolute_url }}">
-    <meta name="twitter:card" content="summary">
+    <script>try { if (localStorage.getItem('microtx-theme') === 'dark') document.documentElement.dataset.theme = 'dark'; } catch (error) {}</script>
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+    <link rel="stylesheet" href="{{ '/assets/css/rouge.css' | relative_url }}">
     {% feed_meta %}
     {% seo %}
   </head>
   <body>
     <header class="site-header">
       <div class="site-shell header-content">
-        <a class="brand" href="{{ '/' | relative_url }}" aria-label="Oracle MicroTx home">Oracle <span>MicroTx</span></a>
+        <a class="brand" href="{{ '/' | relative_url }}" aria-label="Oracle MicroTx home">
+          <img class="brand-logo brand-logo--light" src="{{ '/assets/images/logo/oracle-microtx-black.png' | relative_url }}" alt="Oracle MicroTx" width="136" height="60">
+          <img class="brand-logo brand-logo--dark" src="{{ '/assets/images/logo/oracle-microtx-white.png' | relative_url }}" alt="" width="136" height="60">
+        </a>
         <nav aria-label="Primary navigation">
           <a href="https://www.oracle.com/database/transaction-manager-for-microservices/" target="_blank" rel="noopener noreferrer">Oracle MicroTx</a>
           <a href="{{ '/' | relative_url }}">Articles</a>
-          <a href="https://github.com/oracle-samples/microtx-samples/tree/main/docs/quickstart" target="_blank" rel="noopener noreferrer">Documentation</a>
+          <button class="theme-toggle" type="button" aria-pressed="false">Dark theme</button>
         </nav>
       </div>
     </header>
     <main class="site-shell">{{ content }}</main>
     <footer class="site-footer">
-      <div class="site-shell">Oracle MicroTx sample articles and implementation notes.</div>
+      <nav class="site-shell footer-links" aria-label="Footer navigation">
+        <a href="https://docs.oracle.com/en/database/oracle/transaction-manager-for-microservices/26.1/" target="_blank" rel="noopener noreferrer">MicroTx Documentation</a>
+        <a href="https://www.oracle.com/in/legal/copyright/" target="_blank" rel="noopener noreferrer">Copyright</a>
+        <a href="https://github.com/oracle-samples/microtx-samples/issues" target="_blank" rel="noopener noreferrer">GitHub Issues</a>
+      </nav>
     </footer>
+    <script src="{{ '/assets/js/theme-toggle.js' | relative_url }}"></script>
+    <script src="{{ '/assets/js/article-enhancements.js' | relative_url }}"></script>
   </body>
 </html>
