@@ -7,7 +7,7 @@ layout: default
     <h1>{{ page.title }}</h1>
     <p class="post-description">{{ page.description }}</p>
     <div class="post-meta">
-      {% if author %}<p class="author">By {{ author.name }}{% if author.role %}, {{ author.role }}{% endif %}{% if author.github %} · <a href="{{ author.github }}">GitHub</a>{% endif %}{% if author.linkedin %} · <a href="{{ author.linkedin }}">LinkedIn</a>{% endif %}</p>{% endif %}
+      {% if author %}<p class="author">By {{ author.name }}{% if author.role %}, {{ author.role }}{% endif %}{% if author.github %} · <a href="{{ author.github }}" target="_blank" rel="noopener noreferrer">GitHub</a>{% endif %}{% if author.linkedin %} · <a href="{{ author.linkedin }}" target="_blank" rel="noopener noreferrer">LinkedIn</a>{% endif %}</p>{% endif %}
       <p class="article-date"><time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%B %-d, %Y" }}</time>{% if page.updated %} · Updated {{ page.updated | date: "%B %-d, %Y" }}{% endif %}</p>
     </div>
     {% if page.tags %}<ul class="tags" aria-label="Article tags">{% for tag in page.tags %}<li><a href="{{ '/tags/' | relative_url }}#{{ tag | slugify }}">{{ tag }}</a></li>{% endfor %}</ul>{% endif %}

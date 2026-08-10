@@ -10,22 +10,10 @@ description: Practical articles about Oracle MicroTx deployments, distributed tr
 
 <section class="article-list" aria-label="Latest articles">
   {% for post in site.posts %}
-  <article class="article-card">
-    {% if post.image %}
-    <a class="card-image" href="{{ post.url | relative_url }}" aria-label="Read {{ post.title }}">
-      <img src="{{ post.image | relative_url }}" alt="{{ post.image_alt | default: '' }}">
-    </a>
-    {% endif %}
-    <div class="card-content">
-      <p class="article-date"><time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%B %-d, %Y" }}</time></p>
-      <h2><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h2>
-      <p>{{ post.description }}</p>
-      {% if post.tags %}
-      <ul class="tags" aria-label="Article tags">
-        {% for tag in post.tags %}<li><a href="{{ '/tags/' | relative_url }}#{{ tag | slugify }}">{{ tag }}</a></li>{% endfor %}
-      </ul>
-      {% endif %}
-    </div>
-  </article>
+  {% include article-card.html article=post %}
+  {% endfor %}
+  {% assign external_articles = site.data.external_articles | sort: "date" | reverse %}
+  {% for article in external_articles %}
+  {% include article-card.html article=article %}
   {% endfor %}
 </section>

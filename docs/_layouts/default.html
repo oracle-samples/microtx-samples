@@ -6,6 +6,7 @@
     <script>try { if (localStorage.getItem('microtx-theme') === 'dark') document.documentElement.dataset.theme = 'dark'; } catch (error) {}</script>
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
     <link rel="stylesheet" href="{{ '/assets/css/rouge.css' | relative_url }}">
+    <meta name="keywords" content="{{ site.seo_keywords | join: ', ' }}">
     {% feed_meta %}
     {% seo %}
   </head>

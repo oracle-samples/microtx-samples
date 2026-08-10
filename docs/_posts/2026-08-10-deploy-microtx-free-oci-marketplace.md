@@ -3,8 +3,8 @@ title: Deploy Oracle MicroTx Free on OCI with Oracle Cloud Marketplace
 description: Deploy MicroTx Free on Oracle Kubernetes Engine using the Oracle Cloud Marketplace Terraform stack.
 date: 2026-08-10
 updated: 2026-08-10
-author: Oracle MicroTx team
-author_id: oracle-microtx-team
+author: BHARATH MC
+author_id: bharath-mc
 tags:
   - MicroTx
   - OCI

@@ -1,0 +1,44 @@
+- title: How Oracle MicroTx Workflows Makes Enterprise Workflow Execution Durable
+  description: Learn how Oracle MicroTx Workflows combines durable orchestration, Oracle Database persistence, and distributed transactions for resilient enterprise workflows and AI agents.
+  date: 2026-07-06
+  author_id: pruthvithej-ramesh-kumar
+  external: true
+  url: https://blogs.oracle.com/database/durable-workflow-execution-oracle-microtx-workflows
+  tags:
+    - Oracle MicroTx Workflows
+    - Durable Execution
+    - Durable Workflows
+    - Conductor OSS
+    - Oracle Database
+    - Distributed Transactions
+    - Idempotency
+    - Kubernetes
+    - Saga
+    - TCC
+    - XA
+
+- title: "When AI Agents Meet Enterprise Reality: Workflows, Transactions, and Runtime Controls"
+  description: Explore the workflow, transaction, and runtime controls that help AI agents operate safely across enterprise systems of record.
+  date: 2026-06-23
+  author_id: pruthvithej-ramesh-kumar
+  external: true
+  url: https://blogs.oracle.com/database/ai-agents-enterprise-reality-workflows-transactions-runtime-controls
+  tags:
+    - Agentic AI
+    - AI Agents
+    - Enterprise AI
+    - Production AI
+    - Oracle MicroTx Workflows
+    - Durable Execution
+    - Durable Workflows
+    - Human Approval
+    - Idempotency
+    - MCP
+    - RAG
+    - Runtime Controls
+    - Saga
+    - Systems of Record
+    - Transaction Coordination
+    - Workflow Orchestration
+    - XA
+    - TCC

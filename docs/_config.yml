@@ -1,5 +1,39 @@
 title: Oracle MicroTx
 description: Practical articles about Oracle Transaction Manager for Microservices.
+seo_keywords:
+  - Agentic AI
+  - AI Agents
+  - Agentic Workflows
+  - AI-Assisted Workflows
+  - AI-Native Workflows
+  - Compensation Patterns
+  - Conductor OSS
+  - Distributed Transactions
+  - Durable Execution
+  - Durable Workflows
+  - Enterprise AI
+  - Enterprise Workflows
+  - Human Approval
+  - Idempotency
+  - Kubernetes
+  - Long-Running Workflows
+  - MCP
+  - Microservices
+  - Oracle Database
+  - Oracle Database 23ai
+  - Oracle Database 26ai
+  - Oracle MicroTx
+  - Oracle MicroTx Workflows
+  - Production AI
+  - RAG
+  - Runtime Controls
+  - Saga
+  - Systems of Record
+  - TCC
+  - Temporal
+  - Transaction Coordination
+  - Workflow Orchestration
+  - XA
 url: "https://oracle-samples.github.io"
 baseurl: "/microtx-samples"
 lang: en

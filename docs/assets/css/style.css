@@ -49,6 +49,7 @@ nav a:hover { color: var(--oracle-red); }
 .card-image img { display: block; width: 100%; aspect-ratio: 16 / 8; object-fit: cover; }
 .card-content { max-width: none; padding: 1.45rem 1.55rem; }
 .article-card .article-date { margin-bottom: .55rem; }
+.card-author { margin: 0 0 .35rem; color: var(--muted); font: 600 .82rem/1.4 var(--sans); letter-spacing: .02em; }
 .article-card h2 { margin: 0; font: 700 clamp(1.45rem, 3vw, 1.85rem)/1.18 var(--sans); letter-spacing: -.025em; }
 .article-card h2 a { color: var(--ink); text-decoration: none; }
 .article-card h2 a:hover { color: var(--oracle-red); }
