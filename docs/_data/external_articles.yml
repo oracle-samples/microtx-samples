@@ -97,6 +97,7 @@
 - title: Designing and Deploying Agentic Workflows with Distributed Transactions
   description: Follow this Oracle LiveLabs workshop to design and deploy agentic workflows with Oracle MicroTx distributed transactions.
   date: 2026-06-20 00:00:00 +0000
+  author_id: oracle-microtx-team
   external: true
   url: https://livelabs.oracle.com/ords/r/dbpm/livelabs/view-workshop?wid=4243
   tags:
