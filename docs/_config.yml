@@ -19,11 +19,17 @@ seo_keywords:
   - Long-Running Workflows
   - MCP
   - Microservices
+  - MicroTx blogs
   - Oracle Database
   - Oracle Database 23ai
   - Oracle Database 26ai
+  - Oracle Transaction Manager for Microservices
   - Oracle MicroTx
+  - Oracle MicroTx Free
   - Oracle MicroTx Workflows
+  - Oracle Cloud Marketplace
+  - Oracle Kubernetes Engine
+  - OCI Resource Manager
   - Production AI
   - RAG
   - Runtime Controls
@@ -32,8 +38,10 @@ seo_keywords:
   - TCC
   - Temporal
   - Transaction Coordination
+  - Distributed Transaction Coordinator
   - Workflow Orchestration
   - XA
+  - LRA
 url: "https://oracle-samples.github.io"
 baseurl: "/microtx-samples"
 lang: en

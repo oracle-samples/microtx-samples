@@ -1,0 +1,15 @@
+# Oracle MicroTx Blog
+
+> Technical articles, deployment guides, and workflow resources for Oracle Transaction Manager for Microservices (Oracle MicroTx).
+
+## Primary resources
+
+- [Oracle MicroTx Blog](https://oracle-samples.github.io/microtx-samples/): Oracle MicroTx tutorials, deployment guides, durable workflow orchestration, and distributed transaction patterns.
+- [Deploy Oracle MicroTx Free on OCI with Oracle Cloud Marketplace](https://oracle-samples.github.io/microtx-samples/deploy-microtx-free-oci-marketplace/): Deploy MicroTx Free on Oracle Kubernetes Engine using the Oracle Cloud Marketplace Terraform stack.
+- [MicroTx quickstart](https://oracle-samples.github.io/microtx-samples/quickstart/): Local Minikube and Oracle Kubernetes Engine quickstart resources.
+- [Oracle MicroTx documentation](https://docs.oracle.com/en/database/oracle/transaction-manager-for-microservices/26.1/): Official Oracle documentation.
+- [MicroTx sample applications repository](https://github.com/oracle-samples/microtx-samples): Source code and sample applications.
+
+## Topics
+
+Oracle MicroTx, Oracle Transaction Manager for Microservices, durable workflows, workflow orchestration, distributed transactions, XA, LRA, TCC, Oracle Database, Oracle Cloud Infrastructure, Oracle Kubernetes Engine, and Oracle Cloud Marketplace.

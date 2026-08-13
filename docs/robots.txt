@@ -4,4 +4,5 @@ layout: null
 User-agent: *
 Allow: /
 
+# Search engines and AI search crawlers may access this public site.
 Sitemap: {{ '/sitemap.xml' | absolute_url }}
