@@ -8,6 +8,7 @@
   {% endif %}
   <div class="card-content">
     <p class="article-date"><time datetime="{{ article.date | date_to_xmlschema }}">{{ article.date | date: "%B %-d, %Y" }}</time></p>
+    {% if article.video %}<span class="content-type content-type--video"><span aria-hidden="true"></span>Video</span>{% endif %}
     {% if author or article.author %}<p class="card-author">By {{ author.name | default: article.author }}</p>{% endif %}
     <h2><a href="{% if article.external %}{{ article.url }}{% else %}{{ article.url | relative_url }}{% endif %}"{% if article.external %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ article.title }}</a></h2>
     <p>{{ article.description }}</p>

@@ -9,11 +9,8 @@ description: Practical articles about Oracle MicroTx deployments, distributed tr
 </section>
 
 <section class="article-list" aria-label="Latest articles">
-  {% for post in site.posts %}
-  {% include article-card.html article=post %}
-  {% endfor %}
-  {% assign external_articles = site.data.external_articles | sort: "date" | reverse %}
-  {% for article in external_articles %}
+  {% assign articles = site.posts | concat: site.data.external_articles | sort: "date" | reverse %}
+  {% for article in articles %}
   {% include article-card.html article=article %}
   {% endfor %}
 </section>

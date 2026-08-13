@@ -49,6 +49,8 @@ nav a:hover { color: var(--oracle-red); }
 .card-image img { display: block; width: 100%; aspect-ratio: 16 / 8; object-fit: cover; }
 .card-content { max-width: none; padding: 1.45rem 1.55rem; }
 .article-card .article-date { margin-bottom: .55rem; }
+.content-type { display: inline-flex; align-items: center; gap: .35rem; margin: 0 0 .45rem; color: var(--oracle-red); font: 700 .72rem/1 var(--sans); letter-spacing: .08em; text-transform: uppercase; }
+.content-type--video span { width: 0; height: 0; border-top: .3rem solid transparent; border-bottom: .3rem solid transparent; border-left: .44rem solid currentColor; }
 .card-author { margin: 0 0 .35rem; color: var(--muted); font: 600 .82rem/1.4 var(--sans); letter-spacing: .02em; }
 .article-card h2 { margin: 0; font: 700 clamp(1.45rem, 3vw, 1.85rem)/1.18 var(--sans); letter-spacing: -.025em; }
 .article-card h2 a { color: var(--ink); text-decoration: none; }
