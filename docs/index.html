@@ -1,0 +1,16 @@
+---
+layout: default
+title: "Oracle MicroTx Blog: Workflows & Distributed Transactions"
+description: Oracle MicroTx tutorials and deployment guides for durable workflows and XA, LRA, and TCC distributed transactions on Oracle Database, OCI, OKE, and Oracle Cloud Marketplace.
+---
+<section class="intro" aria-label="Oracle MicroTx technical blog">
+  <h1 class="eyebrow">Oracle MicroTx Blog</h1>
+  <p>Deployment guidance, distributed-transaction patterns, Workflow Orchestration and examples for Oracle MicroTx.</p>
+</section>
+
+<section class="article-list" aria-label="Latest articles">
+  {% assign articles = site.posts | concat: site.data.external_articles | sort: "date" | reverse %}
+  {% for article in articles %}
+  {% include article-card.html article=article %}
+  {% endfor %}
+</section>

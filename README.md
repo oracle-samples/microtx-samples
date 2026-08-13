@@ -8,6 +8,8 @@ Running sample applications is the fastest way for you to get familiar with Micr
 
 See [Documentation set for Oracle Transaction Manager for Microservices](https://docs.oracle.com/en/database/oracle/transaction-manager-for-microservices/index.html).
 
+Read the [Oracle MicroTx Blog](https://oracle-samples.github.io/microtx-samples/) for tutorials, deployment guides, workflow resources, and distributed transaction patterns.
+
 ## Repository Structure for Sample Applications
 
 Sample applications are microservices that demonstrate how you can develop your services for participating in different transaction protocols using MicroTx. MicroTx client libraries are already incorporated with the sample application code. You can use the sample applications as a reference while using the MicroTx libraries with your application.

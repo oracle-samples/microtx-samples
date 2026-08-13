@@ -1,0 +1,108 @@
+- title: How Oracle MicroTx Workflows Makes Enterprise Workflow Execution Durable
+  description: Learn how Oracle MicroTx Workflows combines durable orchestration, Oracle Database persistence, and distributed transactions for resilient enterprise workflows and AI agents.
+  date: 2026-07-06 00:00:00 +0000
+  author_id: pruthvithej-ramesh-kumar
+  external: true
+  url: https://blogs.oracle.com/database/durable-workflow-execution-oracle-microtx-workflows
+  tags:
+    - Oracle MicroTx Workflows
+    - Durable Execution
+    - Durable Workflows
+    - Conductor OSS
+    - Oracle Database
+    - Distributed Transactions
+    - Idempotency
+    - Kubernetes
+    - Saga
+    - TCC
+    - XA
+
+- title: "When AI Agents Meet Enterprise Reality: Workflows, Transactions, and Runtime Controls"
+  description: Explore the workflow, transaction, and runtime controls that help AI agents operate safely across enterprise systems of record.
+  date: 2026-06-23 00:00:00 +0000
+  author_id: pruthvithej-ramesh-kumar
+  external: true
+  url: https://blogs.oracle.com/database/ai-agents-enterprise-reality-workflows-transactions-runtime-controls
+  tags:
+    - Agentic AI
+    - AI Agents
+    - Enterprise AI
+    - Production AI
+    - Oracle MicroTx Workflows
+    - Durable Execution
+    - Durable Workflows
+    - Human Approval
+    - Idempotency
+    - MCP
+    - RAG
+    - Runtime Controls
+    - Saga
+    - Systems of Record
+    - Transaction Coordination
+    - Workflow Orchestration
+    - XA
+    - TCC
+
+- title: Automating Invoice Processing with Oracle MicroTx Workflows
+  description: A practical look at automating invoice processing with Oracle MicroTx Workflows, from AI-assisted tasks through controlled approval and execution.
+  date: 2026-06-23 00:00:00 +0000
+  author_id: brijesh-deo
+  external: true
+  url: https://medium.com/@brijesh.deo/automating-invoice-processing-with-oracle-microtx-workflows-6bdb8cded310
+  tags:
+    - Oracle MicroTx Workflows
+    - Agentic Workflows
+    - AI-Assisted Workflows
+    - Human Approval
+    - Idempotency
+    - Oracle Database
+    - Workflow Orchestration
+
+- title: Oracle MicroTx 26.1 is now generally available
+  description: Discover Oracle MicroTx 26.1, combining durable workflow orchestration and distributed transaction coordination for resilient enterprise applications.
+  date: 2026-06-11 00:00:00 +0000
+  author_id: deepak-goel
+  external: true
+  url: https://blogs.oracle.com/database/oracle-microtx-26-1-is-now-generally-available
+  tags:
+    - Oracle MicroTx Workflows
+    - Durable Workflows
+    - Distributed Transactions
+    - Conductor OSS
+    - Oracle Database
+    - Agentic AI
+    - AI Agents
+    - MCP
+    - RAG
+    - Saga
+    - TCC
+    - XA
+    - Workflow Orchestration
+
+- title: Deploy MicroTx Workflow Server in OKE
+  description: Watch how to deploy the Oracle MicroTx Workflow Server on Oracle Kubernetes Engine.
+  date: 2026-08-11 00:00:00 +0000
+  author_id: shivanshu-singh
+  external: true
+  video: true
+  url: https://www.youtube.com/watch?v=2TyDIQy8F_U
+  tags:
+    - Oracle MicroTx Workflows
+    - OCI
+    - OKE
+    - Kubernetes
+    - Deployment
+    - Workflow Orchestration
+
+- title: Designing and Deploying Agentic Workflows with Distributed Transactions
+  description: Follow this Oracle LiveLabs workshop to design and deploy agentic workflows with Oracle MicroTx distributed transactions.
+  date: 2026-06-20 00:00:00 +0000
+  author_id: oracle-microtx-team
+  external: true
+  url: https://livelabs.oracle.com/ords/r/dbpm/livelabs/view-workshop?wid=4243
+  tags:
+    - Agentic AI
+    - Agentic Workflows
+    - Distributed Transactions
+    - Oracle MicroTx Workflows
+    - Workflow Orchestration
