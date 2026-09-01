@@ -481,7 +481,7 @@ create_simple_task_for_loan_processing_agent(){
   API_URL="$WF_SERVER_URL/api/metadata/taskdefs"
   TASKDEF_DATA='[
     {
-      "name": "loan_processing_agent_task",
+      "name": "Loan_Offer_Underwriter",
       "description": "Loan processing agent based on LanGraph written in Python",
       "retryCount": 3,
       "timeoutSeconds": 120,
@@ -501,17 +501,17 @@ create_simple_task_for_loan_processing_agent(){
     }
   ]'
 
-  response=$(curl_with_common_opts -s -w "%{http_code}" -o /tmp/create_loan_processing_agent_task_resp.json \
+  response=$(curl_with_common_opts -s -w "%{http_code}" -o /tmp/create_Loan_Offer_Underwriter_resp.json \
     -X POST "$API_URL" \
     -H "Content-Type: application/json" \
     -d "$TASKDEF_DATA")
 
   if [ "$response" -eq 200 ]; then
-    echo "✅ loan_processing_agent_task definition creation successful"
+    echo "✅ Loan_Offer_Underwriter definition creation successful"
   else
-    echo "❌ loan_processing_agent_task definition creation failed (code: $response) for API: $API_URL"
-    if [ -f /tmp/create_loan_processing_agent_task_resp.json ]; then
-      cat /tmp/create_loan_processing_agent_task_resp.json
+    echo "❌ Loan_Offer_Underwriter definition creation failed (code: $response) for API: $API_URL"
+    if [ -f /tmp/create_Loan_Offer_Underwriter_resp.json ]; then
+      cat /tmp/create_Loan_Offer_Underwriter_resp.json
     else
       echo "No response file available (curl failed to create output)"
     fi
@@ -619,7 +619,7 @@ cleanup() {
   cleanup_delete "workflow Create_Table_For_Loan_Application" "$WF_SERVER_URL/api/metadata/workflow/Create_Table_For_Loan_Application/1"
 
   # Delete task definitions
-  cleanup_delete "task definition loan_processing_agent_task" "$WF_SERVER_URL/api/metadata/taskdefs/loan_processing_agent_task"
+  cleanup_delete "task definition Loan_Offer_Underwriter" "$WF_SERVER_URL/api/metadata/taskdefs/Loan_Offer_Underwriter"
 
   # Delete agents
   cleanup_delete "agent loan_document_verification_agent" "$WF_SERVER_URL/api/metadata/ai/agents/loan_document_verification_agent"

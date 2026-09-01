@@ -8,7 +8,7 @@ WORKDIR /app
 COPY prebuilt/doc-process-mcp-server-0.0.1-SNAPSHOT.jar app.jar
 
 # Expose the application port
-EXPOSE 8000
+EXPOSE 8010
 
 # Run the Spring Boot application
 ENTRYPOINT ["java", "-jar", "app.jar"]

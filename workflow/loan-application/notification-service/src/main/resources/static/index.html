@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notification Service | TxEventQ Message Viewer</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <div>
+        <p class="eyebrow">Notification Service</p>
+        <h1>TxEventQ Queue Monitor</h1>
+        <p id="queue-details" class="subtitle">Loading configured queue…</p>
+      </div>
+      <button id="refresh-button" type="button">Refresh</button>
+    </header>
+
+    <section id="status" class="status" aria-live="polite">Loading queue status…</section>
+
+    <section class="messages" aria-labelledby="messages-heading">
+      <div class="section-heading">
+        <h2 id="messages-heading">Messages</h2>
+        <span id="message-count"></span>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Enqueued</th>
+              <th>Message ID</th>
+              <th>Payload</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="messages-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script src="app.js" defer></script>
+</body>
+</html>
