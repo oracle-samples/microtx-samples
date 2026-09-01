@@ -176,8 +176,8 @@
             }
           },
           {
-            "name": "loan_processing_agent_task",
-            "taskReferenceName": "loan_processing_agent_task",
+            "name": "Loan_Offer_Underwriter",
+            "taskReferenceName": "Loan_Offer_Underwriter",
             "inputParameters": {
               "applicantId": "12345"
             },

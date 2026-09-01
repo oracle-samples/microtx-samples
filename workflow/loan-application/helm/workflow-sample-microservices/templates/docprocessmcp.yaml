@@ -8,7 +8,7 @@ spec:
     app: {{ .Values.workflowSampleServices.docProcessMcpServer.name }}
   ports:
     - port: 8000
-      targetPort: 8000
+      targetPort: 8010
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -33,9 +33,13 @@ spec:
           image: {{ .Values.workflowSampleServices.docProcessMcpServer.image }}
           imagePullPolicy: {{ .Values.workflowSampleServices.docProcessMcpServer.imagePullPolicy }}
           ports:
-            - containerPort: 8000
+            - containerPort: 8010
           resources:
             requests:
+              cpu: {{ .Values.workflowSampleServices.docProcessMcpServer.resources.requests.cpu | quote }}
+              memory: {{ .Values.workflowSampleServices.docProcessMcpServer.resources.requests.memory | quote }}
               ephemeral-storage: 256Mi
             limits:
-              ephemeral-storage: 5Gi
+              cpu: {{ .Values.workflowSampleServices.docProcessMcpServer.resources.limits.cpu | quote }}
+              memory: {{ .Values.workflowSampleServices.docProcessMcpServer.resources.limits.memory | quote }}
+              ephemeral-storage: 1Gi

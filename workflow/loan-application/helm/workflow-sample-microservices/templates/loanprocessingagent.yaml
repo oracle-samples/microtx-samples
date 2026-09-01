@@ -47,6 +47,10 @@ spec:
             - containerPort: 8002
           resources:
             requests:
+              cpu: {{ .Values.workflowSampleServices.loanProcessingAgent.resources.requests.cpu | quote }}
+              memory: {{ .Values.workflowSampleServices.loanProcessingAgent.resources.requests.memory | quote }}
               ephemeral-storage: 256Mi
             limits:
-              ephemeral-storage: 5Gi
+              cpu: {{ .Values.workflowSampleServices.loanProcessingAgent.resources.limits.cpu | quote }}
+              memory: {{ .Values.workflowSampleServices.loanProcessingAgent.resources.limits.memory | quote }}
+              ephemeral-storage: 1Gi

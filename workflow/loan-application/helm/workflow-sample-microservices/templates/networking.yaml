@@ -1,0 +1,39 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ .Values.workflowSampleServices.notificationService.name }}
+spec:
+  gateways:
+    - "microtx-gateway"
+  hosts:
+    - "*"
+  http:
+    - match:
+        - uri:
+            exact: {{ .Values.workflowSampleServices.notificationService.gatewayUriPrefix | quote }}
+      route:
+        - destination:
+            host: {{ .Values.workflowSampleServices.notificationService.name }}
+            subset: v1
+            port:
+              number: 8085
+    - match:
+        - uri:
+            prefix: {{ printf "%s/" .Values.workflowSampleServices.notificationService.gatewayUriPrefix | quote }}
+      route:
+        - destination:
+            host: {{ .Values.workflowSampleServices.notificationService.name }}
+            subset: v1
+            port:
+              number: 8085
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: {{ .Values.workflowSampleServices.notificationService.name }}
+spec:
+  host: {{ .Values.workflowSampleServices.notificationService.name }}
+  subsets:
+    - name: v1
+      labels:
+        version: v1

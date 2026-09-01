@@ -12,6 +12,13 @@ workflowSampleServices:
     imagePullPolicy: IfNotPresent
     imagePullSecret: regcred
     replicaCount: 1
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "1Gi"
+      limits:
+        cpu: "500m"
+        memory: "1Gi"
 
   loanComplianceService:
     name: loan-compliance-service
@@ -19,6 +26,13 @@ workflowSampleServices:
     imagePullPolicy: IfNotPresent
     imagePullSecret: regcred
     replicaCount: 1
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "1Gi"
+      limits:
+        cpu: "500m"
+        memory: "1Gi"
 
   loanProcessingAgent:
     name: loan-processing-agent
@@ -26,6 +40,13 @@ workflowSampleServices:
     imagePullPolicy: IfNotPresent
     imagePullSecret: regcred
     replicaCount: 1
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "1Gi"
+      limits:
+        cpu: "500m"
+        memory: "1Gi"
 
   notificationService:
     name: notification-service
@@ -33,6 +54,23 @@ workflowSampleServices:
     imagePullPolicy: IfNotPresent
     imagePullSecret: regcred
     replicaCount: 1
+    gatewayUriPrefix: /notification-service
+    txeventq:
+      enabled: false
+      jdbcUrl: ""
+      queueName: LOAN_APPLICATION_EVENTS
+      consumerName: LOAN_APP_NOTIFICATION_CONSUMER
+      maxMessages: 10
+      hasWallet: false
+      walletConfigMap: ""
+      walletMountPath: /app/wallet
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "1Gi"
+      limits:
+        cpu: "500m"
+        memory: "1Gi"
 
   ocrService:
     name: ocr-service
@@ -40,3 +78,10 @@ workflowSampleServices:
     imagePullPolicy: IfNotPresent
     imagePullSecret: regcred
     replicaCount: 1
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "2Gi"
+      limits:
+        cpu: "1"
+        memory: "2Gi"

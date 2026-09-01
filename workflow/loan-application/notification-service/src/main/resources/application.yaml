@@ -1,5 +1,7 @@
 server:
   port: 8085
+  servlet:
+    context-path: /notification-service
 
 spring:
   application:
@@ -16,3 +18,12 @@ spring:
           auth: false
           starttls:
             enable: false
+
+txeventq:
+  enabled: ${TXEVENTQ_ENABLED:true}
+  jdbc-url: ${TXEVENTQ_JDBC_URL:}
+  username: ${TXEVENTQ_USERNAME:}
+  password: ${TXEVENTQ_PASSWORD:}
+  queue-name: ${TXEVENTQ_QUEUE_NAME:LOAN_APPLICATION_EVENTS}
+  consumer-name: ${TXEVENTQ_CONSUMER_NAME:LOAN_APP_NOTIFICATION_CONSUMER}
+  max-messages: ${TXEVENTQ_MAX_MESSAGES:10}
