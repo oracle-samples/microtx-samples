@@ -1,0 +1,10 @@
+# Dependencies for the replay test only.
+#
+# tests/test_harness_boundary.py deliberately needs NONE of this - it is
+# standard library only, so the boundary check can run in CI on every pull
+# request with no install step and no running services:
+#
+#     python tests/test_harness_boundary.py
+#
+pytest==8.3.4
+requests==2.32.3

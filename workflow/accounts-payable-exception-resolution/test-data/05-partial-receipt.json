@@ -1,0 +1,14 @@
+{
+  "operationId": "OP-2026-0005",
+  "invoice": {
+    "invoiceId": "INV-1061",
+    "invoiceNumber": "INV-1061",
+    "supplierId": "SUP-VERTEX",
+    "poId": "PO-7820",
+    "amount": 22000.0,
+    "currency": "USD",
+    "invoiceDate": "2026-08-28",
+    "simulateSettlementTimeout": false
+  },
+  "_description": "Invoiced in full for 100 spindles; only 60 were received. The supplier is also BLOCKED on quality dispute QD-4417. Even a reviewer who approves cannot clear the block - policy still rejects."
+}

@@ -1,0 +1,11 @@
+{
+  "changeId": "BCH-2026-00913",
+  "supplierId": "SUP-NORTHSTAR",
+  "changeType": "BANK_ACCOUNT",
+  "requestedAt": "2026-09-02T09:41:00Z",
+  "requestedChannel": "supplier portal self-service",
+  "previousAccountLast4": "2264",
+  "requestedAccountLast4": "9013",
+  "status": "PENDING_VERIFICATION",
+  "sourceDocument": "05_supplier_bank_change_notice.pdf"
+}
