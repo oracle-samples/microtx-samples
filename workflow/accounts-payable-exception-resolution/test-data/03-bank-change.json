@@ -1,0 +1,14 @@
+{
+  "operationId": "OP-2026-0003",
+  "invoice": {
+    "invoiceId": "INV-1048",
+    "invoiceNumber": "INV-1048",
+    "supplierId": "SUP-NORTHSTAR",
+    "poId": "PO-7812",
+    "amount": 48700.0,
+    "currency": "USD",
+    "invoiceDate": "2026-08-21",
+    "simulateSettlementTimeout": false
+  },
+  "_description": "The headline case. $48,700 against a $47,900 PO; the $800 is freight, allowed by contract C-2291 s7.2. Goods receipt GR-88213 is complete. The payee bank account changed 3 days ago and verification is PENDING."
+}

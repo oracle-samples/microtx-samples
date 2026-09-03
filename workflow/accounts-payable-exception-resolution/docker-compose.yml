@@ -1,0 +1,62 @@
+name: ap-exception-resolution
+
+# Three runnable services. ap-backend packages evidence, verification, policy,
+# and AP state for a small local footprint. Only its GET /evidence/* endpoints
+# appear in the planner's task list; tests/test_harness_boundary.py enforces it.
+
+x-common: &common
+  restart: unless-stopped
+  networks: [ap-net]
+
+services:
+
+  # -- Compact AP backend. Only /evidence/* GETs are planner tools. ----------
+  ap-backend:
+    <<: *common
+    build: ./services/ap-backend
+    container_name: ap-backend
+    environment:
+      SERVER_PORT: 8083
+      AP_DATABASE_URL: "${AP_DATABASE_URL:?set AP_DATABASE_URL}"
+      AP_DATABASE_USERNAME: "${AP_DATABASE_USERNAME:?set AP_DATABASE_USERNAME}"
+      AP_DATABASE_PASSWORD: "${AP_DATABASE_PASSWORD:?set AP_DATABASE_PASSWORD}"
+      MICROTX_COORDINATOR_URL: "${MICROTX_COORDINATOR_URL:?set MICROTX_COORDINATOR_URL}"
+      POLICY_APPROVAL_THRESHOLD: "${POLICY_APPROVAL_THRESHOLD:-100000}"
+    ports:
+      - "${AP_PORT:-8083}:8083"
+
+  # -- Payment instruction XA participant. Never a planner tool. -------------
+  payment-service:
+    <<: *common
+    build: ./services/payment-service
+    container_name: payment-service
+    environment:
+      SERVER_PORT: 8084
+      PAYMENT_DATABASE_URL: "${PAYMENT_DATABASE_URL:?set PAYMENT_DATABASE_URL}"
+      PAYMENT_DATABASE_USERNAME: "${PAYMENT_DATABASE_USERNAME:?set PAYMENT_DATABASE_USERNAME}"
+      PAYMENT_DATABASE_PASSWORD: "${PAYMENT_DATABASE_PASSWORD:?set PAYMENT_DATABASE_PASSWORD}"
+      MICROTX_COORDINATOR_URL: "${MICROTX_COORDINATOR_URL:?set MICROTX_COORDINATOR_URL}"
+      SIMULATE_FAILURE: "${SIMULATE_FAILURE:-false}"
+    ports:
+      - "${PAYMENT_PORT:-8084}:8084"
+
+  # -- External settlement rail. Not an XA participant. Never a planner tool.
+  bank-mock:
+    <<: *common
+    build: ./services/bank-mock
+    container_name: bank-mock
+    environment:
+      PORT: 8085
+      SETTLEMENT_TIMEOUT_SLEEP_SECONDS: "${SETTLEMENT_TIMEOUT_SLEEP_SECONDS:-15}"
+    ports:
+      - "${BANK_PORT:-8085}:8085"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8085/healthz')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+networks:
+  ap-net:
+    driver: bridge
