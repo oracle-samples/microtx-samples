@@ -304,8 +304,8 @@ application_data: LoanApplicationState = {
         "current_step_message": None
     }
 
-@worker_task(task_definition_name='loan_processing_agent_task')
-def loan_processing_agent_task(task_input):
+@worker_task(task_definition_name='Loan_Offer_Underwriter')
+def Loan_Offer_Underwriter(task_input):
     logger.info(f"Received task input: {task_input}")
     result = loan_processing_agent.invoke(application_data)
     logger.info(f"Workflow result: {result}")

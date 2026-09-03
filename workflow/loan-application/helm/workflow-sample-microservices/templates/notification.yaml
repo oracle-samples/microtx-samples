@@ -23,6 +23,7 @@ spec:
     metadata:
       labels:
         app: {{ .Values.workflowSampleServices.notificationService.name }}
+        version: {{ .Values.workflowSampleServices.notificationService.version }}
     spec:
 {{- if .Values.workflowSampleServices.notificationService.imagePullSecret }}
       imagePullSecrets:
@@ -35,6 +36,34 @@ spec:
           env:
             - name: SPRING_MAIL_HOST
               value: "host.minikube.internal"
+            - name: TXEVENTQ_ENABLED
+              value: {{ .Values.workflowSampleServices.notificationService.txeventq.enabled | quote }}
+            - name: TXEVENTQ_JDBC_URL
+              value: {{ .Values.workflowSampleServices.notificationService.txeventq.jdbcUrl | quote }}
+{{- if .Values.workflowSampleServices.notificationService.txeventq.enabled }}
+            - name: TXEVENTQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-oracledb-secret
+                  key: username
+            - name: TXEVENTQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-oracledb-secret
+                  key: password
+{{- end }}
+            - name: TXEVENTQ_QUEUE_NAME
+              value: {{ .Values.workflowSampleServices.notificationService.txeventq.queueName | quote }}
+            - name: TXEVENTQ_CONSUMER_NAME
+              value: {{ .Values.workflowSampleServices.notificationService.txeventq.consumerName | quote }}
+            - name: TXEVENTQ_MAX_MESSAGES
+              value: {{ .Values.workflowSampleServices.notificationService.txeventq.maxMessages | quote }}
+{{- if .Values.workflowSampleServices.notificationService.txeventq.hasWallet }}
+          volumeMounts:
+            - name: txeventq-wallet
+              mountPath: {{ .Values.workflowSampleServices.notificationService.txeventq.walletMountPath | quote }}
+              readOnly: true
+{{- end }}
           ports:
             - containerPort: 8085
           resources:
@@ -42,3 +71,9 @@ spec:
               ephemeral-storage: 256Mi
             limits:
               ephemeral-storage: 5Gi
+{{- if .Values.workflowSampleServices.notificationService.txeventq.hasWallet }}
+      volumes:
+        - name: txeventq-wallet
+          configMap:
+            name: {{ required "workflowSampleServices.notificationService.txeventq.walletConfigMap is required when txeventq.hasWallet is true" .Values.workflowSampleServices.notificationService.txeventq.walletConfigMap | quote }}
+{{- end }}

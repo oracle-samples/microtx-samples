@@ -1,3 +1,8 @@
+istio:
+  gatewayName: microtx-gateway
+  hosts:
+    - "*"
+
 workflowSampleServices:
   security:
     enable_security: false
@@ -33,6 +38,17 @@ workflowSampleServices:
     imagePullPolicy: IfNotPresent
     imagePullSecret: regcred
     replicaCount: 1
+    version: v1
+    gatewayUriPrefix: /notification-service
+    txeventq:
+      enabled: false
+      jdbcUrl: ""
+      queueName: LOAN_APPLICATION_EVENTS
+      consumerName: LOAN_APP_NOTIFICATION_CONSUMER
+      maxMessages: 10
+      hasWallet: false
+      walletConfigMap: ""
+      walletMountPath: /app/wallet
 
   ocrService:
     name: ocr-service

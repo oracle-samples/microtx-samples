@@ -1,6 +1,18 @@
 #!/bin/bash
 set -e
 
+REBUILD="${REBUILD:-true}"
+JAR_FILE="prebuilt/notification-service-0.0.1.jar"
+
+case "$REBUILD" in
+    true|false)
+        ;;
+    *)
+        echo "REBUILD must be either true or false." >&2
+        exit 1
+        ;;
+esac
+
 # Use Docker if available, else Podman
 if command -v docker &>/dev/null; then
     DOCKER=docker
@@ -11,8 +23,17 @@ else
     exit 1
 fi
 
-# Build the Spring Boot project without running tests
-./gradlew clean build -x test
+if [[ "$REBUILD" == "true" ]]; then
+    echo "REBUILD is true. Building the Spring Boot project without running tests..."
+    mvn clean package -DskipTests
+    cp -f target/notification-service-0.0.1.jar "$JAR_FILE"
+    echo "Updated $JAR_FILE with the current build output."
+elif [[ ! -f "$JAR_FILE" ]]; then
+    echo "Prebuilt JAR not found: $JAR_FILE. Set REBUILD=true to create it." >&2
+    exit 1
+else
+    echo "REBUILD is false. Reusing existing $JAR_FILE."
+fi
 
 # If minikube flag is set, use minikube for building the image
 if [[ "$BUILD_USING_MINIKUBE" == "true" ]]; then

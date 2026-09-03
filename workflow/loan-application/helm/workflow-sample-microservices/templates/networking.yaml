@@ -1,0 +1,41 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ .Values.workflowSampleServices.notificationService.name }}
+spec:
+  gateways:
+    - {{ .Values.istio.gatewayName | quote }}
+  hosts:
+{{- range .Values.istio.hosts }}
+    - {{ . | quote }}
+{{- end }}
+  http:
+    - match:
+        - uri:
+            exact: {{ .Values.workflowSampleServices.notificationService.gatewayUriPrefix | quote }}
+      route:
+        - destination:
+            host: {{ .Values.workflowSampleServices.notificationService.name }}
+            subset: {{ .Values.workflowSampleServices.notificationService.version }}
+            port:
+              number: 8085
+    - match:
+        - uri:
+            prefix: {{ printf "%s/" .Values.workflowSampleServices.notificationService.gatewayUriPrefix | quote }}
+      route:
+        - destination:
+            host: {{ .Values.workflowSampleServices.notificationService.name }}
+            subset: {{ .Values.workflowSampleServices.notificationService.version }}
+            port:
+              number: 8085
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: {{ .Values.workflowSampleServices.notificationService.name }}
+spec:
+  host: {{ .Values.workflowSampleServices.notificationService.name }}
+  subsets:
+    - name: {{ .Values.workflowSampleServices.notificationService.version }}
+      labels:
+        version: {{ .Values.workflowSampleServices.notificationService.version }}

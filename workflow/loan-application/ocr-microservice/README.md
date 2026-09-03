@@ -16,15 +16,15 @@ A self-contained, production-ready OCR microservice that extracts and parses str
 
 2. **Create a virtual environment (recommended)**
    ```bash
-   python3 -m venv venv
+   python3 -m venv .venv
    ```
    - Activate on Mac/Linux:
      ```bash
-     source venv/bin/activate
+     source .venv/bin/activate
      ```
    - Activate on Windows:
      ```bash
-     venv\Scripts\activate
+     .venv\Scripts\activate
      ```
 
 3. **Install dependencies**
