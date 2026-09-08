@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-parent</artifactId><version>3.4.3</version><relativePath/></parent>
+  <groupId>com.oracle.microtx.samples</groupId><artifactId>payment-service</artifactId><version>1.0.0</version><name>Payment XA participant</name>
+  <properties><java.version>17</java.version><oracle.jdbc.version>21.3.0.0</oracle.jdbc.version><jakarta.transaction.version>2.0.1</jakarta.transaction.version><jakarta.persistence.version>3.1.0</jakarta.persistence.version><jakarta.jms.version>3.1.0</jakarta.jms.version><aqapi.version>23.3.0.0</aqapi.version><openfeign.version>4.2.0</openfeign.version><mybatis.version>3.5.16</mybatis.version></properties>
+  <dependencies>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
+    <!-- Required by MicroTxTransactionManager at application startup. -->
+    <dependency><groupId>org.springframework</groupId><artifactId>spring-tx</artifactId></dependency>
+    <dependency><groupId>jakarta.transaction</groupId><artifactId>jakarta.transaction-api</artifactId><version>${jakarta.transaction.version}</version></dependency>
+    <!-- The MicroTx starter exposes optional JPA/JMS/Feign/MyBatis factories during component scanning. -->
+    <dependency><groupId>jakarta.persistence</groupId><artifactId>jakarta.persistence-api</artifactId><version>${jakarta.persistence.version}</version></dependency>
+    <dependency><groupId>jakarta.jms</groupId><artifactId>jakarta.jms-api</artifactId><version>${jakarta.jms.version}</version></dependency>
+    <dependency><groupId>com.oracle.database.messaging</groupId><artifactId>aqapi-jakarta</artifactId><version>${aqapi.version}</version></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-webflux</artifactId></dependency>
+    <dependency><groupId>org.springframework.cloud</groupId><artifactId>spring-cloud-starter-openfeign</artifactId><version>${openfeign.version}</version></dependency>
+    <dependency><groupId>org.mybatis</groupId><artifactId>mybatis</artifactId><version>${mybatis.version}</version></dependency>
+    <dependency><groupId>com.oracle.microtx</groupId><artifactId>microtx-spring-boot-starter</artifactId><version>1.0-SNAPSHOT</version></dependency>
+    <dependency><groupId>com.oracle.database.jdbc</groupId><artifactId>ojdbc8</artifactId><version>${oracle.jdbc.version}</version></dependency>
+    <dependency><groupId>com.oracle.database.jdbc</groupId><artifactId>ucp</artifactId><version>${oracle.jdbc.version}</version></dependency>
+    <!-- Required when PAYMENT_DATABASE_URL uses an Oracle TCPS wallet (cwallet.sso). -->
+    <dependency><groupId>com.oracle.database.security</groupId><artifactId>oraclepki</artifactId><version>${oracle.jdbc.version}</version></dependency>
+    <dependency><groupId>com.oracle.database.security</groupId><artifactId>osdt_core</artifactId><version>${oracle.jdbc.version}</version></dependency>
+    <dependency><groupId>com.oracle.database.security</groupId><artifactId>osdt_cert</artifactId><version>${oracle.jdbc.version}</version></dependency>
+  </dependencies>
+  <build><finalName>payment-service</finalName><plugins><plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin></plugins></build>
+</project>

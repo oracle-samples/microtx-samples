@@ -1,0 +1,55 @@
+{
+  "name": "ap_payment_preparation_xa_rollback",
+  "description": "Failure workflow for ap_exception_resolution. It rolls back an active XA payment-preparation transaction. External settlement starts only after COMMIT and cannot cause this rollback workflow to run.",
+  "version": 1,
+  "schemaVersion": 2,
+  "ownerEmail": "ap-samples@example.com",
+  "restartable": true,
+  "timeoutPolicy": "TIME_OUT_WF",
+  "timeoutSeconds": 3600,
+  "inputParameters": [
+    "workflowId",
+    "reason",
+    "failureStatus",
+    "operationId"
+  ],
+  "tasks": [
+    {
+      "name": "Rollback_Payment_Preparation_XA_Transaction",
+      "taskReferenceName": "rollback_payment_preparation_xa_transaction",
+      "type": "TRANSACTION",
+      "description": "Instructs the MicroTx coordinator to roll the XA transaction back. Both participants - the ap-backend invoice write and the payment-service instruction - are discarded together.",
+      "inputParameters": {
+        "transactionType": "XA",
+        "coordinatorUrl": "http://otmm-tcs:9000/api/v1",
+        "failedWorkflowId": "${workflow.input.workflowId}",
+        "action": "ROLLBACK"
+      }
+    },
+    {
+      "name": "Terminate_Rolled_Back",
+      "taskReferenceName": "terminate_rolled_back",
+      "type": "TERMINATE",
+      "inputParameters": {
+        "terminationStatus": "COMPLETED",
+          "terminationReason": "Payment-preparation XA transaction rolled back; no invoice state or payment instruction persisted.",
+        "workflowOutput": {
+          "outcome": "PAYMENT_PREPARATION_XA_ROLLED_BACK",
+          "operationId": "${workflow.input.operationId}",
+          "failedWorkflowId": "${workflow.input.workflowId}",
+          "failureReason": "${workflow.input.reason}",
+          "paymentScheduled": false,
+          "settlementStatus": "NONE"
+        }
+      }
+    }
+  ],
+  "outputParameters": {
+    "outcome": "PAYMENT_PREPARATION_XA_ROLLED_BACK",
+    "operationId": "${workflow.input.operationId}",
+    "failedWorkflowId": "${workflow.input.workflowId}",
+    "failureReason": "${workflow.input.reason}",
+    "paymentScheduled": false,
+    "settlementStatus": "NONE"
+  }
+}

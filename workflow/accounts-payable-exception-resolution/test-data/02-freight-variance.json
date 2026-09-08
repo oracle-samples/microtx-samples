@@ -1,0 +1,14 @@
+{
+  "operationId": "OP-2026-0002",
+  "invoice": {
+    "invoiceId": "INV-1047",
+    "invoiceNumber": "INV-1047",
+    "supplierId": "SUP-CROWNRIDGE",
+    "poId": "PO-7811",
+    "amount": 48700.0,
+    "currency": "USD",
+    "invoiceDate": "2026-08-22",
+    "simulateSettlementTimeout": false
+  },
+  "_description": "$800 over PO-7811. Contract C-2290 s7.2 allows freight up to $1,000. Bank verification COMPLETE, so nothing is left unresolved."
+}

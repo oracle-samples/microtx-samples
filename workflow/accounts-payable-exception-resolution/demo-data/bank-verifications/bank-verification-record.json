@@ -1,0 +1,10 @@
+{
+  "supplierId": "SUP-NORTHSTAR",
+  "verificationId": "BKV-2026-01873",
+  "bankAccountLast4": "9013",
+  "status": "PENDING",
+  "lastChangedAt": "2026-09-02",
+  "verifiedAt": null,
+  "verifiedBy": null,
+  "requiredControl": "Independent callback to a known supplier contact"
+}

@@ -1,0 +1,11 @@
+{
+  "supplierId": "SUP-NORTHSTAR",
+  "name": "Northstar Components",
+  "status": "ACTIVE",
+  "paymentProfile": {
+    "currency": "USD",
+    "bankAccountLast4": "9013",
+    "bankChangeStatus": "PENDING_VERIFICATION"
+  },
+  "onboardedAt": "2024-12-06"
+}
