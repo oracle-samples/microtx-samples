@@ -1,0 +1,27 @@
+digraph SettlementWorkflow {
+  graph [rankdir=TB, bgcolor="#fbfaf8", pad=0.3, nodesep=0.35, ranksep=0.5,
+         fontname="Helvetica", label="Event-driven payment settlement", labelloc=t,
+         fontsize=22];
+  node [shape=box, style="rounded,filled", color="#52606d", fillcolor="#ffffff",
+        fontname="Helvetica", fontsize=11, margin="0.14,0.09"];
+  edge [color="#52606d", fontname="Helvetica", fontsize=9, arrowsize=0.7];
+
+  event [label="Committed TxEventQ event", shape=cylinder,
+         fillcolor="#e7f6ec", color="#16794b"];
+  handler [label="MicroTx event handler\nStart ap_payment_settlement v2",
+           fillcolor="#e7f6ec", color="#16794b"];
+  get [label="Get payment instruction\nby operationId", fillcolor="#e8f1fb"];
+  execute [label="Submit payment to bank\nIdempotency-Key = operationId", fillcolor="#e8f1fb"];
+  reconcile [label="Reconcile provider outcome\nby operationId", fillcolor="#e8f1fb"];
+  route [label="Status = SETTLED?", shape=diamond, fillcolor="#f5efe5"];
+  sql [label="SQL task\nmark invoice PAYMENT_SETTLED", shape=cylinder,
+       fillcolor="#e7f6ec", color="#16794b"];
+  done [label="Complete\nPAYMENT_SETTLED", fillcolor="#e7f6ec", color="#16794b"];
+  pending [label="Fail for recovery\ninvoice remains PAYMENT_SCHEDULED",
+           fillcolor="#fde8e7", color="#b42318"];
+
+  event -> handler -> get -> execute -> reconcile -> route;
+  route -> sql [label="YES"];
+  sql -> done;
+  route -> pending [label="NO"];
+}
