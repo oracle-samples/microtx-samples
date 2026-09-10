@@ -1,0 +1,26 @@
+{
+  "duplicateWindowDays": 90,
+  "records": [
+    {
+      "invoiceId": "INV-1049",
+      "invoiceNumber": "INV-1049",
+      "supplierId": "SUP-ACME",
+      "poId": "PO-7818",
+      "amount": 9450.0,
+      "currency": "USD",
+      "paidAt": "2026-08-30",
+      "paymentReference": "PAY-55021"
+    },
+    {
+      "invoiceId": "INV-0902",
+      "invoiceNumber": "INV-0902",
+      "supplierId": "SUP-CROWNRIDGE",
+      "poId": "PO-7790",
+      "amount": 15300.0,
+      "currency": "USD",
+      "paidAt": "2026-07-19",
+      "paymentReference": "PAY-54780"
+    }
+  ],
+  "duplicateRule": "same supplier AND inside window AND (normalised invoice number match OR exact amount match)"
+}

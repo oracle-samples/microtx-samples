@@ -1,0 +1,437 @@
+{
+    "name": "ap_exception_resolution",
+    "description": "A structured invoice receives AP prechecks, exception-only agent-harness investigation, structured evidence verification, one business-policy evaluation, a short XA payment preparation transaction, and separate external settlement.",
+  "version": 11,
+    "schemaVersion": 2,
+    "ownerEmail": "ap-samples@example.com",
+    "restartable": true,
+    "workflowStatusListenerEnabled": true,
+    "timeoutPolicy": "TIME_OUT_WF",
+    "timeoutSeconds": 86400,
+    "failureWorkflow": "ap_payment_preparation_xa_rollback",
+    "inputParameters": [
+        "operationId",
+        "invoice"
+    ],
+    "tasks": [
+        {
+            "name": "Run_Deterministic_AP_Prechecks",
+            "taskReferenceName": "run_deterministic_ap_prechecks",
+            "type": "HTTP",
+            "description": "Mandatory duplicate, supplier, PO, receipt, baseline-match, bank-control, and threshold checks classify the invoice as CLEAR, EXCEPTION, or REJECT.",
+            "inputParameters": {
+                "uri": "http://ap-backend:8083/prechecks",
+                "method": "POST",
+                "body": {
+      "invoice": "${workflow.input.invoice}",
+      "operationId": "${workflow.input.operationId}"
+                },
+                "headers": {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                "connectionTimeOut": 3000,
+                "readTimeOut": 10000
+            }
+        },
+        {
+            "name": "Route_AP_Precheck",
+            "taskReferenceName": "route_ap_precheck",
+            "type": "SWITCH",
+  "description": "REJECT ends before a planner or transaction. ALREADY_PROCESSED makes an exact operation replay safe; DUPLICATE_OPERATION preserves an existing scheduled payment. EXCEPTION enters the agent harness; CLEAR bypasses investigation but still reaches shared business policy.",
+            "evaluatorType": "value-param",
+            "expression": "switchCaseValue",
+            "inputParameters": {
+                "switchCaseValue": "${run_deterministic_ap_prechecks.output.response.body.status}"
+            },
+            "decisionCases": {
+    "REJECT": [
+                    {
+                        "name": "Record_Precheck_Rejection",
+                        "taskReferenceName": "record_precheck_rejection",
+                        "type": "HTTP",
+                        "inputParameters": {
+                            "uri": "http://ap-backend:8083/invoices/${workflow.input.invoice.invoiceId}/reject",
+                            "method": "POST",
+                            "body": {
+                                "operationId": "${workflow.input.operationId}",
+                                "reason": "${run_deterministic_ap_prechecks.output.response.body.reasons}"
+                            },
+                            "headers": {
+                                "Accept": "application/json",
+                                "Content-Type": "application/json"
+                            },
+                            "connectionTimeOut": 3000,
+                            "readTimeOut": 5000
+                        }
+                    },
+                    {
+                        "name": "Terminate_Precheck_Rejected",
+                        "taskReferenceName": "terminate_precheck_rejected",
+                        "type": "TERMINATE",
+                        "inputParameters": {
+                            "terminationStatus": "COMPLETED",
+                            "terminationReason": "A mandatory AP precheck rejected the invoice; no transaction opened.",
+                            "workflowOutput": {
+                                "outcome": "INVOICE_REJECTED_BY_PRECHECK",
+                                "operationId": "${workflow.input.operationId}",
+                                "paymentScheduled": false,
+                                "paymentExecutionStatus": "NONE"
+                            }
+                        }
+      }
+    ],
+    "ALREADY_PROCESSED": [
+      {
+        "name": "Terminate_Already_Processed",
+        "taskReferenceName": "terminate_already_processed",
+        "type": "TERMINATE",
+        "inputParameters": {
+          "terminationStatus": "COMPLETED",
+          "terminationReason": "This operation has already prepared payment state; no duplicate transaction or payment instruction was created.",
+          "workflowOutput": {
+            "outcome": "OPERATION_ALREADY_PROCESSED",
+            "operationId": "${workflow.input.operationId}",
+            "paymentScheduled": true,
+            "paymentExecutionStatus": "EXISTING_OPERATION"
+          }
+        }
+      }
+    ],
+    "DUPLICATE_OPERATION": [
+      {
+        "name": "Terminate_Duplicate_Operation",
+        "taskReferenceName": "terminate_duplicate_operation",
+        "type": "TERMINATE",
+        "inputParameters": {
+          "terminationStatus": "COMPLETED",
+          "terminationReason": "The invoice is already scheduled by another operation; existing payment state was preserved.",
+          "workflowOutput": {
+            "outcome": "INVOICE_ALREADY_SCHEDULED",
+            "operationId": "${workflow.input.operationId}",
+            "paymentScheduled": true,
+            "paymentExecutionStatus": "EXISTING_OPERATION"
+          }
+        }
+      }
+    ],
+    "EXCEPTION": [
+                    {
+                        "name": "Investigate_AP_Exception",
+                        "taskReferenceName": "investigate_ap_exception",
+                        "type": "AGENTIC_PLANNER",
+                        "description": "The planner may select only the read-only evidence GETs below. It recommends whether the exception is explained, needs review, or cannot proceed; it never authorises payment.",
+                        "inputParameters": {
+                            "llmProfile": {
+                                "name": "ap-planner-llm",
+                                "model": "<configure-in-MicroTx>"
+                            },
+                            "promptTemplate": "ap_exception_planner",
+                            "promptVariables": {
+                                "operationId": "${workflow.input.operationId}",
+                                "invoiceId": "${workflow.input.invoice.invoiceId}"
+                            },
+                            "data": {
+                                "invoice": "${workflow.input.invoice}",
+                                "precheck": "${run_deterministic_ap_prechecks.output.response.body}"
+                            },
+                            "tasks": [
+                                {
+                                    "name": "get_supplier_contract",
+                                    "taskReferenceName": "get_supplier_contract",
+                                    "type": "HTTP",
+                                    "description": "Read-only contract terms that may explain a variance.",
+                                    "inputParameters": {
+                                        "uri": "http://ap-backend:8083/evidence/suppliers/${workflow.input.invoice.supplierId}/contract",
+                                        "method": "GET",
+                                        "headers": {
+                                            "Accept": "application/json"
+                                        },
+                                        "connectionTimeOut": 3000,
+                                        "readTimeOut": 5000
+                                    }
+                                },
+                                {
+                                    "name": "get_supplier_details",
+                                    "taskReferenceName": "get_supplier_details",
+                                    "type": "HTTP",
+                                    "description": "Read-only supplier context for an exception.",
+                                    "inputParameters": {
+                                        "uri": "http://ap-backend:8083/evidence/suppliers/${workflow.input.invoice.supplierId}",
+                                        "method": "GET",
+                                        "headers": {
+                                            "Accept": "application/json"
+                                        },
+                                        "connectionTimeOut": 3000,
+                                        "readTimeOut": 5000
+                                    }
+                                },
+                                {
+                                    "name": "get_bank_verification",
+                                    "taskReferenceName": "get_bank_verification",
+                                    "type": "HTTP",
+                                    "description": "Read-only bank-verification state when supplier payment details are relevant.",
+                                    "inputParameters": {
+                                        "uri": "http://ap-backend:8083/evidence/suppliers/${workflow.input.invoice.supplierId}/bank-verification",
+                                        "method": "GET",
+                                        "headers": {
+                                            "Accept": "application/json"
+                                        },
+                                        "connectionTimeOut": 3000,
+                                        "readTimeOut": 5000
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "Create_Structured_Decision_Contract",
+                        "taskReferenceName": "create_structured_decision_contract",
+                        "type": "HTTP",
+                        "description": "Extracts the final decision from the Agentic Planner's durable plannerHistory envelope. Downstream verification, review, and policy consume this stable decision contract rather than planner execution history.",
+                        "inputParameters": {
+                            "uri": "http://ap-backend:8083/planner-decision",
+                            "method": "POST",
+                            "body": {
+                                "plannerOutput": "${investigate_ap_exception.output}"
+                            },
+                            "headers": {
+                                "Accept": "application/json",
+                                "Content-Type": "application/json"
+                            },
+                            "connectionTimeOut": 3000,
+                            "readTimeOut": 10000
+                        }
+                    },
+                    {
+                        "name": "Verify_Investigation_Evidence",
+                        "taskReferenceName": "verify_investigation_evidence",
+                        "type": "HTTP",
+                        "description": "Re-reads every fact cited by the planner before the exception can be resolved.",
+                        "inputParameters": {
+                            "uri": "http://ap-backend:8083/verify-evidence",
+                            "method": "POST",
+                            "body": {
+                                "invoice": "${workflow.input.invoice}",
+                                "decision": "${create_structured_decision_contract.output.response.body}"
+                            },
+                            "headers": {
+                                "Accept": "application/json",
+                                "Content-Type": "application/json"
+                            },
+                            "connectionTimeOut": 3000,
+                            "readTimeOut": 10000
+                        }
+                    },
+                    {
+                        "name": "Request_Review_When_Planner_Escalates",
+                        "taskReferenceName": "request_review_when_planner_escalates",
+                        "type": "SWITCH",
+                        "evaluatorType": "value-param",
+                        "expression": "switchCaseValue",
+                        "inputParameters": {
+                            "switchCaseValue": "${create_structured_decision_contract.output.response.body.decision}"
+                        },
+                        "decisionCases": {
+                            "ESCALATE": [
+                                {
+                                    "name": "AP_Human_Review",
+                                    "taskReferenceName": "ap_human_review",
+                                    "type": "HUMAN",
+                                    "optional": true,
+                                    "description": "The reviewer receives the assembled exception context. COMPLETED approves the exception; Rejected or Failed is passed to policy as a rejection. The task is optional only so the policy rejection can be recorded before the workflow terminates.",
+                                    "inputParameters": {
+                                        "assignmentGroup": "ap-reviewers",
+                                        "displayName": "Review AP exception ${workflow.input.invoice.invoiceId}",
+                                        "question": "Review the assembled AP exception evidence and approve or decline the escalated concern.",
+                                        "invoice": "${workflow.input.invoice}",
+                                        "precheck": "${run_deterministic_ap_prechecks.output.response.body}",
+                                        "plannerDecision": "${create_structured_decision_contract.output.response.body}",
+                                        "evidenceVerification": "${verify_investigation_evidence.output.response.body}"
+                                    }
+                                }
+                            ]
+                        },
+                        "defaultCase": []
+                    }
+                ]
+            },
+            "defaultCase": []
+        },
+        {
+            "name": "Apply_Business_Policy",
+            "taskReferenceName": "apply_business_policy",
+            "type": "HTTP",
+            "description": "The single business-authority step evaluates authoritative prechecks plus the structured decision contract when an exception was investigated.",
+            "inputParameters": {
+                "uri": "http://ap-backend:8083/policy/evaluate",
+                "method": "POST",
+                "body": {
+                    "invoice": "${workflow.input.invoice}",
+                    "precheck": "${run_deterministic_ap_prechecks.output.response.body}",
+                    "plannerDecision": "${create_structured_decision_contract.output.response.body}",
+                    "evidenceVerification": "${verify_investigation_evidence.output.response.body}",
+                    "humanDecision": {
+                        "completionStatus": "${ap_human_review.status}",
+                        "output": "${ap_human_review.output}"
+                    }
+                },
+                "headers": {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                "connectionTimeOut": 3000,
+                "readTimeOut": 10000
+            }
+        },
+        {
+            "name": "Check_Business_Policy",
+            "taskReferenceName": "check_business_policy",
+            "type": "SWITCH",
+            "description": "Only APPROVE reaches XA. Business policy produces APPROVE or REJECT; it never creates a second Human task.",
+            "evaluatorType": "value-param",
+            "expression": "switchCaseValue",
+            "inputParameters": {
+                "switchCaseValue": "${apply_business_policy.output.response.body.status}"
+            },
+            "decisionCases": {
+                "REJECT": [
+                    {
+                        "name": "Record_Policy_Rejection",
+                        "taskReferenceName": "record_policy_rejection",
+                        "type": "HTTP",
+                        "inputParameters": {
+                            "uri": "http://ap-backend:8083/invoices/${workflow.input.invoice.invoiceId}/reject",
+                            "method": "POST",
+                            "body": {
+                                "operationId": "${workflow.input.operationId}",
+                                "reason": "${apply_business_policy.output.response.body.reasons}"
+                            },
+                            "headers": {
+                                "Accept": "application/json",
+                                "Content-Type": "application/json"
+                            },
+                            "connectionTimeOut": 3000,
+                            "readTimeOut": 5000
+                        }
+                    },
+                    {
+                        "name": "Terminate_Policy_Rejected",
+                        "taskReferenceName": "terminate_policy_rejected",
+                        "type": "TERMINATE",
+                        "inputParameters": {
+                            "terminationStatus": "COMPLETED",
+                            "terminationReason": "Business policy rejected the invoice; no transaction opened.",
+                            "workflowOutput": {
+                                "outcome": "INVOICE_REJECTED_BY_POLICY",
+                                "operationId": "${workflow.input.operationId}",
+                                "paymentScheduled": false,
+                                "paymentExecutionStatus": "NONE"
+                            }
+                        }
+                    }
+                ]
+            },
+            "defaultCase": []
+        },
+        {
+            "name": "Begin_Payment_Transaction",
+            "taskReferenceName": "begin_payment_transaction",
+            "type": "TRANSACTION",
+            "description": "Only a policy-approved invoice reaches this short XA boundary.",
+            "inputParameters": {
+                "transactionType": "XA",
+                "coordinatorUrl": "http://otmm-tcs:9000/api/v1",
+        "transactionTimeout": 300000,
+                "action": "BEGIN"
+            }
+        },
+        {
+            "name": "Schedule_Invoice_For_Payment",
+            "taskReferenceName": "schedule_invoice_for_payment",
+            "type": "HTTP",
+            "description": "XA participant 1 of 2: AP state.",
+            "inputParameters": {
+                "uri": "http://ap-backend:8083/invoices/${workflow.input.invoice.invoiceId}/payment-scheduled",
+                "method": "POST",
+                "headers": {
+                    "Idempotency-Key": "${workflow.input.operationId}",
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                "body": {
+                    "operationId": "${workflow.input.operationId}",
+                    "amount": "${workflow.input.invoice.amount}",
+                    "currency": "${workflow.input.invoice.currency}"
+                },
+                "connectionTimeOut": 3000,
+                "readTimeOut": 30000,
+                "enlistInTxn": true
+            }
+        },
+        {
+            "name": "Create_Payment_Instruction",
+            "taskReferenceName": "create_payment_instruction",
+            "type": "HTTP",
+            "description": "XA participant 2 of 2: an idempotent payment instruction.",
+            "inputParameters": {
+                "uri": "http://payment-service:8084/payment-instructions",
+                "method": "POST",
+                "headers": {
+                    "Idempotency-Key": "${workflow.input.operationId}",
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                "body": {
+                    "operationId": "${workflow.input.operationId}",
+                    "invoiceId": "${workflow.input.invoice.invoiceId}",
+                    "supplierId": "${workflow.input.invoice.supplierId}",
+                    "amount": "${workflow.input.invoice.amount}",
+                    "currency": "${workflow.input.invoice.currency}"
+                },
+                "connectionTimeOut": 3000,
+                "readTimeOut": 30000,
+                "enlistInTxn": true
+            }
+        },
+        {
+            "name": "Commit_Payment_Transaction",
+            "taskReferenceName": "commit_payment_transaction",
+            "type": "TRANSACTION",
+            "description": "Commits the two participating financial writes. External payment settlement starts only after this boundary has ended.",
+            "inputParameters": {
+                "transactionType": "XA",
+                "coordinatorUrl": "http://otmm-tcs:9000/api/v1",
+                "action": "COMMIT"
+            }
+        },
+        {
+            "name": "Start_Payment_Settlement",
+            "taskReferenceName": "start_payment_settlement",
+            "type": "START_WORKFLOW",
+            "optional": true,
+            "description": "Asynchronously starts the linked payment-settlement workflow after COMMIT. It is optional so a dispatch failure cannot invoke the XA rollback handler after a successful commit; production dispatch should be recovered from a committed outbox/event.",
+            "inputParameters": {
+                "startWorkflow": {
+                    "name": "ap_payment_settlement",
+                    "version": 1,
+                    "correlationId": "${workflow.input.operationId}",
+                    "input": {
+                        "operationId": "${workflow.input.operationId}",
+                        "simulateSettlementTimeout": "${workflow.input.invoice.simulateSettlementTimeout}"
+                    }
+                }
+            }
+        }
+    ],
+    "outputParameters": {
+        "outcome": "PAYMENT_PREPARED",
+        "operationId": "${workflow.input.operationId}",
+        "invoiceId": "${workflow.input.invoice.invoiceId}",
+        "precheck": "${run_deterministic_ap_prechecks.output.response.body}",
+        "paymentScheduled": true,
+        "instructionId": "${create_payment_instruction.output.response.body.instructionId}",
+        "paymentSettlementWorkflowId": "${start_payment_settlement.output.workflowId}",
+        "paymentExecutionStatus": "PENDING"
+    }
+}

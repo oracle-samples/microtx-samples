@@ -1,0 +1,14 @@
+{
+  "operationId": "OP-2026-0001",
+  "invoice": {
+    "invoiceId": "INV-1001",
+    "invoiceNumber": "INV-1001",
+    "supplierId": "SUP-ACME",
+    "poId": "PO-7800",
+    "amount": 12500.0,
+    "currency": "USD",
+    "invoiceDate": "2026-08-24",
+    "simulateSettlementTimeout": false
+  },
+  "_description": "Matches PO-7800 exactly. Receipt complete, supplier active, bank verified."
+}

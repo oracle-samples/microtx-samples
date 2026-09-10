@@ -1,0 +1,14 @@
+{
+  "operationId": "OP-2026-0006",
+  "invoice": {
+    "invoiceId": "INV-1075",
+    "invoiceNumber": "INV-1075",
+    "supplierId": "SUP-ACME",
+    "poId": "PO-7830",
+    "amount": 8300.0,
+    "currency": "USD",
+    "invoiceDate": "2026-08-29",
+    "simulateSettlementTimeout": true
+  },
+  "_description": "Clean invoice. External payment settlement times out after bank-mock has already recorded the result. Reconcile_Payment_Outcome must find SETTLED and no second payment may be created."
+}
