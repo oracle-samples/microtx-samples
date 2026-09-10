@@ -3,6 +3,8 @@
 `ap-backend` runs on port `8083`. It owns the AP system-of-record data and
 provides deterministic prechecks, planner evidence reads, evidence verification,
 business policy, and the AP-side XA write that marks an invoice as scheduled.
+After external reconciliation, the settlement workflow uses a SQL task against
+the same schema to move that invoice to `PAYMENT_SETTLED`.
 
 Its `POST /invoices/{invoiceId}/payment-scheduled` endpoint uses the
 MicroTx-managed `microTxSqlConnection`. When MicroTx Workflows propagates an
@@ -49,22 +51,30 @@ Run these scripts as the AP schema owner, in order:
 ```text
 database/schema.sql
 database/demo-data.sql
+database/txeventq.sql
 ```
 
-The second script loads the six sample scenarios. Do not run it in a production
-schema.
+The second script loads the six sample scenarios. The third creates and starts
+`AP_PAYMENT_SETTLEMENT_EVENTS` and adds the durable
+`AP_SETTLEMENT_SUBSCRIBER`. It selects `CREATE_SHARDED_QUEUE` when the database
+does not expose `CREATE_TRANSACTIONAL_EVENT_QUEUE`, so it can be run against
+Oracle Database 19c-compatible TxEventQ deployments as well. The queue script
+requires `AQ_USER_ROLE` and execute privileges on `DBMS_AQ` and `DBMS_AQADM`.
+Do not run the seed script in a production schema.
 
-`run-local.sh` does not run either script automatically. Schema creation and
-seeding are deliberate one-time environment setup, not application startup
-behavior.
+`run-local.sh` does not run these scripts automatically. Schema creation,
+seeding, and queue administration are deliberate one-time environment setup,
+not application startup behavior.
 
 ## Reset between demo runs
 
 An exact rerun with the same `operationId` is safe and returns
 `OPERATION_ALREADY_PROCESSED`; a different operation ID for an invoice already
-scheduled is rejected. To reset mutable AP state for a completely fresh demo,
-run `database/reset-demo-state.sql` as this schema owner. It retains all
-reference evidence and historical duplicate records.
+prepared or settled is rejected. To reset mutable AP state for a completely
+fresh demo, run `database/reset-demo-state.sql` as this schema owner. It retains all
+reference evidence, historical duplicate records, and the TxEventQ definition.
+It resets both `PAYMENT_SCHEDULED` and `PAYMENT_SETTLED` invoice rows to their
+initial `RECEIVED` state.
 
 ## Start
 

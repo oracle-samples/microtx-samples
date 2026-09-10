@@ -5,8 +5,9 @@
 `microTxSqlConnection`; within the main workflow's XA boundary it enlists as
 the payment branch, alongside `ap-backend`.
 
-The external bank call is intentionally not here. It is made after commit by
-the separate payment-settlement workflow through `bank-mock`.
+The external bank call is intentionally not here. The main XA transaction also
+publishes a TxEventQ message, and a MicroTx event handler starts the separate
+payment-settlement workflow after commit. That workflow calls `bank-mock`.
 
 ## Configure
 

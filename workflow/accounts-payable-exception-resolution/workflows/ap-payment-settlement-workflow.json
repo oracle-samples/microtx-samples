@@ -1,13 +1,15 @@
 {
   "name": "ap_payment_settlement",
   "description": "Durably submit an approved payment instruction to the external payment rail and reconcile its final settlement outcome by stable operationId. A response timeout is not proof that settlement did not happen.",
-  "version": 1,
+  "version": 2,
   "schemaVersion": 2,
   "restartable": true,
   "timeoutPolicy": "TIME_OUT_WF",
   "timeoutSeconds": 3600,
   "inputParameters": [
     "operationId",
+    "invoiceId",
+    "instructionId",
     "simulateSettlementTimeout"
   ],
   "tasks": [
@@ -60,11 +62,60 @@
         "connectionTimeOut": 3000,
         "readTimeOut": 10000
       }
+    },
+    {
+      "name": "Route_Settlement_Outcome",
+      "taskReferenceName": "route_settlement_outcome",
+      "type": "SWITCH",
+      "description": "Only a confirmed settlement may move the AP invoice to its terminal paid state.",
+      "evaluatorType": "value-param",
+      "expression": "switchCaseValue",
+      "inputParameters": {
+        "switchCaseValue": "${reconcile_payment_outcome.output.response.body.status}"
+      },
+      "decisionCases": {
+        "SETTLED": [
+          {
+            "name": "Mark_Invoice_Payment_Settled",
+            "taskReferenceName": "mark_invoice_payment_settled",
+            "type": "SQL",
+            "description": "Records the reconciled payment outcome directly in the AP Oracle Database. The conditional update is safe to repeat after event redelivery or workflow retry.",
+            "inputParameters": {
+              "databaseProfile": "ap-oracle-db-profile",
+              "sqlStatement": "UPDATE ap_invoices SET status = 'PAYMENT_SETTLED', reason = NULL, updated_at = SYSTIMESTAMP WHERE invoice_id = ? AND operation_id = ? AND status IN ('PAYMENT_SCHEDULED', 'PAYMENT_SETTLED')",
+              "type": "UPDATE",
+              "parameters": [
+                "${workflow.input.invoiceId}",
+                "${workflow.input.operationId}"
+              ]
+            }
+          }
+        ]
+      },
+      "defaultCase": [
+        {
+          "name": "Terminate_Settlement_Unconfirmed",
+          "taskReferenceName": "terminate_settlement_unconfirmed",
+          "type": "TERMINATE",
+          "inputParameters": {
+            "terminationStatus": "FAILED",
+            "terminationReason": "The provider did not report a final SETTLED outcome. The invoice remains PAYMENT_SCHEDULED for reconciliation or retry.",
+            "workflowOutput": {
+              "outcome": "SETTLEMENT_UNCONFIRMED",
+              "operationId": "${workflow.input.operationId}",
+              "invoiceId": "${workflow.input.invoiceId}",
+              "paymentExecutionStatus": "${reconcile_payment_outcome.output.response.body.status}"
+            }
+          }
+        }
+      ]
     }
   ],
   "outputParameters": {
     "operationId": "${workflow.input.operationId}",
+    "invoiceId": "${workflow.input.invoiceId}",
     "instructionId": "${get_payment_instruction.output.response.body.instructionId}",
-    "paymentExecutionStatus": "${reconcile_payment_outcome.output.response.body.status}"
+    "paymentExecutionStatus": "${reconcile_payment_outcome.output.response.body.status}",
+    "invoiceStatus": "PAYMENT_SETTLED"
   }
 }

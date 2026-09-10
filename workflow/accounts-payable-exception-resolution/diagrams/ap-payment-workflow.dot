@@ -1,0 +1,53 @@
+digraph APWorkflow {
+  graph [rankdir=TB, bgcolor="#fbfaf8", pad=0.3, nodesep=0.35, ranksep=0.5,
+         fontname="Helvetica", label="Accounts payable exception resolution", labelloc=t,
+         fontsize=22];
+  node [shape=box, style="rounded,filled", color="#52606d", fillcolor="#ffffff",
+        fontname="Helvetica", fontsize=11, margin="0.14,0.09"];
+  edge [color="#52606d", fontname="Helvetica", fontsize=9, arrowsize=0.7];
+
+  invoice [label="Structured invoice\nfrom OCR / ERP", fillcolor="#e8f1fb"];
+  precheck [label="Deterministic AP prechecks", fillcolor="#e8f1fb"];
+  route [label="Route precheck", shape=diamond, fillcolor="#f5efe5"];
+  reject [label="Record rejection\nand end", fillcolor="#fde8e7", color="#b42318"];
+  planner [label="Agentic Planner\nread-only evidence tools", fillcolor="#f2eafd", color="#6941c6"];
+  contract [label="Structured decision contract"];
+  verify [label="Verify cited evidence"];
+  escalate [label="Planner escalates?", shape=diamond, fillcolor="#f5efe5"];
+  review [label="Human review\nonly on escalation", fillcolor="#fff3d6", color="#b54708"];
+  policy [label="Deterministic business policy", fillcolor="#e8f1fb"];
+  policyRoute [label="Approved?", shape=diamond, fillcolor="#f5efe5"];
+
+  subgraph cluster_xa {
+    label="Short XA payment-preparation transaction";
+    color="#e07a1f";
+    style="rounded,dashed";
+    penwidth=2;
+    begin [label="BEGIN XA", fillcolor="#fff3d6"];
+    schedule [label="Schedule invoice\nPAYMENT_SCHEDULED", fillcolor="#fff3d6"];
+    instruction [label="Create payment instruction", fillcolor="#fff3d6"];
+    publish [label="Publish settlement event\nto Oracle TxEventQ", fillcolor="#fff3d6"];
+    commit [label="COMMIT XA", fillcolor="#fff3d6"];
+    begin -> schedule -> instruction -> publish -> commit;
+  }
+
+  queue [label="AP_PAYMENT_SETTLEMENT_EVENTS", shape=cylinder,
+         fillcolor="#e7f6ec", color="#16794b"];
+  handler [label="MicroTx event handler\nstarts settlement workflow", fillcolor="#e7f6ec", color="#16794b"];
+  settlement [label="External payment settlement\nand reconciliation", fillcolor="#e7f6ec", color="#16794b"];
+  settled [label="SQL task\ninvoice = PAYMENT_SETTLED", shape=cylinder,
+           fillcolor="#e7f6ec", color="#16794b"];
+
+  invoice -> precheck -> route;
+  route -> reject [label="REJECT"];
+  route -> policy [label="CLEAR"];
+  route -> planner [label="EXCEPTION"];
+  planner -> contract -> verify -> escalate;
+  escalate -> review [label="YES"];
+  escalate -> policy [label="NO"];
+  review -> policy;
+  policy -> policyRoute;
+  policyRoute -> reject [label="NO"];
+  policyRoute -> begin [label="YES"];
+  commit -> queue -> handler -> settlement -> settled;
+}

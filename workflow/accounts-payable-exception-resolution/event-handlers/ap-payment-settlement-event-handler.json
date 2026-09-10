@@ -1,0 +1,21 @@
+{
+  "name": "ap_payment_settlement_event_handler",
+  "event": "txeventq:AP_PAYMENT_SETTLEMENT_EVENTS:AP_SETTLEMENT_SUBSCRIBER:ap-oracle-db-profile",
+  "actions": [
+    {
+      "action": "start_workflow",
+      "start_workflow": {
+        "name": "ap_payment_settlement",
+        "version": 2,
+        "correlationId": "${payload.operationId}",
+        "input": {
+          "operationId": "${payload.operationId}",
+          "invoiceId": "${payload.invoiceId}",
+          "instructionId": "${payload.instructionId}",
+          "simulateSettlementTimeout": "${payload.simulateSettlementTimeout}"
+        }
+      }
+    }
+  ],
+  "active": true
+}

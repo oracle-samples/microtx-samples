@@ -28,6 +28,10 @@ from urllib.parse import urlparse
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORKFLOW_PATH = os.path.join(REPO_ROOT, "workflows", "ap-exception-resolution-workflow.json")
+SETTLEMENT_WORKFLOW_PATH = os.path.join(
+    REPO_ROOT, "workflows", "ap-payment-settlement-workflow.json")
+EVENT_HANDLER_PATH = os.path.join(
+    REPO_ROOT, "event-handlers", "ap-payment-settlement-event-handler.json")
 
 PLANNER_TASK_NAME = "Investigate_AP_Exception"
 PLANNER_TASK_TYPE = "AGENTIC_PLANNER"
@@ -115,6 +119,10 @@ class PlannerBoundaryTest(unittest.TestCase):
     def setUpClass(cls):
         cls.workflow = load_workflow()
         cls.planner = find_planner_task(cls.workflow)
+        with open(SETTLEMENT_WORKFLOW_PATH, "r", encoding="utf-8") as handle:
+            cls.settlement_workflow = json.load(handle)
+        with open(EVENT_HANDLER_PATH, "r", encoding="utf-8") as handle:
+            cls.event_handler = json.load(handle)
 
     def test_planner_task_exists(self):
         self.assertIsNotNone(
@@ -275,17 +283,82 @@ class PlannerBoundaryTest(unittest.TestCase):
             "Keep one Human task in this demo. Business policy must consume the "
             "planner-review result rather than create a second review path.")
 
-    def test_payment_settlement_starts_after_commit(self):
-        """The post-commit child workflow must never sit inside the XA scope."""
+    def test_settlement_event_is_atomic_and_replaces_direct_workflow_start(self):
+        """Settlement is dispatched by an XA-enlisted event, not a start task."""
         names = [t.get("name") for t in self.workflow.get("tasks", [])]
+        tasks = {task.get("name"): task for task in self.workflow.get("tasks", [])}
+        self.assertIn("Begin_Payment_Transaction", names)
+        self.assertIn("Publish_Payment_Settlement_Event", names)
         self.assertIn("Commit_Payment_Transaction", names)
-        self.assertIn("Start_Payment_Settlement", names)
+        self.assertNotIn("Start_Payment_Settlement", names)
         self.assertLess(
-            names.index("Commit_Payment_Transaction"),
-            names.index("Start_Payment_Settlement"),
-            "Start_Payment_Settlement must follow Commit_Payment_Transaction. "
-            "External settlement and reconciliation must never be attempted inside "
-            "the XA payment-preparation boundary.")
+            names.index("Create_Payment_Instruction"),
+            names.index("Publish_Payment_Settlement_Event"))
+        self.assertLess(
+            names.index("Publish_Payment_Settlement_Event"),
+            names.index("Commit_Payment_Transaction"))
+        publish = tasks["Publish_Payment_Settlement_Event"]
+        inputs = publish.get("inputParameters", {})
+        self.assertEqual(publish.get("type"), "TXEVENTQ_PUBLISH")
+        self.assertTrue(inputs.get("enlistInTxn"))
+        self.assertFalse(
+            inputs.get("enableIdempotency", False),
+            "TxEventQ task-level idempotency cannot be combined with XA enlistment.")
+        payload = json.loads(inputs["value"])
+        self.assertEqual(payload["eventType"], "AP_PAYMENT_PREPARED")
+        for field in ("operationId", "invoiceId", "instructionId",
+                      "simulateSettlementTimeout"):
+            self.assertIn(field, payload)
+
+    def test_event_handler_starts_the_current_settlement_workflow(self):
+        """A dedicated topic needs no JavaScript condition to route its event."""
+        publish = next(
+            task for task in self.workflow["tasks"]
+            if task.get("name") == "Publish_Payment_Settlement_Event")
+        publish_inputs = publish["inputParameters"]
+        expected_event = "txeventq:{topic}:{agent}:{profile}".format(
+            topic=publish_inputs["topic"],
+            agent=publish_inputs["publisherAgentName"],
+            profile=publish_inputs["databaseProfile"])
+        self.assertEqual(self.event_handler.get("event"), expected_event)
+        self.assertNotIn(
+            "condition", self.event_handler,
+            "AP_PAYMENT_SETTLEMENT_EVENTS is dedicated to payment-prepared events; "
+            "do not require a JavaScript evaluator just to filter that topic.")
+        self.assertNotIn(
+            "evaluatorType", self.event_handler,
+            "The dedicated settlement topic must start its workflow without loading "
+            "the JavaScript event-condition evaluator.")
+        start = self.event_handler["actions"][0]["start_workflow"]
+        self.assertEqual(start["name"], self.settlement_workflow["name"])
+        self.assertEqual(start["version"], self.settlement_workflow["version"])
+        self.assertEqual(start["correlationId"], "${payload.operationId}")
+        for field in ("operationId", "invoiceId", "instructionId",
+                      "simulateSettlementTimeout"):
+            self.assertIn(field, start["input"])
+
+    def test_settlement_marks_only_a_confirmed_payment_as_settled(self):
+        names = [task.get("name") for task in self.settlement_workflow["tasks"]]
+        self.assertLess(
+            names.index("Reconcile_Payment_Outcome"),
+            names.index("Route_Settlement_Outcome"))
+        route = next(
+            task for task in self.settlement_workflow["tasks"]
+            if task.get("name") == "Route_Settlement_Outcome")
+        settled_tasks = route.get("decisionCases", {}).get("SETTLED", [])
+        self.assertEqual(len(settled_tasks), 1)
+        update = settled_tasks[0]
+        self.assertEqual(update.get("type"), "SQL")
+        statement = update.get("inputParameters", {}).get("sqlStatement", "")
+        self.assertIn("PAYMENT_SETTLED", statement)
+        self.assertIn("operation_id = ?", statement)
+        self.assertNotIn("enlistInTxn", update.get("inputParameters", {}))
+        publish = next(
+            task for task in self.workflow["tasks"]
+            if task.get("name") == "Publish_Payment_Settlement_Event")
+        self.assertEqual(
+            update["inputParameters"]["databaseProfile"],
+            publish["inputParameters"]["databaseProfile"])
 
 
 if __name__ == "__main__":

@@ -1,0 +1,8 @@
+{
+  "eventType": "AP_PAYMENT_PREPARED",
+  "schemaVersion": 1,
+  "operationId": "OP-2026-0003",
+  "invoiceId": "INV-1048",
+  "instructionId": "PI-1048003",
+  "simulateSettlementTimeout": "false"
+}

@@ -1,36 +1,25 @@
-# Accounts Payable Exception Resolution with MicroTx Workflows
+# Accounts payable exception resolution
 
-**Known AP controls stay deterministic. The Agentic Planner investigates only the exceptions those controls cannot explain; verified facts, policy, human review, and transactions decide whether financial state changes.**
+![AP payment workflow](./ap_payment_workflow.png)
 
-This sample starts after invoice capture. The input is already a structured invoice. The problem is what happens when that invoice does not match cleanly and the system has to investigate before it can continue.
+![AP payment settlement workflow](./ap_payment_settlement_workflow.png)
 
-## Why this sample
+This sample starts after invoice capture. It accepts a structured invoice, runs AP controls, investigates exceptions with read-only evidence lookups, and atomically commits the AP state, payment instruction, and a TxEventQ settlement event. A MicroTx event handler consumes the committed event and starts external payment settlement.
 
-A supplier invoice arrives for **$48,700** against a **$47,900** purchase order. The $800 difference is freight. The goods were received. The supplier also changed its bank account recently and that change has not completed independent verification.
+## What it does
 
-There are two different jobs here:
+1. **Precheck**: Checks supplier status, PO, receipt, duplicate history, amount variance, and bank verification.
+2. **Route**: Rejects hard failures, sends clear invoices to policy, and sends unresolved exceptions to the planner.
+3. **Investigate**: Uses the Agentic Planner to choose from read-only evidence APIs such as contract and bank-verification lookups.
+4. **Verify**: Re-reads the evidence cited by the planner and produces a structured decision for policy.
+5. **Review**: Creates one Human task only when the planner escalates a case.
+6. **Decide**: Applies deterministic AP policy using prechecks, verified evidence, and the Human task result.
+7. **Prepare payment**: Schedules the invoice, creates a payment instruction, and publishes a TxEventQ event in one short XA transaction.
+8. **Settle**: A TxEventQ event handler starts a separate workflow that submits the payment, reconciles an ambiguous provider response, and records the final invoice status with a SQL task.
 
-1. **Run mandatory AP controls.** Check duplicates, PO, receipt, and baseline matching every time.
-2. **Investigate an unresolved exception.** When a variance or receipt issue remains, read contract, supplier, or bank-verification evidence as needed.
-3. **Control the financial action.** Verify planner-cited facts, apply deterministic policy, involve a person when required, and only then change AP/payment state.
+## Services
 
-The sample keeps those jobs separate on purpose.
-
-## What it demonstrates
-
-- **Deterministic AP prechecks** - duplicate detection, PO/receipt lookup, and basic matching happen before any planner call.
-- **Agentic Planner / Agent Loop** - only an unresolved exception reaches the planner, which chooses the next read-only evidence task.
-- **Agent Harness** - the planner can reach only `ap-backend`'s `GET /evidence/*` routes. No policy, AP write, payment, or payment-settlement operation is registered as a planner tool.
-- **Evidence verification** - the workflow does not trust a planner-cited fact. `POST /verify-evidence` re-reads it from source data.
-- **Deterministic policy** - policy evaluates authoritative precheck facts, verified investigation evidence, and any recorded human decision.
-- **Human review** - an escalated concern can pause the workflow; the review result is an input to policy, not a bypass around it.
-- **Durable execution and idempotency** - MicroTx Workflows owns the long-running execution state and can avoid redoing completed planner/task work after recovery.
-- **Short XA boundary** - only the AP-state update and payment-instruction creation are inside the transaction.
-- **External payment settlement and reconciliation** - a linked durable workflow submits the approved instruction to the payment rail and reconciles by stable `operationId`; a timeout is not treated as proof of failure.
-
-## Architecture
-
-Three runnable services are included. `ap-backend` packages several logical AP responsibilities to keep the local sample easy to run; its route-level planner boundary remains explicit.
+Three runnable services are included. `ap-backend` groups the AP checks, evidence reads, policy, and invoice state used by the sample.
 
 | Service | Port | Responsibility | Planner access |
 |---|---:|---|---|
@@ -38,8 +27,7 @@ Three runnable services are included. `ap-backend` packages several logical AP r
 | `payment-service` | 8084 | Payment instruction | None |
 | `bank-mock` | 8085 | External payment-provider simulation with timeout behavior | None |
 
-The repository split is intentional. This is the architecture narrative used by
-the blog and reflected in the workflow:
+## Workflow
 
 ```mermaid
 flowchart TD
@@ -54,17 +42,20 @@ flowchart TD
   R -->|No| P
   U --> P
   P -->|Reject / hold| X
-  P -->|Approve| T[7. Short XA transaction<br/>schedule invoice + create instruction]
-  T --> E[8. External settlement workflow<br/>idempotent submit + reconciliation]
+  P -->|Approve| T[7. Short XA transaction<br/>schedule invoice + create instruction + publish event]
+  T --> Q[(Oracle TxEventQ)]
+  Q --> EH[Event handler<br/>start settlement workflow]
+  EH --> E[8. External settlement workflow<br/>idempotent submit + reconciliation]
+  E --> S[(SQL task<br/>invoice = PAYMENT_SETTLED)]
 ```
 
-The sample accepts every structured invoice, not only one pre-labelled as an
-exception. Mandatory prechecks determine whether it takes the straight-through
-path or enters the exception-investigation branch. OCR and correction are shown
-only as the upstream source of the structured invoice; they are intentionally
-not another workflow in this sample.
+The sample accepts every structured invoice. Prechecks decide whether it follows
+the straight-through path or enters exception investigation. OCR and correction
+are upstream of this sample and are not represented as another workflow.
 
-The compact runtime does not merge authority. Within `ap-backend`, evidence reads answer **what is true**, evidence verification checks planner-cited facts, and policy answers **what is allowed**. The planner registry exposes only the read-only evidence routes; the static boundary test rejects every other route.
+The planner can call only `ap-backend`'s `GET /evidence/*` routes. It cannot
+write AP state, create payment instructions, evaluate policy, or call the bank.
+Evidence verification and policy remain deterministic service operations.
 
 ## Demo evidence: documents and system records
 
@@ -86,25 +77,29 @@ deterministic query over invoice history, not a PDF stored beside the invoice.
 
 [`demo-documents/README.md`](demo-documents/README.md) defines the visual
 document pack; [`demo-data/`](demo-data) contains structured examples of the
-system-of-record data for the headline and timeout cases. The running mock
+system-of-record data for the headline and timeout cases. The running
 `ap-backend` and `payment-service` persist these records in Oracle Database
 and enlist their write endpoints as MicroTx XA participants. `bank-mock`
 remains non-transactional: it represents the external payment rail, where
 idempotency and reconciliation—not XA—are the safe controls.
 
-## Repository layout
+## Files
 
 ```text
 accounts-payable-exception-resolution/
 ├── README.md
 ├── docker-compose.yml
 ├── run-local.sh
+├── diagrams/                       # source for the rendered workflow diagrams
+├── event-handlers/
+│   └── ap-payment-settlement-event-handler.json
 ├── prompts/
 │   └── ap-exception-planner.md
 ├── demo-documents/
 │   └── README.md                  # visual-document manifest
 ├── demo-data/                     # system-of-record fixture model
 │   ├── bank-verifications/
+│   ├── events/
 │   ├── invoice-history.json
 │   ├── payment-instructions/
 │   ├── settlements/
@@ -131,20 +126,18 @@ accounts-payable-exception-resolution/
     └── ap-payment-settlement-workflow.json
 ```
 
-## Workflow 1: exception resolution and payment preparation
+## Workflow definitions
 
-`workflows/ap-exception-resolution-workflow.json` contains the business workflow:
+`workflows/ap-exception-resolution-workflow.json` is version **12**. Use this
+version for new runs. A repeated `operationId` returns the existing result;
+using a new operation ID for an invoice already prepared or settled is
+rejected.
 
-The current definition is version **11**. Import it as version 11 and start that
-version when testing Agentic Planner scenarios. The definition makes repeat runs
-safe: the same operation terminates as already processed, while a different
-operation ID for an already scheduled invoice is rejected. It uses real XA
-participants and gives the short XA boundary five minutes (`300000` milliseconds),
-which leaves enough time for both remote Oracle participant branches to enlist.
-Version 4 added
-`Create_Structured_Decision_Contract`, which extracts the final decision from
-the planner's durable `plannerHistory` envelope before verification, and uses
-the planner escalation path as the workflow's only Human task.
+The XA transaction timeout is five minutes (`300000` milliseconds), which gives
+the AP, payment, and TxEventQ Oracle branches time to enlist.
+The workflow requires a MicroTx Workflows build containing commit
+`8edaf21abf2b3747fa096194c4f209ee333ca59a` or later, which adds XA context to
+the TxEventQ Publish task.
 
 1. `Run_Deterministic_AP_Prechecks` - duplicate, PO, receipt, and baseline-match checks
 2. `Route_AP_Precheck` - `REJECT` ends; `CLEAR` bypasses investigation; only `EXCEPTION` enters the agent harness
@@ -157,33 +150,38 @@ the planner escalation path as the workflow's only Human task.
 9. `Begin_Payment_Transaction` - XA BEGIN
 10. `Schedule_Invoice_For_Payment` - AP write
 11. `Create_Payment_Instruction` - payment write
-12. `Commit_Payment_Transaction` - XA COMMIT
-13. `Start_Payment_Settlement` - asynchronously starts the linked payment-settlement workflow
+12. `Publish_Payment_Settlement_Event` - XA-enlisted TxEventQ publication
+13. `Commit_Payment_Transaction` - XA COMMIT
 
-This mirrors the blog’s eight-stage story: structured invoice, prechecks, agent harness, structured decision contract, evidence checks, business policy, short XA, and external settlement. A clear invoice skips the exception-only agent harness but still passes the single visible business-policy step. The payment-settlement workflow starts only after COMMIT. `Start_Payment_Settlement` is optional, so a dispatch failure cannot invoke the XA rollback handler after a successful commit. In production, recover the dispatch from a settlement-request outbox/event written with the payment-preparation state.
+Clear invoices skip the investigation tasks but still pass business policy. The
+settlement event, AP invoice state, and payment instruction commit or roll back
+together. After COMMIT, the TxEventQ event handler starts the settlement
+workflow. There is no direct `START_WORKFLOW` task and no post-commit dispatch
+gap in the main workflow.
 
 ## Workflow 2: external payment settlement and reconciliation
 
-`workflows/ap-payment-settlement-workflow.json` is linked from the main workflow after payment preparation commits. It has its own durable execution, retry, and reconciliation lifecycle.
+`workflows/ap-payment-settlement-workflow.json` version **2** runs after payment
+preparation commits and its TxEventQ message becomes visible to the subscriber.
 
 It:
 
 1. reads the committed payment instruction by `operationId`;
 2. calls `bank-mock` with the same `Idempotency-Key`;
 3. allows the payment-settlement POST to time out;
-4. always reconciles using `GET /settlements/{operationId}`.
+4. always reconciles using `GET /settlements/{operationId}`;
+5. uses a SQL task to mark the invoice `PAYMENT_SETTLED` only after the provider reports `SETTLED`.
 
-This is the sample's implementation of the rule: **a timeout is ambiguous; reconcile by business identity instead of creating another payment.**
+If a provider POST times out, the workflow reconciles by `operationId` instead
+of creating another payment.
 
 ### Why external payment settlement uses reconciliation, not LRA
 
-MicroTx Distributed Transactions also supports longer-running compensation
-patterns such as LRA. This sample deliberately does not use one for bank
-payment settlement: once an external bank has accepted a payment, the system cannot
-assume that a local compensating action will reverse it. The safer pattern here
-is a stable `operationId`, idempotent submission, and reconciliation. LRA is a
-better fit for a broader, genuinely compensatable business process—for example,
-releasing a reservation when a still-pending payment request is cancelled.
+MicroTx supports longer-running compensation patterns such as LRA. They are not
+used for bank settlement here: once a bank accepts a payment, a local
+compensating action cannot be assumed to reverse it. This workflow uses a stable
+`operationId`, idempotent submission, and reconciliation instead. LRA is better
+suited to a compensatable action such as releasing a reservation.
 
 ## Planner contract
 
@@ -205,7 +203,7 @@ The prompt in `prompts/ap-exception-planner.md` follows the MicroTx Agentic Plan
 
 The business decision is one of `APPROVE`, `ESCALATE`, or `REJECT`. It is **not** payment authority.
 
-## Run the local service/test mode
+## Local setup and test
 
 Run the static Agent Harness boundary check before importing any workflow. It
 needs no database, model, or running services:
@@ -224,13 +222,20 @@ below, followed by TCS branch inspection and the injected rollback case.
 If the MicroTx Workflows server is running directly on your machine, start the
 two Spring Boot XA participants and the Python bank mock with one command.
 First create the AP schema from `services/ap-backend/database/schema.sql` and
-load `services/ap-backend/database/demo-data.sql`. Create the payment schema
-from `services/payment-service/database/schema.sql`.
+load `services/ap-backend/database/demo-data.sql`. Then create the TxEventQ
+topic and durable subscriber with
+`services/ap-backend/database/txeventq.sql`. Create the payment schema from
+`services/payment-service/database/schema.sql`.
 
-The schema and demo seed scripts are intentionally a one-time operator action;
-`run-local.sh` never creates, seeds, or clears database tables. That keeps the
-service startup production-like and prevents an application restart from
-overwriting system-of-record data.
+The schema, seed, and queue scripts are intentionally a one-time operator
+action; `run-local.sh` never creates, seeds, clears, or administers database
+objects. That keeps service startup production-like and prevents an
+application restart from overwriting system-of-record data. The AP schema
+owner requires `AQ_USER_ROLE` and execute privileges on `DBMS_AQ` and
+`DBMS_AQADM` before running the queue script. The script selects the TxEventQ
+queue-creation API exposed by the connected database: on Oracle Database
+19c-compatible deployments this is `CREATE_SHARDED_QUEUE`; on newer
+deployments it can be `CREATE_TRANSACTIONAL_EVENT_QUEUE`.
 
 The schemas may be on one Oracle Database instance, but use separate schemas
 or databases and distinct XA resource-manager IDs. Export the settings below
@@ -292,10 +297,12 @@ write endpoints receive the transaction context from Workflows and use the
 MicroTx-managed `microTxSqlConnection`, which enlists the two Oracle branches.
 `bank-mock` deliberately does not enlist.
 
-In Workflow Builder, select **Enlist in transaction** for both
-`Schedule_Invoice_For_Payment` and `Create_Payment_Instruction`. The checked-in
-workflow sets `enlistInTxn: true`; without it, an HTTP write is outside XA even
-when it appears between `BEGIN` and `COMMIT` tasks.
+In Workflow Builder, select **Enlist in transaction** for
+`Schedule_Invoice_For_Payment`, `Create_Payment_Instruction`, and
+`Publish_Payment_Settlement_Event`. The checked-in workflow sets
+`enlistInTxn: true` on all three tasks. Do not also enable task-level
+idempotency on the TxEventQ task: the server rejects that combination because
+the publish is already controlled by the global XA transaction.
 
 The `BEGIN` task's `transactionTimeout` is measured in **milliseconds**. Keep it
 at `300000` (five minutes); `300` expires before a remote Oracle participant can
@@ -306,7 +313,7 @@ enlist and makes the coordinator roll the transaction back.
 | Rerun type | Result | Cleanup needed? |
 |---|---|---|
 | Same invoice and same `operationId` after a committed run | Ends as `OPERATION_ALREADY_PROCESSED`; no second XA transaction, instruction, or settlement | No |
-| Same invoice with a new `operationId` | Ends as `INVOICE_ALREADY_SCHEDULED`, preserving the original payment state | No |
+| Same invoice with a new `operationId` | Ends as `INVOICE_ALREADY_IN_PAYMENT_PROCESS`, preserving the original payment state | No |
 | Run every scenario again from its initial state | Reset mutable AP/payment demo state, then restart `bank-mock` | Yes |
 
 For a clean repeatable demo, run the following as their respective schema
@@ -323,7 +330,8 @@ services/payment-service/database/reset-demo-state.sql
 The reset scripts retain reference evidence and the intentionally seeded paid
 invoice history used by the duplicate test. They delete only AP operation state
 and payment instructions created by workflow executions. Never use them in a
-production schema.
+production schema. They do not drop or purge TxEventQ; allow the active event
+handler to consume committed demo messages before resetting database rows.
 
 ### What the local tests prove
 
@@ -335,7 +343,11 @@ The local replay test does **not** claim to be an end-to-end MicroTx/LLM test. `
 - targets anything other than `ap-backend`;
 - points at a write-like path;
 - gains access to a non-evidence path or to payment/settlement services;
-- or if the financial transaction is placed before policy evaluation.
+- places the financial transaction before policy evaluation;
+- moves the TxEventQ publication outside the XA boundary or combines XA with
+  task-level TxEventQ idempotency;
+- restores a direct settlement `START_WORKFLOW` task; or
+- disconnects the event handler or final settlement SQL update.
 
 Keep this test in CI. It verifies the sample's central authority claim as configuration, not as a prompt instruction.
 
@@ -381,7 +393,31 @@ prompts/ap-exception-planner.md
 
 The planner task references this template by name.
 
-### 4. Import the workflows
+### 4. Enable TxEventQ event handling and create the database profile
+
+Enable the TxEventQ event-handler provider in the MicroTx Workflows server and
+restart the server. For a Helm installation:
+
+```yaml
+workflow:
+  server:
+    eventHandler:
+      txeventq:
+        enabled: true
+```
+
+The corresponding server property is:
+
+```properties
+conductor.event-queues.txeventq.enabled=true
+```
+
+Create a relational Oracle Database profile named
+`ap-oracle-db-profile`. It must connect as the owner of `ap_invoices` and
+`AP_PAYMENT_SETTLEMENT_EVENTS`. The main workflow uses this profile for its
+XA-enlisted publish; the settlement workflow uses it for the final SQL update.
+
+### 5. Import the workflows
 
 Import these definitions into MicroTx Workflows:
 
@@ -392,12 +428,52 @@ workflows/ap-exception-resolution-workflow.json
 ```
 
 Import the two referenced workflows first, then import
-`ap_exception_resolution` version 11. Existing executions and the old workflow
-names are not changed by this import; use version 11 for all new runs.
+`ap_exception_resolution` version 12. The imported versions are:
 
-**Pre-merge validation:** import and export these definitions once through the Workflow Builder used for the target MicroTx release. This repository version is aligned to the current documented 26.1 task shape, but generated/default properties can vary by release and should be normalized by the Builder before the sample is merged.
+| Workflow | Version |
+|---|---:|
+| `ap_payment_preparation_xa_rollback` | 2 |
+| `ap_payment_settlement` | 2 |
+| `ap_exception_resolution` | 12 |
 
-### 5. Start the AP exception workflow
+Existing executions and older definitions are not changed; use these versions
+for new runs.
+
+**Pre-merge validation:** import and export these definitions once through the
+Workflow Builder from the build that contains TxEventQ XA support.
+Generated/default properties can vary by release and should be normalized by
+that Builder before the sample is merged.
+
+### 6. Create the TxEventQ event handler
+
+Create an active event handler using
+`event-handlers/ap-payment-settlement-event-handler.json`, or enter the same
+values in **Definitions > Event Handlers**:
+
+| Field | Value |
+|---|---|
+| Name | `ap_payment_settlement_event_handler` |
+| Queue type | `txeventq` |
+| Queue name | `AP_PAYMENT_SETTLEMENT_EVENTS` |
+| Publisher name | `AP_SETTLEMENT_SUBSCRIBER` |
+| Database profile | `ap-oracle-db-profile` |
+| Action | Start `ap_payment_settlement`, version 2 |
+
+The action maps `operationId`, `invoiceId`, `instructionId`, and
+`simulateSettlementTimeout` from `payload` and uses `operationId` as the
+correlation ID. Create and activate this handler before starting the first main
+workflow so the durable subscriber exists before a message is published.
+There is no subscriber process to add to `run-local.sh`; consumption runs in
+the MicroTx Workflows server. `AP_PAYMENT_SETTLEMENT_EVENTS` is dedicated to
+the `AP_PAYMENT_PREPARED` event, so the handler deliberately has no condition
+or JavaScript evaluator. This avoids loading a JavaScript runtime solely to
+filter a topic that carries no other event type.
+
+The settlement path remains safe if a message is redelivered: the bank request
+uses `operationId` as its idempotency key and the final SQL update is a
+conditional, repeatable update for the same invoice and operation.
+
+### 7. Start the AP exception workflow
 
 Use a test payload such as `test-data/03-bank-change.json`. Only `operationId` and `invoice` are workflow inputs; `_description` in the test-data file is documentation and should be removed before submitting the input.
 
@@ -431,15 +507,21 @@ For the bank-change case, the planner should gather enough evidence to return `E
 
 The human result is then passed to the deterministic policy endpoint in `ap-backend`. The policy rules still execute; the review does not bypass them.
 
-### 6. Follow external payment settlement after the main workflow commits
+### 8. Follow external payment settlement after the main workflow commits
 
-After `ap_exception_resolution` commits, `Start_Payment_Settlement` starts `ap_payment_settlement` asynchronously with the same `operationId` as its correlation ID. Use the workflow execution view to navigate from the start task to the payment-settlement run.
+After `ap_exception_resolution` commits, the TxEventQ message becomes visible.
+The event handler consumes it and starts `ap_payment_settlement` version 2 with
+the same `operationId` as its correlation ID. Search workflow executions by
+that correlation ID to move from the completed preparation workflow to the
+settlement run.
 
 For a timeout demonstration, start `ap_payment_settlement` directly only when you are running the child workflow in isolation:
 
 ```json
 {
   "operationId": "OP-2026-0003",
+  "invoiceId": "INV-1048",
+  "instructionId": "<instruction ID created by the main workflow>",
   "simulateSettlementTimeout": false
 }
 ```
@@ -449,6 +531,8 @@ For the timeout case use:
 ```json
 {
   "operationId": "OP-2026-0006",
+  "invoiceId": "INV-1075",
+  "instructionId": "<instruction ID created by the main workflow>",
   "simulateSettlementTimeout": true
 }
 ```
@@ -457,17 +541,20 @@ The payment-provider POST may time out after `bank-mock` has persisted the opera
 
 ## XA boundary and proof
 
-The main workflow's five-minute short XA boundary contains exactly two writes:
-the AP invoice scheduling update at port 8083 and payment-instruction creation
-at port 8084. Both are Java Spring Boot MicroTx participants with Oracle XA
-data sources and separate resource-manager IDs. Bank submission starts only
-after COMMIT and is outside XA.
+The main workflow's five-minute short XA boundary contains three atomic effects:
+the AP invoice scheduling update at port 8083, payment-instruction creation at
+port 8084, and publication to `AP_PAYMENT_SETTLEMENT_EVENTS`. The two HTTP
+services are Java Spring Boot XA participants; the TxEventQ task directly
+enlists its Oracle Database branch. Bank submission starts only after COMMIT
+and remains outside XA.
 
 To prove atomicity, configure the payment HTTP task with
 `?simulateFailure=true`. It returns 500 after the AP branch writes; TCS must
-roll back both branches. The invoice must remain `RECEIVED` and
-`GET /payment-instructions/{operationId}` must return 404. A successful run
-should list two branches in TCS transaction details.
+roll back all enlisted branches. The invoice must remain `RECEIVED` and
+`GET /payment-instructions/{operationId}` must return 404. The settlement event
+must not be visible to the subscriber. A successful run should show the two
+HTTP database branches and the TxEventQ database branch in TCS transaction
+details.
 
 ## Test cases
 
@@ -482,7 +569,7 @@ business policy, short XA preparation, and external payment settlement.
 
 | Demo | Input | Human-task action | Expected result |
 |---|---|---|---|
-| Positive | `03-bank-change.json` | Mark `AP_Human_Review` as `COMPLETED` | Policy approves; the workflow reaches XA and the child payment-settlement workflow reconciles `SETTLED`. |
+| Positive | `03-bank-change.json` | Mark `AP_Human_Review` as `COMPLETED` | Policy approves; XA commits the event and the event-started settlement workflow reconciles `SETTLED`. |
 | Negative | Same `03-bank-change.json` with a new `operationId` | Mark `AP_Human_Review` as Rejected or Failed | Policy records the rejection; no XA transaction, payment instruction, or settlement is created. |
 
 In the current Human-task UI, task status is authoritative: `COMPLETED`
@@ -503,23 +590,3 @@ The remaining fixtures are retained for QA and customer exploration.
 | `06-payment-timeout` | not run | APPROVE | reconciliation finds one settled operation |
 
 Exact deterministic expectations are in `test-data/EXPECTED.md`.
-
-## What is deliberately not in v1
-
-- OCR / invoice extraction
-- RAG / vector database
-- Kafka or another broker
-- multi-agent collaboration
-- MCP as a requirement
-- a full ERP or UI
-
-Those are valid concerns, but they do not help demonstrate the sample's core boundary. An optional follow-on can expose the same three planner evidence capabilities through an authenticated MCP server without changing the business flow.
-
-## Before submitting a PR
-
-1. Run `python3 tests/test_harness_boundary.py`.
-2. Run `python3 tests/test_harness_boundary.py` and the two-case workflow demo against the configured local services.
-3. Import/re-export the workflow JSON through the target MicroTx Workflow Builder.
-4. Run at least the bank-change case against a real configured LLM profile.
-5. Verify TCS lists two XA branches for a successful bank-change run, then verify an injected payment-service failure rolls back both database writes.
-6. Verify the payment-settlement timeout case; it must reconcile by the same `operationId` and must never trigger XA rollback.
