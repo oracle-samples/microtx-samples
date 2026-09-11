@@ -5,6 +5,7 @@ target/
 !**/src/test/**/target/
 
 .DS_Store
+Gemfile.lock
 
 ### STS ###
 .apt_generated

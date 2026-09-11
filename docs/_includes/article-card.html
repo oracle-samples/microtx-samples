@@ -1,0 +1,21 @@
+{% assign article = include.article %}
+{% assign author = site.data.authors[article.author_id] %}
+<article class="article-card">
+  {% if article.image %}
+  <a class="card-image" href="{% if article.external %}{{ article.url }}{% else %}{{ article.url | relative_url }}{% endif %}" aria-label="Read {{ article.title }}"{% if article.external %} target="_blank" rel="noopener noreferrer"{% endif %}>
+    <img src="{{ article.image | relative_url }}" alt="{{ article.image_alt | default: '' }}">
+  </a>
+  {% endif %}
+  <div class="card-content">
+    <p class="article-date"><time datetime="{{ article.date | date_to_xmlschema }}">{{ article.date | date: "%B %-d, %Y" }}</time></p>
+    {% if article.video %}<span class="content-type content-type--video"><span aria-hidden="true"></span>Video</span>{% endif %}
+    {% if author or article.author %}<p class="card-author">By {{ author.name | default: article.author }}</p>{% endif %}
+    <h2><a href="{% if article.external %}{{ article.url }}{% else %}{{ article.url | relative_url }}{% endif %}"{% if article.external %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ article.title }}</a></h2>
+    <p>{{ article.description }}</p>
+    {% if article.tags %}
+    <ul class="tags" aria-label="Article tags">
+      {% for tag in article.tags %}<li><a href="{{ '/tags/' | relative_url }}#{{ tag | slugify }}">{{ tag }}</a></li>{% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+</article>
