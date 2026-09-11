@@ -1,3 +1,23 @@
+- title: Transaction-Aware Durable Execution with Oracle MicroTx Workflows
+  description: Learn how Oracle MicroTx Workflows combines durable workflow orchestration with XA transaction coordination so critical business updates commit or roll back together.
+  date: 2026-09-01 00:00:00 +0000
+  author_id: brijesh-deo
+  external: true
+  url: https://blogs.oracle.com/database/transaction-aware-durable-execution-with-oracle-microtx-workflows
+  tags:
+    - MicroTx
+    - Oracle MicroTx Workflows
+    - Workflows
+    - Durable Execution
+    - Durable Workflows
+    - Atomic Transactions
+    - Distributed Transactions
+    - Workflow Orchestration
+    - Transaction Coordination
+    - XA
+    - Conductor OSS
+    - Systems of Record
+
 - title: How Oracle MicroTx Workflows Makes Enterprise Workflow Execution Durable
   description: Learn how Oracle MicroTx Workflows combines durable orchestration, Oracle Database persistence, and distributed transactions for resilient enterprise workflows and AI agents.
   date: 2026-07-06 00:00:00 +0000
