@@ -1,0 +1,12 @@
+{
+  "instructionId": "PI-1048003",
+  "operationId": "OP-2026-0003",
+  "invoiceId": "INV-1048",
+  "supplierId": "SUP-NORTHSTAR",
+  "amount": 48700.0,
+  "currency": "USD",
+  "status": "CREATED",
+  "idempotencyKey": "OP-2026-0003",
+  "createdBy": "payment-service",
+  "createdAt": "2026-09-05T10:08:00Z"
+}

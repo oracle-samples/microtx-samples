@@ -1,0 +1,9 @@
+CREATE TABLE ap_suppliers (supplier_id VARCHAR2(64) PRIMARY KEY, name VARCHAR2(200) NOT NULL, status VARCHAR2(32) NOT NULL, status_reason VARCHAR2(500), onboarded_at DATE);
+CREATE TABLE ap_contracts (supplier_id VARCHAR2(64) PRIMARY KEY, contract_id VARCHAR2(64) NOT NULL, clause VARCHAR2(64), freight_allowance NUMBER(14,2) NOT NULL, currency VARCHAR2(3) NOT NULL, text VARCHAR2(1000));
+CREATE TABLE ap_purchase_orders (po_id VARCHAR2(64) PRIMARY KEY, supplier_id VARCHAR2(64) NOT NULL, amount NUMBER(14,2) NOT NULL, currency VARCHAR2(3) NOT NULL, status VARCHAR2(32), description VARCHAR2(500));
+CREATE TABLE ap_goods_receipts (receipt_id VARCHAR2(64) PRIMARY KEY, po_id VARCHAR2(64) NOT NULL, status VARCHAR2(32) NOT NULL, ordered_qty NUMBER, received_qty NUMBER, received_at DATE, note VARCHAR2(500));
+CREATE TABLE ap_bank_verifications (supplier_id VARCHAR2(64) PRIMARY KEY, status VARCHAR2(32) NOT NULL, account_last4 VARCHAR2(4), previous_account_last4 VARCHAR2(4), last_changed_at DATE, verified_at DATE, verified_by VARCHAR2(100), change_channel VARCHAR2(200));
+CREATE TABLE ap_paid_invoices (invoice_id VARCHAR2(64) PRIMARY KEY, invoice_number VARCHAR2(100) NOT NULL, supplier_id VARCHAR2(64) NOT NULL, po_id VARCHAR2(64), amount NUMBER(14,2) NOT NULL, currency VARCHAR2(3) NOT NULL, paid_at DATE NOT NULL, payment_ref VARCHAR2(100));
+CREATE TABLE ap_invoices (invoice_id VARCHAR2(64) PRIMARY KEY, status VARCHAR2(40) NOT NULL, operation_id VARCHAR2(100), amount NUMBER(14,2), currency VARCHAR2(3), scheduled_date VARCHAR2(32), reason VARCHAR2(1000), updated_at TIMESTAMP WITH TIME ZONE);
+CREATE TABLE ap_payment_operations (idempotency_key VARCHAR2(100) PRIMARY KEY, operation_id VARCHAR2(100) NOT NULL, invoice_id VARCHAR2(64) NOT NULL, created_at TIMESTAMP WITH TIME ZONE NOT NULL);
+CREATE UNIQUE INDEX ap_payment_operations_operation_uq ON ap_payment_operations(operation_id);

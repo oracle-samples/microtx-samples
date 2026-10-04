@@ -1,0 +1,12 @@
+{
+  "settlementId": "STL-1075006",
+  "operationId": "OP-2026-0006",
+  "instructionId": "PI-1075006",
+  "status": "SETTLED",
+  "submissionOutcome": "CLIENT_TIMEOUT",
+  "reconciliationOutcome": "SETTLED",
+  "amount": 8300.0,
+  "currency": "USD",
+  "settledAt": "2026-09-05T10:12:00Z",
+  "reconciledAt": "2026-09-05T10:12:08Z"
+}

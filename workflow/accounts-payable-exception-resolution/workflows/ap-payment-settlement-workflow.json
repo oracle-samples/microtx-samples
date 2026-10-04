@@ -1,0 +1,70 @@
+{
+  "name": "ap_payment_settlement",
+  "description": "Durably submit an approved payment instruction to the external payment rail and reconcile its final settlement outcome by stable operationId. A response timeout is not proof that settlement did not happen.",
+  "version": 1,
+  "schemaVersion": 2,
+  "restartable": true,
+  "timeoutPolicy": "TIME_OUT_WF",
+  "timeoutSeconds": 3600,
+  "inputParameters": [
+    "operationId",
+    "simulateSettlementTimeout"
+  ],
+  "tasks": [
+    {
+      "name": "Get_Payment_Instruction",
+      "taskReferenceName": "get_payment_instruction",
+      "type": "HTTP",
+      "inputParameters": {
+        "uri": "http://payment-service:8084/payment-instructions/${workflow.input.operationId}",
+        "method": "GET",
+        "headers": {"Accept": "application/json"},
+        "connectionTimeOut": 3000,
+        "readTimeOut": 10000
+      }
+    },
+    {
+      "name": "Execute_Payment",
+      "taskReferenceName": "execute_payment",
+      "type": "HTTP",
+      "optional": true,
+      "description": "The provider may accept the payment and lose the response. Reconciliation is therefore mandatory after this call.",
+      "inputParameters": {
+        "uri": "http://bank-mock:8085/settlements?simulateTimeout=${workflow.input.simulateSettlementTimeout}",
+        "method": "POST",
+        "headers": {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+          "Idempotency-Key": "${workflow.input.operationId}"
+        },
+        "connectionTimeOut": 3000,
+        "readTimeOut": 5000,
+        "body": {
+          "operationId": "${workflow.input.operationId}",
+          "instructionId": "${get_payment_instruction.output.response.body.instructionId}",
+          "supplierId": "${get_payment_instruction.output.response.body.supplierId}",
+          "amount": "${get_payment_instruction.output.response.body.amount}",
+          "currency": "${get_payment_instruction.output.response.body.currency}"
+        }
+      }
+    },
+    {
+      "name": "Reconcile_Payment_Outcome",
+      "taskReferenceName": "reconcile_payment_outcome",
+      "type": "HTTP",
+      "description": "Resolve an ambiguous provider response by the same operationId; never create a second payment because a POST timed out.",
+      "inputParameters": {
+        "uri": "http://bank-mock:8085/settlements/${workflow.input.operationId}",
+        "method": "GET",
+        "headers": {"Accept": "application/json"},
+        "connectionTimeOut": 3000,
+        "readTimeOut": 10000
+      }
+    }
+  ],
+  "outputParameters": {
+    "operationId": "${workflow.input.operationId}",
+    "instructionId": "${get_payment_instruction.output.response.body.instructionId}",
+    "paymentExecutionStatus": "${reconcile_payment_outcome.output.response.body.status}"
+  }
+}
