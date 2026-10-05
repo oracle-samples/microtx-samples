@@ -24,7 +24,9 @@ Nothing is wrong with this invoice, so deterministic prechecks bypass investigat
 - Mandatory prechecks read the PO and receipt, confirm an exact match, and
   check duplicates. The planner is not invoked.
 - The planner is not invoked; policy returns `APPROVE` from authoritative precheck facts.
-- `ap-backend` invoice status ends `PAYMENT_SCHEDULED`.
+- The XA transaction commits `PAYMENT_SCHEDULED`, the payment instruction, and
+  the TxEventQ message together. After reconciliation, the settlement SQL task
+  changes the invoice status to `PAYMENT_SETTLED`.
 - Exactly one payment instruction and one settlement for `OP-2026-0001`.
 
 ## 02-freight-variance — `INV-1047`, $48,700 against `PO-7811`
@@ -40,6 +42,7 @@ that it will need the contract.
 - Duplicate detection is mandatory precheck logic. Bank state remains an
   authoritative policy fact even when no bank evidence tool was needed.
 - Terminal outcome `PAYMENT_SETTLED`.
+- Final `ap_invoices.status` is `PAYMENT_SETTLED`.
 
 ## 03-bank-change — `INV-1048`, $48,700 against `PO-7812`
 
@@ -56,6 +59,7 @@ The headline case. Same freight explanation, one unresolved risk.
 - Policy evaluates **with** that approval and returns `APPROVE`. The duplicate
   and supplier-block rules remain mandatory precheck controls.
 - Terminal outcome `PAYMENT_SETTLED`.
+- Final `ap_invoices.status` is `PAYMENT_SETTLED`.
 
 If the human declines instead, policy returns `REJECT` with reason
 `human_review_declined` and no transaction opens.
@@ -102,6 +106,7 @@ Identical to `01-clean` up to the commit. The difference is after it.
   and is not an error state.
 - `Reconcile_Payment_Outcome` reads `GET /settlements/OP-2026-0006` and finds
   `status: SETTLED`.
+- `Mark_Invoice_Payment_Settled` updates `INV-1075` to `PAYMENT_SETTLED`.
 - Terminal outcome `PAYMENT_SETTLED`.
 - `bank-mock` holds **exactly one** settlement for `OP-2026-0006`, and
   `payment-service` holds exactly one instruction. The replay test asserts the
