@@ -14,6 +14,25 @@
     - Distributed Transactions
     - XA
 
+- title: "When APIs Run for Hours: Building Reliable Event-Driven Workflows with Oracle MicroTx and TxEventQ"
+  description: Learn how Oracle MicroTx Workflows and TxEventQ coordinate long-running insurance claims with durable execution, event-driven orchestration, idempotency, and reliable recovery.
+  date: 2026-10-21 00:00:00 +0000
+  author_id: brijesh-deo
+  external: true
+  url: https://blogs.oracle.com/database/when-apis-run-for-hours-building-reliable-event-driven-workflows-with-oracle-microtx-and-txeventq
+  tags:
+    - MicroTx
+    - Oracle MicroTx Workflows
+    - Workflows
+    - Durable Execution
+    - Durable Workflows
+    - Event-Driven Architecture
+    - TxEventQ
+    - Workflow Orchestration
+    - Idempotency
+    - Human Approval
+    - Insurance Claims Processing
+
 - title: "Oracle MicroTx vs Temporal: Durable Workflow Orchestration"
   description: Compare Oracle MicroTx and Temporal for durable workflow orchestration.
   date: 2026-09-26 00:00:00 +0000
@@ -42,6 +61,7 @@
     - SQL
     - Database Operations
     - Durable Execution
+
 
 - title: Transaction-Aware Durable Execution with Oracle MicroTx Workflows
   description: Learn how Oracle MicroTx Workflows combines durable workflow orchestration with XA transaction coordination so critical business updates commit or roll back together.
