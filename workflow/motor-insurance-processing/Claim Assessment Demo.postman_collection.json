@@ -1,0 +1,593 @@
+{
+  "info": {
+    "_postman_id": "b4167745-e31e-4439-9016-8061fa91a51f",
+    "name": "Claim Assessment Demo",
+    "description": "Import this collection and create a public Postman mock server. Both endpoints return result, claimId, correlationId, and the complete saved claim with HTTP 200. Select pass/fail examples by name. Responses contain static example data, not an automatic echo of the incoming request. All people and claim data are synthetic.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "14328117"
+  },
+  "item": [
+    {
+      "name": "Validate Claim",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-mock-response-name",
+            "value": "{{validationMockResponse}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claimId\": \"CLAIM-98371\",\n  \"correlationId\": \"claim-98371\",\n  \"claim\": {\n    \"policyId\": \"POL-MOTOR-2026-001\",\n    \"claimant\": {\n      \"customerId\": \"CUSTOMER-001\",\n      \"name\": \"Asha Demo\"\n    },\n    \"vehicle\": {\n      \"registrationNumber\": \"DEMO-98371\",\n      \"make\": \"Example Motors\",\n      \"model\": \"City\",\n      \"year\": 2024\n    },\n    \"incident\": {\n      \"date\": \"2026-09-20\",\n      \"type\": \"COLLISION\",\n      \"location\": \"Bengaluru\",\n      \"description\": \"Low-speed collision damaged the front bumper and left headlamp. No injuries reported.\"\n    },\n    \"requestedAmount\": 12500,\n    \"currency\": \"INR\",\n    \"documents\": [\n      {\n        \"documentId\": \"DOC-001\",\n        \"type\": \"REPAIR_ESTIMATE\",\n        \"fileName\": \"repair-estimate.txt\",\n        \"extractedText\": \"Front bumper replacement INR 8000; left headlamp INR 3500; labour INR 1000. Total INR 12500.\"\n      }\n    ]\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{mockApiBaseUrl}}/claims/validate",
+          "host": [
+            "{{mockApiBaseUrl}}"
+          ],
+          "path": [
+            "claims",
+            "validate"
+          ]
+        },
+        "description": "true means validation passed; false means validation failed."
+      },
+      "response": [
+        {
+          "name": "validation-pass",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-mock-response-name",
+                "value": "validation-pass"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"claimId\": \"CLAIM-98371\",\n  \"correlationId\": \"claim-98371\",\n  \"claim\": {\n    \"policyId\": \"POL-MOTOR-2026-001\",\n    \"claimant\": {\n      \"customerId\": \"CUSTOMER-001\",\n      \"name\": \"Asha Demo\"\n    },\n    \"vehicle\": {\n      \"registrationNumber\": \"DEMO-98371\",\n      \"make\": \"Example Motors\",\n      \"model\": \"City\",\n      \"year\": 2024\n    },\n    \"incident\": {\n      \"date\": \"2026-09-20\",\n      \"type\": \"COLLISION\",\n      \"location\": \"Bengaluru\",\n      \"description\": \"Low-speed collision damaged the front bumper and left headlamp. No injuries reported.\"\n    },\n    \"requestedAmount\": 12500,\n    \"currency\": \"INR\",\n    \"documents\": [\n      {\n        \"documentId\": \"DOC-001\",\n        \"type\": \"REPAIR_ESTIMATE\",\n        \"fileName\": \"repair-estimate.txt\",\n        \"extractedText\": \"Front bumper replacement INR 8000; left headlamp INR 3500; labour INR 1000. Total INR 12500.\"\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{mockApiBaseUrl}}/claims/validate",
+              "host": [
+                "{{mockApiBaseUrl}}"
+              ],
+              "path": [
+                "claims",
+                "validate"
+              ]
+            },
+            "description": "true means validation passed; false means validation failed."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"result\": true,\n  \"claimId\": \"CLAIM-98371\",\n  \"correlationId\": \"claim-98371\",\n  \"claim\": {\n    \"policyId\": \"POL-MOTOR-2026-001\",\n    \"claimant\": {\n      \"customerId\": \"CUSTOMER-001\",\n      \"name\": \"Asha Demo\"\n    },\n    \"vehicle\": {\n      \"registrationNumber\": \"DEMO-98371\",\n      \"make\": \"Example Motors\",\n      \"model\": \"City\",\n      \"year\": 2024\n    },\n    \"incident\": {\n      \"date\": \"2026-09-20\",\n      \"type\": \"COLLISION\",\n      \"location\": \"Bengaluru\",\n      \"description\": \"Low-speed collision damaged the front bumper and left headlamp. No injuries reported.\"\n    },\n    \"requestedAmount\": 12500,\n    \"currency\": \"INR\",\n    \"documents\": [\n      {\n        \"documentId\": \"DOC-001\",\n        \"type\": \"REPAIR_ESTIMATE\",\n        \"fileName\": \"repair-estimate.txt\",\n        \"extractedText\": \"Front bumper replacement INR 8000; left headlamp INR 3500; labour INR 1000. Total INR 12500.\"\n      }\n    ]\n  }\n}"
+        },
+        {
+          "name": "validation-fail",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-mock-response-name",
+                "value": "validation-fail"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"claimId\": \"CLAIM-98371\",\n  \"correlationId\": \"claim-98371\",\n  \"claim\": {\n    \"policyId\": \"POL-MOTOR-2026-001\",\n    \"claimant\": {\n      \"customerId\": \"CUSTOMER-001\",\n      \"name\": \"Asha Demo\"\n    },\n    \"vehicle\": {\n      \"registrationNumber\": \"DEMO-98371\",\n      \"make\": \"Example Motors\",\n      \"model\": \"City\",\n      \"year\": 2024\n    },\n    \"incident\": {\n      \"date\": \"2026-09-20\",\n      \"type\": \"COLLISION\",\n      \"location\": \"Bengaluru\",\n      \"description\": \"Low-speed collision damaged the front bumper and left headlamp. No injuries reported.\"\n    },\n    \"requestedAmount\": 12500,\n    \"currency\": \"INR\",\n    \"documents\": [\n      {\n        \"documentId\": \"DOC-001\",\n        \"type\": \"REPAIR_ESTIMATE\",\n        \"fileName\": \"repair-estimate.txt\",\n        \"extractedText\": \"Front bumper replacement INR 8000; left headlamp INR 3500; labour INR 1000. Total INR 12500.\"\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{mockApiBaseUrl}}/claims/validate",
+              "host": [
+                "{{mockApiBaseUrl}}"
+              ],
+              "path": [
+                "claims",
+                "validate"
+              ]
+            },
+            "description": "true means validation passed; false means validation failed."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"result\": false,\n  \"claimId\": \"CLAIM-98371\",\n  \"correlationId\": \"claim-98371\",\n  \"claim\": {\n    \"policyId\": \"POL-MOTOR-2026-001\",\n    \"claimant\": {\n      \"customerId\": \"CUSTOMER-001\",\n      \"name\": \"Asha Demo\"\n    },\n    \"vehicle\": {\n      \"registrationNumber\": \"DEMO-98371\",\n      \"make\": \"Example Motors\",\n      \"model\": \"City\",\n      \"year\": 2024\n    },\n    \"incident\": {\n      \"date\": \"2026-09-20\",\n      \"type\": \"COLLISION\",\n      \"location\": \"Bengaluru\",\n      \"description\": \"Low-speed collision damaged the front bumper and left headlamp. No injuries reported.\"\n    },\n    \"requestedAmount\": 12500,\n    \"currency\": \"INR\",\n    \"documents\": [\n      {\n        \"documentId\": \"DOC-001\",\n        \"type\": \"REPAIR_ESTIMATE\",\n        \"fileName\": \"repair-estimate.txt\",\n        \"extractedText\": \"Front bumper replacement INR 8000; left headlamp INR 3500; labour INR 1000. Total INR 12500.\"\n      }\n    ]\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Fraud Check",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-mock-response-name",
+            "value": "{{fraudMockResponse}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claimId\": \"CLAIM-98371\",\n  \"correlationId\": \"claim-98371\",\n  \"claim\": {\n    \"policyId\": \"POL-MOTOR-2026-001\",\n    \"claimant\": {\n      \"customerId\": \"CUSTOMER-001\",\n      \"name\": \"Asha Demo\"\n    },\n    \"vehicle\": {\n      \"registrationNumber\": \"DEMO-98371\",\n      \"make\": \"Example Motors\",\n      \"model\": \"City\",\n      \"year\": 2024\n    },\n    \"incident\": {\n      \"date\": \"2026-09-20\",\n      \"type\": \"COLLISION\",\n      \"location\": \"Bengaluru\",\n      \"description\": \"Low-speed collision damaged the front bumper and left headlamp. No injuries reported.\"\n    },\n    \"requestedAmount\": 12500,\n    \"currency\": \"INR\",\n    \"documents\": [\n      {\n        \"documentId\": \"DOC-001\",\n        \"type\": \"REPAIR_ESTIMATE\",\n        \"fileName\": \"repair-estimate.txt\",\n        \"extractedText\": \"Front bumper replacement INR 8000; left headlamp INR 3500; labour INR 1000. Total INR 12500.\"\n      }\n    ]\n  },\n  \"assessment\": {\n    \"severityScore\": 25,\n    \"damageSeverity\": \"LOW\",\n    \"extractedFacts\": {\n      \"damagedParts\": [\n        \"front bumper\",\n        \"left headlamp\"\n      ],\n      \"estimatedRepairAmount\": 12500,\n      \"currency\": \"INR\"\n    },\n    \"assessmentSummary\": \"The supplied repair estimate totals INR 12500 for bumper and headlamp repairs.\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{mockApiBaseUrl}}/claims/fraud-check",
+          "host": [
+            "{{mockApiBaseUrl}}"
+          ],
+          "path": [
+            "claims",
+            "fraud-check"
+          ]
+        },
+        "description": "true means fraud screening cleared; false means flagged and rejected for this demo."
+      },
+      "response": [
+        {
+          "name": "fraud-pass",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-mock-response-name",
+                "value": "fraud-pass"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"claimId\": \"CLAIM-98371\",\n  \"correlationId\": \"claim-98371\",\n  \"claim\": {\n    \"policyId\": \"POL-MOTOR-2026-001\",\n    \"claimant\": {\n      \"customerId\": \"CUSTOMER-001\",\n      \"name\": \"Asha Demo\"\n    },\n    \"vehicle\": {\n      \"registrationNumber\": \"DEMO-98371\",\n      \"make\": \"Example Motors\",\n      \"model\": \"City\",\n      \"year\": 2024\n    },\n    \"incident\": {\n      \"date\": \"2026-09-20\",\n      \"type\": \"COLLISION\",\n      \"location\": \"Bengaluru\",\n      \"description\": \"Low-speed collision damaged the front bumper and left headlamp. No injuries reported.\"\n    },\n    \"requestedAmount\": 12500,\n    \"currency\": \"INR\",\n    \"documents\": [\n      {\n        \"documentId\": \"DOC-001\",\n        \"type\": \"REPAIR_ESTIMATE\",\n        \"fileName\": \"repair-estimate.txt\",\n        \"extractedText\": \"Front bumper replacement INR 8000; left headlamp INR 3500; labour INR 1000. Total INR 12500.\"\n      }\n    ]\n  },\n  \"assessment\": {\n    \"severityScore\": 25,\n    \"damageSeverity\": \"LOW\",\n    \"extractedFacts\": {\n      \"damagedParts\": [\n        \"front bumper\",\n        \"left headlamp\"\n      ],\n      \"estimatedRepairAmount\": 12500,\n      \"currency\": \"INR\"\n    },\n    \"assessmentSummary\": \"The supplied repair estimate totals INR 12500 for bumper and headlamp repairs.\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{mockApiBaseUrl}}/claims/fraud-check",
+              "host": [
+                "{{mockApiBaseUrl}}"
+              ],
+              "path": [
+                "claims",
+                "fraud-check"
+              ]
+            },
+            "description": "true means fraud screening cleared; false means flagged and rejected for this demo."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"result\": true,\n  \"claimId\": \"CLAIM-98371\",\n  \"correlationId\": \"claim-98371\",\n  \"claim\": {\n    \"policyId\": \"POL-MOTOR-2026-001\",\n    \"claimant\": {\n      \"customerId\": \"CUSTOMER-001\",\n      \"name\": \"Asha Demo\"\n    },\n    \"vehicle\": {\n      \"registrationNumber\": \"DEMO-98371\",\n      \"make\": \"Example Motors\",\n      \"model\": \"City\",\n      \"year\": 2024\n    },\n    \"incident\": {\n      \"date\": \"2026-09-20\",\n      \"type\": \"COLLISION\",\n      \"location\": \"Bengaluru\",\n      \"description\": \"Low-speed collision damaged the front bumper and left headlamp. No injuries reported.\"\n    },\n    \"requestedAmount\": 12500,\n    \"currency\": \"INR\",\n    \"documents\": [\n      {\n        \"documentId\": \"DOC-001\",\n        \"type\": \"REPAIR_ESTIMATE\",\n        \"fileName\": \"repair-estimate.txt\",\n        \"extractedText\": \"Front bumper replacement INR 8000; left headlamp INR 3500; labour INR 1000. Total INR 12500.\"\n      }\n    ]\n  }\n}"
+        },
+        {
+          "name": "fraud-fail",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-mock-response-name",
+                "value": "fraud-fail"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"claimId\": \"CLAIM-98371\",\n  \"correlationId\": \"claim-98371\",\n  \"claim\": {\n    \"policyId\": \"POL-MOTOR-2026-001\",\n    \"claimant\": {\n      \"customerId\": \"CUSTOMER-001\",\n      \"name\": \"Asha Demo\"\n    },\n    \"vehicle\": {\n      \"registrationNumber\": \"DEMO-98371\",\n      \"make\": \"Example Motors\",\n      \"model\": \"City\",\n      \"year\": 2024\n    },\n    \"incident\": {\n      \"date\": \"2026-09-20\",\n      \"type\": \"COLLISION\",\n      \"location\": \"Bengaluru\",\n      \"description\": \"Low-speed collision damaged the front bumper and left headlamp. No injuries reported.\"\n    },\n    \"requestedAmount\": 12500,\n    \"currency\": \"INR\",\n    \"documents\": [\n      {\n        \"documentId\": \"DOC-001\",\n        \"type\": \"REPAIR_ESTIMATE\",\n        \"fileName\": \"repair-estimate.txt\",\n        \"extractedText\": \"Front bumper replacement INR 8000; left headlamp INR 3500; labour INR 1000. Total INR 12500.\"\n      }\n    ]\n  },\n  \"assessment\": {\n    \"severityScore\": 25,\n    \"damageSeverity\": \"LOW\",\n    \"extractedFacts\": {\n      \"damagedParts\": [\n        \"front bumper\",\n        \"left headlamp\"\n      ],\n      \"estimatedRepairAmount\": 12500,\n      \"currency\": \"INR\"\n    },\n    \"assessmentSummary\": \"The supplied repair estimate totals INR 12500 for bumper and headlamp repairs.\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{mockApiBaseUrl}}/claims/fraud-check",
+              "host": [
+                "{{mockApiBaseUrl}}"
+              ],
+              "path": [
+                "claims",
+                "fraud-check"
+              ]
+            },
+            "description": "true means fraud screening cleared; false means flagged and rejected for this demo."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"result\": false,\n  \"claimId\": \"CLAIM-98371\",\n  \"correlationId\": \"claim-98371\",\n  \"claim\": {\n    \"policyId\": \"POL-MOTOR-2026-001\",\n    \"claimant\": {\n      \"customerId\": \"CUSTOMER-001\",\n      \"name\": \"Asha Demo\"\n    },\n    \"vehicle\": {\n      \"registrationNumber\": \"DEMO-98371\",\n      \"make\": \"Example Motors\",\n      \"model\": \"City\",\n      \"year\": 2024\n    },\n    \"incident\": {\n      \"date\": \"2026-09-20\",\n      \"type\": \"COLLISION\",\n      \"location\": \"Bengaluru\",\n      \"description\": \"Low-speed collision damaged the front bumper and left headlamp. No injuries reported.\"\n    },\n    \"requestedAmount\": 12500,\n    \"currency\": \"INR\",\n    \"documents\": [\n      {\n        \"documentId\": \"DOC-001\",\n        \"type\": \"REPAIR_ESTIMATE\",\n        \"fileName\": \"repair-estimate.txt\",\n        \"extractedText\": \"Front bumper replacement INR 8000; left headlamp INR 3500; labour INR 1000. Total INR 12500.\"\n      }\n    ]\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Initiate Payment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "x-mock-response-name",
+            "value": "{{paymentMockResponse}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "evt-claim-98371-approved-001"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claimId\": \"CLAIM-98371\",\n  \"amount\": 200,\n  \"currency\": \"INR\",\n  \"approvalType\": \"MANUAL\",\n  \"idempotencyKey\": \"evt-claim-98371-approved-001\",\n  \"correlationId\": \"claim-98371\",\n  \"workflowId\": \"DEMO-WORKFLOW-ID\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{mockApiBaseUrl}}/payments",
+          "host": [
+            "{{mockApiBaseUrl}}"
+          ],
+          "path": [
+            "payments"
+          ]
+        },
+        "description": "Create payment. HTTP 201 means created, not settled. The workflow obtains the paymentId here and polls the separate status endpoint."
+      },
+      "response": [
+        {
+          "name": "payment-accepted",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-mock-response-name",
+                "value": "payment-accepted"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "evt-claim-98371-approved-001"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"claimId\": \"CLAIM-98371\",\n  \"amount\": 200,\n  \"currency\": \"INR\",\n  \"approvalType\": \"MANUAL\",\n  \"idempotencyKey\": \"evt-claim-98371-approved-001\",\n  \"correlationId\": \"claim-98371\",\n  \"workflowId\": \"DEMO-WORKFLOW-ID\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{mockApiBaseUrl}}/payments",
+              "host": [
+                "{{mockApiBaseUrl}}"
+              ],
+              "path": [
+                "payments"
+              ]
+            },
+            "description": "Create payment. HTTP 201 means created, not settled. The workflow obtains the paymentId here and polls the separate status endpoint."
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"claimId\": \"CLAIM-98371\",\n  \"amount\": 200,\n  \"currency\": \"INR\",\n  \"approvalType\": \"MANUAL\",\n  \"paymentId\": \"PAY-CLAIM98371-DEMO\",\n  \"paymentStatus\": \"PENDING\"\n}"
+        },
+        {
+          "name": "payment-declined",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-mock-response-name",
+                "value": "payment-declined"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "evt-claim-98371-approved-001"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"claimId\": \"CLAIM-98371\",\n  \"amount\": 200,\n  \"currency\": \"INR\",\n  \"approvalType\": \"MANUAL\",\n  \"idempotencyKey\": \"evt-claim-98371-approved-001\",\n  \"correlationId\": \"claim-98371\",\n  \"workflowId\": \"DEMO-WORKFLOW-ID\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{mockApiBaseUrl}}/payments",
+              "host": [
+                "{{mockApiBaseUrl}}"
+              ],
+              "path": [
+                "payments"
+              ]
+            },
+            "description": "Create payment. HTTP 201 means created, not settled. The workflow obtains the paymentId here and polls the separate status endpoint."
+          },
+          "status": "Unprocessable Entity",
+          "code": 422,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"paymentStatus\": \"FAILED\",\n  \"error\": \"PAYMENT_DECLINED\",\n  \"message\": \"Synthetic payment initiation failure.\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Check Payment Status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "x-mock-response-name",
+            "value": "{{paymentStatusMockResponse}}"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ],
+        "url": {
+          "raw": "{{mockApiBaseUrl}}/payments/{{paymentId}}/status",
+          "host": [
+            "{{mockApiBaseUrl}}"
+          ],
+          "path": [
+            "payments",
+            "{{paymentId}}",
+            "status"
+          ]
+        },
+        "description": "GET status for the payment created by POST /payments. Choose payment-status-pending, payment-status-settled, or payment-status-failed. To show multiple pending checks, select payment-status-pending and edit that saved example to SETTLED with completedAt while the workflow is polling; keep the example name unchanged."
+      },
+      "response": [
+        {
+          "name": "payment-status-pending",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "x-mock-response-name",
+                "value": "payment-status-pending"
+              },
+              {
+                "key": "Cache-Control",
+                "value": "no-cache"
+              }
+            ],
+            "url": {
+              "raw": "{{mockApiBaseUrl}}/payments/{{pathClaimId}}/status",
+              "host": [
+                "{{mockApiBaseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "{{pathClaimId}}",
+                "status"
+              ]
+            },
+            "description": "GET status for the payment created by POST /payments. Choose payment-status-pending, payment-status-settled, or payment-status-failed. To show multiple pending checks, select payment-status-pending and edit that saved example to SETTLED with completedAt while the workflow is polling; keep the example name unchanged."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"claimId\": \"{{pathClaimId}}\",\n  \"amount\": 200,\n  \"currency\": \"INR\",\n  \"approvalType\": \"MANUAL\",\n  \"paymentStatus\": \"PENDING\",\n  \"paymentId\": \"{{pathClaimId}}\"\n}"
+        },
+        {
+          "name": "payment-status-settled",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "x-mock-response-name",
+                "value": "payment-status-settled"
+              },
+              {
+                "key": "Cache-Control",
+                "value": "no-cache"
+              }
+            ],
+            "url": {
+              "raw": "{{mockApiBaseUrl}}/payments/{{pathClaimId}}/status",
+              "host": [
+                "{{mockApiBaseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "{{pathClaimId}}",
+                "status"
+              ]
+            },
+            "description": "GET status for the payment created by POST /payments. Choose payment-status-pending, payment-status-settled, or payment-status-failed. To show multiple pending checks, select payment-status-pending and edit that saved example to SETTLED with completedAt while the workflow is polling; keep the example name unchanged."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"claimId\": \"{{pathClaimId}}\",\n  \"amount\": 200,\n  \"currency\": \"INR\",\n  \"approvalType\": \"MANUAL\",\n  \"paymentId\": \"{{pathClaimId}}\",\n  \"paymentStatus\": \"PENDING\",\n  \"completedAt\": \"2026-09-24T09:05:00Z\"\n}"
+        },
+        {
+          "name": "payment-status-failed",
+          "originalRequest": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "x-mock-response-name",
+                "value": "payment-status-failed"
+              },
+              {
+                "key": "Cache-Control",
+                "value": "no-cache"
+              }
+            ],
+            "url": {
+              "raw": "{{mockApiBaseUrl}}/payments/{{pathClaimId}}/status",
+              "host": [
+                "{{mockApiBaseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "{{pathClaimId}}",
+                "status"
+              ]
+            },
+            "description": "GET status for the payment created by POST /payments. Choose payment-status-pending, payment-status-settled, or payment-status-failed. To show multiple pending checks, select payment-status-pending and edit that saved example to SETTLED with completedAt while the workflow is polling; keep the example name unchanged."
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n  \"claimId\": \"{{pathClaimId}}\",\n  \"amount\": 200,\n  \"currency\": \"INR\",\n  \"approvalType\": \"MANUAL\",\n  \"paymentId\": \"{{pathClaimId}}\",\n  \"paymentStatus\": \"FAILED\",\n  \"failureReason\": \"PAYMENT_PROCESSOR_DECLINED\"\n}"
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "mockApiBaseUrl",
+      "value": "https://YOUR-MOCK-ID.mock.pstmn.io"
+    },
+    {
+      "key": "validationMockResponse",
+      "value": "validation-pass"
+    },
+    {
+      "key": "fraudMockResponse",
+      "value": "fraud-pass"
+    }
+  ]
+}
