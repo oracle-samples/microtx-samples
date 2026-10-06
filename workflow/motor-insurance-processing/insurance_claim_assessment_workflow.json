@@ -1,0 +1,483 @@
+{
+  "createTime": 1790784950840,
+  "updateTime": 1790813763941,
+  "createdBy": "17053a21-f8b5-4aca-a522-213dc971fb59",
+  "updatedBy": "5b8bfede-5d2d-4dea-9f4a-19d6ca05ae9f",
+  "name": "insurance_claim_assessment",
+  "description": "Auto insurance claim assessment workflow",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "validate_claim",
+      "taskReferenceName": "validate_claim",
+      "description": "Application Service: result=true means the claim and policy checks pass; result=false rejects the claim.",
+      "inputParameters": {
+        "uri": "${workflow.input.config.serviceBaseUrl}/claims/validate",
+        "method": "POST",
+        "accept": "application/json",
+        "contentType": "application/json",
+        "headers": {
+          "x-mock-response-name": "${workflow.input.config.validationMockResponse}"
+        },
+        "body": {
+          "claimId": "${workflow.input.claimDetails.claimId}",
+          "correlationId": "${workflow.input.claimDetails.correlationId}",
+          "claim": {
+            "policyId": "${workflow.input.claimDetails.claim.policyId}",
+            "claimant": {
+              "customerId": "${workflow.input.claimDetails.claim.claimant.customerId}",
+              "name": "${workflow.input.claimDetails.claim.claimant.name}"
+            },
+            "vehicle": {
+              "registrationNumber": "${workflow.input.claimDetails.claim.vehicle.registrationNumber}",
+              "make": "${workflow.input.claimDetails.claim.vehicle.make}",
+              "model": "${workflow.input.claimDetails.claim.vehicle.model}",
+              "year": "${workflow.input.claimDetails.claim.vehicle.year}"
+            },
+            "incident": {
+              "date": "${workflow.input.claimDetails.claim.incident.date}",
+              "type": "${workflow.input.claimDetails.claim.incident.type}",
+              "location": "${workflow.input.claimDetails.claim.incident.location}",
+              "description": "${workflow.input.claimDetails.claim.incident.description}"
+            },
+            "requestedAmount": "${workflow.input.claimDetails.claim.requestedAmount}",
+            "currency": "${workflow.input.claimDetails.claim.currency}",
+            "documents": "${workflow.input.claimDetails.claim.documents}"
+          }
+        },
+        "connectionTimeOut": 5000,
+        "readTimeOut": 10000
+      },
+      "type": "HTTP",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "validation_decision",
+      "taskReferenceName": "validation_decision",
+      "description": "Continue when the result matches true; otherwise terminate with a business rejection through the default case.",
+      "inputParameters": {
+        "result": "${validate_claim.output.response.body.result}"
+      },
+      "type": "SWITCH",
+      "decisionCases": {
+        "true": [
+          {
+            "name": "validation_passed",
+            "taskReferenceName": "validation_passed",
+            "inputParameters": {
+              "claimStatus": "VALIDATED"
+            },
+            "type": "SET_VARIABLE",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          }
+        ]
+      },
+      "defaultCase": [
+        {
+          "name": "validation_rejected",
+          "taskReferenceName": "validation_rejected",
+          "inputParameters": {
+            "terminationStatus": "COMPLETED",
+            "terminationReason": "CLAIM_VALIDATION_FAILED",
+            "workflowOutput": {
+              "claimId": "${workflow.input.claimDetails.claimId}",
+              "status": "REJECTED",
+              "reason": "CLAIM_VALIDATION_FAILED",
+              "correlationId": "${workflow.input.claimDetails.correlationId}"
+            }
+          },
+          "type": "TERMINATE",
+          "decisionCases": {},
+          "defaultCase": [],
+          "forkTasks": [],
+          "startDelay": 0,
+          "joinOn": [],
+          "optional": false,
+          "defaultExclusiveJoinTask": [],
+          "asyncComplete": false,
+          "loopOver": [],
+          "onStateChange": {},
+          "permissive": false
+        }
+      ],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "evaluatorType": "value-param",
+      "expression": "result",
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "insurance_assessor",
+      "taskReferenceName": "insurance_assessor",
+      "inputParameters": {
+        "agentProfile": "insurance_agent",
+        "prompt": "The claim information ${validate_claim.output.response.body} and request status ${validate_claim.output.response.statusCode}",
+        "promptVariables": {},
+        "temperature": 0.8,
+        "maxTokens": 1024,
+        "top_k": 40,
+        "top_p": 0.9,
+        "idempotencyLockTimeout": 180000
+      },
+      "type": "AGENTIC_TASK",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "fraud_check",
+      "taskReferenceName": "fraud_check",
+      "description": "Application Service: result=true means the claim clears fraud screening; result=false rejects the claim for this demo.",
+      "inputParameters": {
+        "uri": "${workflow.input.config.serviceBaseUrl}/claims/fraud-check",
+        "method": "POST",
+        "accept": "application/json",
+        "contentType": "application/json",
+        "headers": {
+          "x-mock-response-name": "${workflow.input.config.fraudMockResponse}"
+        },
+        "body": {
+          "claimId": "${workflow.input.claimDetails.claimId}",
+          "claim": "${validate_claim.output.response.body.claim}",
+          "assessment": "",
+          "correlationId": "${workflow.input.claimDetails.correlationId}"
+        },
+        "connectionTimeOut": 5000,
+        "readTimeOut": 10000
+      },
+      "type": "HTTP",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "fraud_decision",
+      "taskReferenceName": "fraud_decision",
+      "description": "Continue when the result matches true; otherwise terminate with a business rejection through the default case.",
+      "inputParameters": {
+        "result": "${fraud_check.output.response.body.result}"
+      },
+      "type": "SWITCH",
+      "decisionCases": {
+        "true": [
+          {
+            "name": "fraud_passed",
+            "taskReferenceName": "fraud_passed",
+            "inputParameters": {
+              "claimStatus": "FRAUD_CLEARED"
+            },
+            "type": "SET_VARIABLE",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          }
+        ]
+      },
+      "defaultCase": [
+        {
+          "name": "fraud_rejected",
+          "taskReferenceName": "fraud_rejected",
+          "inputParameters": {
+            "terminationStatus": "COMPLETED",
+            "terminationReason": "FRAUD_CHECK_FAILED",
+            "workflowOutput": {
+              "claimId": "${workflow.input.claimDetails.claimId}",
+              "status": "REJECTED",
+              "reason": "FRAUD_CHECK_FAILED",
+              "correlationId": "${workflow.input.claimDetails.correlationId}"
+            }
+          },
+          "type": "TERMINATE",
+          "decisionCases": {},
+          "defaultCase": [],
+          "forkTasks": [],
+          "startDelay": 0,
+          "joinOn": [],
+          "optional": false,
+          "defaultExclusiveJoinTask": [],
+          "asyncComplete": false,
+          "loopOver": [],
+          "onStateChange": {},
+          "permissive": false
+        }
+      ],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "evaluatorType": "value-param",
+      "expression": "result",
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "human_review",
+      "taskReferenceName": "human_review",
+      "description": "Wait for an adjuster decision. Complete with approved (boolean), approvedAmount, approvalType=MANUAL, and reviewerId. A false decision rejects the claim.",
+      "inputParameters": {
+        "claimId": "${workflow.input.claimDetails.claimId}",
+        "claim": "${validate_claim.output.response.body.claim}",
+        "fraudCheck": "${fraud_check.output.response.body}",
+        "requestedAmount": "${validate_claim.output.response.body.claim.requestedAmount}",
+        "currency": "${validate_claim.output.response.body.claim.currency}",
+        "formData": {
+          "approved": false,
+          "approvedAmount": "${workflow.input.claimDetails.claim.requestedAmount}",
+          "approvalType": "MANUAL",
+          "reviewerId": "adjuster-demo"
+        },
+        "ai_evaluator": "${insurance_assessor.output}"
+      },
+      "type": "HUMAN",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "review_decision",
+      "taskReferenceName": "review_decision",
+      "description": "Continue when the result matches true; otherwise terminate with a business rejection through the default case.",
+      "inputParameters": {
+        "result": "${human_review.output.approved}"
+      },
+      "type": "SWITCH",
+      "decisionCases": {
+        "true": [
+          {
+            "name": "review_passed",
+            "taskReferenceName": "review_passed",
+            "inputParameters": {
+              "claimStatus": "APPROVED"
+            },
+            "type": "SET_VARIABLE",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          }
+        ]
+      },
+      "defaultCase": [
+        {
+          "name": "review_rejected",
+          "taskReferenceName": "review_rejected",
+          "inputParameters": {
+            "terminationStatus": "COMPLETED",
+            "terminationReason": "ADJUSTER_REJECTED",
+            "workflowOutput": {
+              "claimId": "${workflow.input.claimDetails.claimId}",
+              "status": "REJECTED",
+              "reason": "ADJUSTER_REJECTED",
+              "correlationId": "${workflow.input.claimDetails.correlationId}"
+            }
+          },
+          "type": "TERMINATE",
+          "decisionCases": {},
+          "defaultCase": [],
+          "forkTasks": [],
+          "startDelay": 0,
+          "joinOn": [],
+          "optional": false,
+          "defaultExclusiveJoinTask": [],
+          "asyncComplete": false,
+          "loopOver": [],
+          "onStateChange": {},
+          "permissive": false
+        }
+      ],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "evaluatorType": "value-param",
+      "expression": "result",
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "persist_approval",
+      "taskReferenceName": "persist_approval",
+      "description": "Insert a new demo approval row on every execution. Duplicate claim IDs are allowed; Oracle generates the approval row ID.",
+      "inputParameters": {
+        "databaseProfile": "insurance_database",
+        "type": "UPDATE",
+        "sqlStatement": "INSERT INTO CLAIM_APPROVALS (CLAIM_ID, APPROVED_AMOUNT, APPROVAL_TYPE, REVIEWER_ID, STATUS, UPDATED_AT) VALUES (?, ?, ?, ?, 'APPROVED', SYSTIMESTAMP)",
+        "parameters": [
+          "${workflow.input.claimDetails.claimId}",
+          "${human_review.output.approvedAmount}",
+          "${human_review.output.approvalType}",
+          "${human_review.output.reviewerId}"
+        ],
+        "enableIdempotency": true,
+        "idempotentTableName": "fenced_task_idempotency_lock"
+      },
+      "type": "SQL",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "serialize_claim_approved_event",
+      "taskReferenceName": "serialize_claim_approved_event",
+      "description": "Build the stable claim.approved event contract and serialize it as JSON text for TxEventQ.",
+      "inputParameters": {
+        "data": {
+          "eventType": "claim.approved",
+          "eventVersion": "1.0",
+          "eventId": "${workflow.input.claimDetails.approvalEventId}",
+          "correlationId": "${workflow.input.claimDetails.correlationId}",
+          "causationId": "${workflow.input.claimDetails.causationId}",
+          "occurredAt": "${workflow.input.claimDetails.occurredAt}",
+          "data": {
+            "claimId": "${workflow.input.claimDetails.claimId}",
+            "approvedAmount": "${human_review.output.approvedAmount}",
+            "approvalType": "${human_review.output.approvalType}"
+          }
+        },
+        "queryExpression": ".data | tojson"
+      },
+      "type": "JSON_JQ_TRANSFORM",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "publish_claim_approved_event",
+      "taskReferenceName": "publish_claim_approved_event",
+      "description": "Publish the canonical claim.approved event to Oracle TxEventQ.",
+      "inputParameters": {
+        "databaseProfile": "insurance_database",
+        "topic": "insurance_claim_queue",
+        "publisherAgentName": "approvalAgent",
+        "value": "${serialize_claim_approved_event.output.result}"
+      },
+      "type": "TXEVENTQ_PUBLISH",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    }
+  ],
+  "inputParameters": [
+    "config",
+    "claimDetails"
+  ],
+  "outputParameters": {
+    "claimId": "${workflow.input.claimDetails.claimId}",
+    "approval": "${persist_approval.output.response}",
+    "publishTaskResponse": "${publish_claim_approved_event.output.response}",
+    "eventId": "${workflow.input.claimDetails.approvalEventId}",
+    "correlationId": "${workflow.input.claimDetails.correlationId}",
+    "status": "APPROVED",
+    "approvedAmount": "${human_review.output.approvedAmount}"
+  },
+  "schemaVersion": 2,
+  "restartable": true,
+  "workflowStatusListenerEnabled": false,
+  "timeoutPolicy": "TIME_OUT_WF",
+  "timeoutSeconds": 86400,
+  "variables": {},
+  "inputTemplate": {
+    "config": {
+      "validationMockResponse": "validation-pass",
+      "fraudMockResponse": "fraud-pass"
+    }
+  },
+  "enforceSchema": true,
+  "metadata": {},
+  "maskedFields": []
+}

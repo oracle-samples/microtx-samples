@@ -1,0 +1,515 @@
+{
+  "createTime": 1790789752393,
+  "updateTime": 1790817454884,
+  "createdBy": "17053a21-f8b5-4aca-a522-213dc971fb59",
+  "updatedBy": "5b8bfede-5d2d-4dea-9f4a-19d6ca05ae9f",
+  "name": "insurance_claim_settlement",
+  "description": "Demo settlement: initiate payment, poll payment status after a 10 second wait per iteration, fail on FAILED or polling exhaustion, and publish claim.settled only on SETTLED.",
+  "version": 1,
+  "tasks": [
+    {
+      "name": "normalize_settlement_input",
+      "taskReferenceName": "normalize_settlement_input",
+      "description": "Normalize the approval amount and require a positive integer polling limit.",
+      "inputParameters": {
+        "data": {
+          "claimId": "${workflow.input.claimId}",
+          "approvedAmount": "${workflow.input.approvedAmount}",
+          "approvalType": "${workflow.input.approvalType}",
+          "maxPaymentPolls": "${workflow.input.maxPaymentPolls}"
+        },
+        "queryExpression": ".data | .approvedAmount |= tonumber | .maxPaymentPolls |= tonumber | if .approvedAmount <= 0 then error(\"approvedAmount must be positive\") elif .maxPaymentPolls < 1 or .maxPaymentPolls != (.maxPaymentPolls | floor) then error(\"maxPaymentPolls must be a positive integer\") else . end"
+      },
+      "type": "JSON_JQ_TRANSFORM",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "create_settlement_record",
+      "taskReferenceName": "create_settlement_record",
+      "description": "Insert a demo settlement row with a database-generated ID. Duplicate claim IDs are allowed.",
+      "inputParameters": {
+        "databaseProfile": "insurance_database",
+        "type": "UPDATE",
+        "sqlStatement": "INSERT INTO CLAIM_SETTLEMENTS (WORKFLOW_ID, CLAIM_ID, APPROVED_AMOUNT, APPROVAL_TYPE, STATUS, UPDATED_AT) VALUES (?, ?, ?, ?, 'PAYMENT_PENDING', SYSTIMESTAMP)",
+        "parameters": [
+          "${workflow.workflowId}",
+          "${workflow.input.claimId}",
+          "${normalize_settlement_input.output.result.approvedAmount}",
+          "${workflow.input.approvalType}"
+        ]
+      },
+      "type": "SQL",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "initiate_payment",
+      "taskReferenceName": "initiate_payment",
+      "description": "Create payment once. Require HTTP 201 and a nonempty paymentId before polling.",
+      "inputParameters": {
+        "uri": "${workflow.input.serviceBaseUrl}/payments",
+        "method": "POST",
+        "accept": "application/json",
+        "contentType": "application/json",
+        "headers": {
+          "x-mock-response-name": "${workflow.input.paymentMockResponse}",
+          "Idempotency-Key": "${workflow.input.paymentIdempotencyKey}"
+        },
+        "body": {
+          "claimId": "${workflow.input.claimId}",
+          "amount": "${normalize_settlement_input.output.result.approvedAmount}",
+          "currency": "INR",
+          "approvalType": "${workflow.input.approvalType}",
+          "idempotencyKey": "${workflow.input.paymentIdempotencyKey}",
+          "correlationId": "${workflow.input.correlationId}",
+          "workflowId": "${workflow.workflowId}"
+        },
+        "connectionTimeOut": 5000,
+        "readTimeOut": 10000
+      },
+      "type": "HTTP",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "validate_payment_initiation",
+      "taskReferenceName": "validate_payment_initiation",
+      "inputParameters": {
+        "queryExpression": ".response | if .statusCode != 201 then error(\"Payment initiation must return HTTP 201\") elif (.body.paymentId | type) != \"string\" or (.body.paymentId | length) == 0 then error(\"Payment initiation must return paymentId\") else .body end",
+        "response": "${initiate_payment.output.response}"
+      },
+      "type": "JSON_JQ_TRANSFORM",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "poll_payment_status",
+      "taskReferenceName": "poll_payment_status",
+      "description": "Wait 5 seconds before each check. Repeat only while PENDING and below maxPaymentPolls.",
+      "inputParameters": {
+        "paymentStatus": "${workflow.variables.payment.paymentStatus}",
+        "maxPolls": "${workflow.input.maxPaymentPolls}",
+        "poll_payment_status": "${poll_payment_status.output}"
+      },
+      "type": "DO_WHILE",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopCondition": "(function(){ return $.paymentStatus === 'PENDING' && $.poll_payment_status['iteration'] < $.maxPolls; })();",
+      "loopOver": [
+        {
+          "name": "wait_before_payment_check",
+          "taskReferenceName": "wait_before_payment_check",
+          "description": "Non-blocking five-second sleep before each status check.",
+          "inputParameters": {
+            "duration": "10s"
+          },
+          "type": "WAIT",
+          "decisionCases": {},
+          "defaultCase": [],
+          "forkTasks": [],
+          "startDelay": 0,
+          "joinOn": [],
+          "optional": false,
+          "defaultExclusiveJoinTask": [],
+          "asyncComplete": false,
+          "loopOver": [],
+          "onStateChange": {},
+          "permissive": false
+        },
+        {
+          "name": "check_payment_status",
+          "taskReferenceName": "check_payment_status",
+          "inputParameters": {
+            "uri": "${workflow.input.serviceBaseUrl}/payments/${validate_payment_initiation.output.result.paymentId}/status",
+            "method": "GET",
+            "accept": "application/json",
+            "headers": {
+              "x-mock-response-name": "${workflow.input.paymentStatusMockResponse}",
+              "Cache-Control": "no-cache"
+            },
+            "connectionTimeOut": 5000,
+            "readTimeOut": 10000
+          },
+          "type": "HTTP",
+          "decisionCases": {},
+          "defaultCase": [],
+          "forkTasks": [],
+          "startDelay": 0,
+          "joinOn": [],
+          "optional": false,
+          "defaultExclusiveJoinTask": [],
+          "asyncComplete": false,
+          "loopOver": [],
+          "onStateChange": {},
+          "permissive": false
+        },
+        {
+          "name": "validate_payment_status",
+          "taskReferenceName": "validate_payment_status",
+          "description": "Validate response code, payment identity, status, and completion timestamp for SETTLED.",
+          "inputParameters": {
+            "expectedPaymentId": "${validate_payment_initiation.output.result.paymentId}",
+            "response": "${check_payment_status.output.response}",
+            "queryExpression": "if .response.statusCode != 200 then error(\"Payment status must return HTTP 200\") elif .response.body.paymentId != .expectedPaymentId then error(\"Payment status returned a different paymentId\") elif (.response.body.paymentStatus != \"PENDING\" and .response.body.paymentStatus != \"SETTLED\" and .response.body.paymentStatus != \"FAILED\") then error(\"paymentStatus must be PENDING, SETTLED, or FAILED\") elif .response.body.paymentStatus == \"SETTLED\" and ((.response.body.completedAt | type) != \"string\" or (.response.body.completedAt | length) == 0) then error(\"SETTLED requires completedAt\") else .response.body end"
+          },
+          "type": "JSON_JQ_TRANSFORM",
+          "decisionCases": {},
+          "defaultCase": [],
+          "forkTasks": [],
+          "startDelay": 0,
+          "joinOn": [],
+          "optional": false,
+          "defaultExclusiveJoinTask": [],
+          "asyncComplete": false,
+          "loopOver": [],
+          "onStateChange": {},
+          "permissive": false
+        },
+        {
+          "name": "save_payment_status",
+          "taskReferenceName": "save_payment_status",
+          "description": "Keep the latest validated payment response for the loop condition and downstream tasks.",
+          "inputParameters": {
+            "payment": "${validate_payment_status.output.result}"
+          },
+          "type": "SET_VARIABLE",
+          "decisionCases": {},
+          "defaultCase": [],
+          "forkTasks": [],
+          "startDelay": 0,
+          "joinOn": [],
+          "optional": false,
+          "defaultExclusiveJoinTask": [],
+          "asyncComplete": false,
+          "loopOver": [],
+          "onStateChange": {},
+          "permissive": false
+        }
+      ],
+      "evaluatorType": "graaljs",
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "payment_completed_decision",
+      "taskReferenceName": "payment_completed_decision",
+      "description": "Continue for SETTLED; handle polling exhaustion for PENDING; otherwise record PAYMENT_FAILED and fail the workflow through the default branch.",
+      "inputParameters": {
+        "result": "${workflow.variables.payment.paymentStatus}"
+      },
+      "type": "SWITCH",
+      "decisionCases": {
+        "SETTLED": [
+          {
+            "name": "payment_confirmed",
+            "taskReferenceName": "payment_confirmed",
+            "inputParameters": {
+              "settlementStatus": "SETTLED"
+            },
+            "type": "SET_VARIABLE",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          }
+        ],
+        "PENDING": [
+          {
+            "name": "record_payment_timeout",
+            "taskReferenceName": "record_payment_timeout",
+            "inputParameters": {
+              "databaseProfile": "insurance_database",
+              "type": "UPDATE",
+              "sqlStatement": "UPDATE CLAIM_SETTLEMENTS SET STATUS = 'PAYMENT_TIMEOUT', PAYMENT_ID = ?, UPDATED_AT = SYSTIMESTAMP WHERE WORKFLOW_ID = ?",
+              "parameters": [
+                "${workflow.variables.payment.paymentId}",
+                "${workflow.workflowId}"
+              ]
+            },
+            "type": "SQL",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          },
+          {
+            "name": "stop_payment_timeout",
+            "taskReferenceName": "stop_payment_timeout",
+            "inputParameters": {
+              "terminationStatus": "FAILED",
+              "terminationReason": "PAYMENT_TIMEOUT",
+              "workflowOutput": {
+                "claimId": "${workflow.input.claimId}",
+                "status": "PAYMENT_TIMEOUT",
+                "paymentId": "${workflow.variables.payment.paymentId}",
+                "paymentStatus": "${workflow.variables.payment.paymentStatus}",
+                "pollCount": "${poll_payment_status.output.iteration}",
+                "correlationId": "${workflow.input.correlationId}"
+              }
+            },
+            "type": "TERMINATE",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": [],
+            "onStateChange": {},
+            "permissive": false
+          }
+        ]
+      },
+      "defaultCase": [
+        {
+          "name": "record_payment_failure",
+          "taskReferenceName": "record_payment_failure",
+          "inputParameters": {
+            "databaseProfile": "insurance_database",
+            "type": "UPDATE",
+            "sqlStatement": "UPDATE CLAIM_SETTLEMENTS SET STATUS = 'PAYMENT_FAILED', PAYMENT_ID = ?, UPDATED_AT = SYSTIMESTAMP WHERE WORKFLOW_ID = ?",
+            "parameters": [
+              "${workflow.variables.payment.paymentId}",
+              "${workflow.workflowId}"
+            ]
+          },
+          "type": "SQL",
+          "decisionCases": {},
+          "defaultCase": [],
+          "forkTasks": [],
+          "startDelay": 0,
+          "joinOn": [],
+          "optional": false,
+          "defaultExclusiveJoinTask": [],
+          "asyncComplete": false,
+          "loopOver": [],
+          "onStateChange": {},
+          "permissive": false
+        },
+        {
+          "name": "stop_payment_failure",
+          "taskReferenceName": "stop_payment_failure",
+          "inputParameters": {
+            "terminationStatus": "FAILED",
+            "terminationReason": "PAYMENT_FAILED",
+            "workflowOutput": {
+              "claimId": "${workflow.input.claimId}",
+              "status": "PAYMENT_FAILED",
+              "paymentId": "${workflow.variables.payment.paymentId}",
+              "paymentStatus": "${workflow.variables.payment.paymentStatus}",
+              "pollCount": "${poll_payment_status.output.iteration}",
+              "correlationId": "${workflow.input.correlationId}"
+            }
+          },
+          "type": "TERMINATE",
+          "decisionCases": {},
+          "defaultCase": [],
+          "forkTasks": [],
+          "startDelay": 0,
+          "joinOn": [],
+          "optional": false,
+          "defaultExclusiveJoinTask": [],
+          "asyncComplete": false,
+          "loopOver": [],
+          "onStateChange": {},
+          "permissive": false
+        }
+      ],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "evaluatorType": "value-param",
+      "expression": "result",
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "update_claim_settled",
+      "taskReferenceName": "update_claim_settled",
+      "description": "Update the settlement rows belonging to this workflow execution.",
+      "inputParameters": {
+        "databaseProfile": "insurance_database",
+        "type": "UPDATE",
+        "sqlStatement": "UPDATE CLAIM_SETTLEMENTS SET STATUS = 'SETTLED', PAYMENT_ID = ?, UPDATED_AT = SYSTIMESTAMP WHERE WORKFLOW_ID = ?",
+        "parameters": [
+          "${workflow.variables.payment.paymentId}",
+          "${workflow.workflowId}"
+        ]
+      },
+      "type": "SQL",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "serialize_claim_settled_event",
+      "taskReferenceName": "serialize_claim_settled_event",
+      "description": "Serialize the final claim.settled event after confirmed payment.",
+      "inputParameters": {
+        "data": {
+          "eventType": "claim.settled",
+          "eventVersion": "1.0",
+          "eventId": "evt-${workflow.workflowId}-settled",
+          "occurredAt": "${workflow.variables.payment.completedAt}",
+          "correlationId": "${workflow.input.correlationId}",
+          "causationId": "${workflow.input.causationId}",
+          "data": {
+            "claimId": "${workflow.input.claimId}",
+            "settledAmount": "${normalize_settlement_input.output.result.approvedAmount}",
+            "currency": "INR",
+            "paymentId": "${workflow.variables.payment.paymentId}",
+            "paymentStatus": "${workflow.variables.payment.paymentStatus}"
+          }
+        },
+        "queryExpression": ".data | tojson"
+      },
+      "type": "JSON_JQ_TRANSFORM",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    },
+    {
+      "name": "publish_claim_settled_event",
+      "taskReferenceName": "publish_claim_settled_event",
+      "description": "Publish claim.settled to insurance_settlement_queue for settlementAgent.",
+      "inputParameters": {
+        "databaseProfile": "insurance_database",
+        "topic": "insurance_settlement_queue",
+        "publisherAgentName": "settlement_agent",
+        "value": "${serialize_claim_settled_event.output.result}"
+      },
+      "type": "TXEVENTQ_PUBLISH",
+      "decisionCases": {},
+      "defaultCase": [],
+      "forkTasks": [],
+      "startDelay": 0,
+      "joinOn": [],
+      "optional": false,
+      "defaultExclusiveJoinTask": [],
+      "asyncComplete": false,
+      "loopOver": [],
+      "onStateChange": {},
+      "permissive": false
+    }
+  ],
+  "inputParameters": [
+    "claimId",
+    "approvedAmount",
+    "approvalType",
+    "correlationId",
+    "causationId",
+    "paymentIdempotencyKey",
+    "serviceBaseUrl",
+    "paymentMockResponse",
+    "paymentStatusMockResponse"
+  ],
+  "outputParameters": {
+    "claimId": "${workflow.input.claimId}",
+    "status": "SETTLED",
+    "approvedAmount": "${normalize_settlement_input.output.result.approvedAmount}",
+    "paymentId": "${workflow.variables.payment.paymentId}",
+    "paymentStatus": "${workflow.variables.payment.paymentStatus}",
+    "eventId": "evt-${workflow.workflowId}-settled",
+    "correlationId": "${workflow.input.correlationId}",
+    "publishTaskResponse": "${publish_claim_settled_event.output.response}",
+    "pollCount": "${poll_payment_status.output.iteration}"
+  },
+  "schemaVersion": 2,
+  "restartable": true,
+  "workflowStatusListenerEnabled": false,
+  "timeoutPolicy": "TIME_OUT_WF",
+  "timeoutSeconds": 172800,
+  "variables": {},
+  "inputTemplate": {
+    "serviceBaseUrl": "https://YOUR-PAYMENT-MOCK-ID.mock.pstmn.io",
+    "paymentMockResponse": "payment-accepted",
+    "databaseProfile": "insurance_database",
+    "txEventQDatabaseProfile": "insurance_database",
+    "settledTopic": "insurance_settlement_queue",
+    "settledRecipient": "settlementAgent",
+    "paymentStatusMockResponse": "payment-status-settled",
+    "maxPaymentPolls": 60
+  },
+  "enforceSchema": true,
+  "metadata": {},
+  "maskedFields": []
+}

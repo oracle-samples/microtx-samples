@@ -1,0 +1,30 @@
+{
+  "name": "claim_approved_start_settlement",
+  "event": "txeventq:insurance_claim_queue:approvalAgent:insurance_database",
+  "condition": "$.payload.eventType == 'claim.approved'",
+  "actions": [
+    {
+      "action": "start_workflow",
+      "start_workflow": {
+        "name": "insurance_claim_settlement",
+        "version": 1,
+        "correlationId": "${payload.correlationId}",
+        "input": {
+          "claimId": "${payload.data.claimId}",
+          "approvedAmount": "${payload.data.approvedAmount}",
+          "approvalType": "${payload.data.approvalType}",
+          "correlationId": "${payload.correlationId}",
+          "causationId": "${payload.eventId}",
+          "paymentIdempotencyKey": "${payload.eventId}",
+          "paymentStatusMockResponse": "payment-status-settled",
+          "serviceBaseUrl": "https://50096360-c34a-4194-b492-2ae5b5f1f553.mock.pstmn.io",
+          "paymentMockResponse": "payment-accepted"
+        },
+        "taskToDomain": {}
+      },
+      "expandInlineJSON": false
+    }
+  ],
+  "active": true,
+  "evaluatorType": "graaljs"
+}
