@@ -1,7 +1,7 @@
 {
     "name": "ap_exception_resolution",
     "description": "A structured invoice receives AP prechecks, exception-only agent-harness investigation, structured evidence verification, one business-policy evaluation, a short XA payment preparation transaction, and separate external settlement.",
-  "version": 11,
+    "version": 12,
     "schemaVersion": 2,
     "ownerEmail": "ap-samples@example.com",
     "restartable": true,
@@ -105,9 +105,9 @@
         "type": "TERMINATE",
         "inputParameters": {
           "terminationStatus": "COMPLETED",
-          "terminationReason": "The invoice is already scheduled by another operation; existing payment state was preserved.",
+          "terminationReason": "The invoice already has payment state owned by another operation; the existing state was preserved.",
           "workflowOutput": {
-            "outcome": "INVOICE_ALREADY_SCHEDULED",
+            "outcome": "INVOICE_ALREADY_IN_PAYMENT_PROCESS",
             "operationId": "${workflow.input.operationId}",
             "paymentScheduled": true,
             "paymentExecutionStatus": "EXISTING_OPERATION"
@@ -342,7 +342,7 @@
             "inputParameters": {
                 "transactionType": "XA",
                 "coordinatorUrl": "http://otmm-tcs:9000/api/v1",
-        "transactionTimeout": 300000,
+                "transactionTimeout": 300000,
                 "action": "BEGIN"
             }
         },
@@ -350,7 +350,7 @@
             "name": "Schedule_Invoice_For_Payment",
             "taskReferenceName": "schedule_invoice_for_payment",
             "type": "HTTP",
-            "description": "XA participant 1 of 2: AP state.",
+            "description": "XA participant 1 of 3: AP state.",
             "inputParameters": {
                 "uri": "http://ap-backend:8083/invoices/${workflow.input.invoice.invoiceId}/payment-scheduled",
                 "method": "POST",
@@ -373,7 +373,7 @@
             "name": "Create_Payment_Instruction",
             "taskReferenceName": "create_payment_instruction",
             "type": "HTTP",
-            "description": "XA participant 2 of 2: an idempotent payment instruction.",
+            "description": "XA participant 2 of 3: an idempotent payment instruction.",
             "inputParameters": {
                 "uri": "http://payment-service:8084/payment-instructions",
                 "method": "POST",
@@ -395,32 +395,27 @@
             }
         },
         {
+            "name": "Publish_Payment_Settlement_Event",
+            "taskReferenceName": "publish_payment_settlement_event",
+            "type": "TXEVENTQ_PUBLISH",
+            "description": "XA participant 3 of 3: publishes the committed payment-preparation event that starts external settlement.",
+            "inputParameters": {
+                "databaseProfile": "ap-oracle-db-profile",
+                "topic": "AP_PAYMENT_SETTLEMENT_EVENTS",
+                "value": "{\"eventType\":\"AP_PAYMENT_PREPARED\",\"schemaVersion\":1,\"operationId\":\"${workflow.input.operationId}\",\"invoiceId\":\"${workflow.input.invoice.invoiceId}\",\"instructionId\":\"${create_payment_instruction.output.response.body.instructionId}\",\"simulateSettlementTimeout\":\"${workflow.input.invoice.simulateSettlementTimeout}\"}",
+                "publisherAgentName": "AP_SETTLEMENT_SUBSCRIBER",
+                "enlistInTxn": true
+            }
+        },
+        {
             "name": "Commit_Payment_Transaction",
             "taskReferenceName": "commit_payment_transaction",
             "type": "TRANSACTION",
-            "description": "Commits the two participating financial writes. External payment settlement starts only after this boundary has ended.",
+            "description": "Atomically commits the AP state, payment instruction, and settlement event. The event becomes available to the subscriber only after this boundary has ended.",
             "inputParameters": {
                 "transactionType": "XA",
                 "coordinatorUrl": "http://otmm-tcs:9000/api/v1",
                 "action": "COMMIT"
-            }
-        },
-        {
-            "name": "Start_Payment_Settlement",
-            "taskReferenceName": "start_payment_settlement",
-            "type": "START_WORKFLOW",
-            "optional": true,
-            "description": "Asynchronously starts the linked payment-settlement workflow after COMMIT. It is optional so a dispatch failure cannot invoke the XA rollback handler after a successful commit; production dispatch should be recovered from a committed outbox/event.",
-            "inputParameters": {
-                "startWorkflow": {
-                    "name": "ap_payment_settlement",
-                    "version": 1,
-                    "correlationId": "${workflow.input.operationId}",
-                    "input": {
-                        "operationId": "${workflow.input.operationId}",
-                        "simulateSettlementTimeout": "${workflow.input.invoice.simulateSettlementTimeout}"
-                    }
-                }
             }
         }
     ],
@@ -431,7 +426,8 @@
         "precheck": "${run_deterministic_ap_prechecks.output.response.body}",
         "paymentScheduled": true,
         "instructionId": "${create_payment_instruction.output.response.body.instructionId}",
-        "paymentSettlementWorkflowId": "${start_payment_settlement.output.workflowId}",
+        "settlementEventPublished": "${publish_payment_settlement_event.output.response.published}",
+        "settlementEventTopic": "${publish_payment_settlement_event.output.response.topic}",
         "paymentExecutionStatus": "PENDING"
     }
 }
