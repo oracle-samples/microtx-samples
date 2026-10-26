@@ -1,3 +1,48 @@
+- title: Building Reliable Accounts Payable Exception Workflows with Oracle MicroTx
+  description: Explore how to build reliable accounts payable exception workflows with Oracle MicroTx.
+  date: 2026-10-22 00:00:00 +0000
+  author_id: pruthvithej-ramesh-kumar
+  external: true
+  url: https://pruthvithej.medium.com/building-reliable-accounts-payable-exception-workflows-with-oracle-microtx-392424759dce
+  tags:
+    - Oracle MicroTx Workflows
+    - Accounts Payable
+    - Exception Handling
+    - Workflow Orchestration
+    - Agentic AI
+    - Enterprise Workflows
+    - Distributed Transactions
+    - XA
+
+- title: "Oracle MicroTx vs Temporal: Durable Workflow Orchestration"
+  description: Compare Oracle MicroTx and Temporal for durable workflow orchestration.
+  date: 2026-09-26 00:00:00 +0000
+  author_id: pruthvithej-ramesh-kumar
+  external: true
+  url: https://pruthvithej.medium.com/oracle-microtx-vs-temporal-durable-workflow-orchestration-ed1651c27f44
+  tags:
+    - Oracle MicroTx Workflows
+    - Temporal
+    - Durable Execution
+    - Durable Workflows
+    - Workflow Orchestration
+    - Distributed Transactions
+    - Agentic Workflows
+    - Idempotency
+    - Kubernetes
+
+- title: "Your SQL Deserves an Enterprise Runtime: Durable Database Operations with Oracle MicroTx"
+  description: Explore durable database operations with Oracle MicroTx as an enterprise runtime for SQL.
+  date: 2026-09-03 00:00:00 +0000
+  author: tusharshaily
+  external: true
+  url: https://medium.com/@tusharshaily/your-sql-deserves-an-enterprise-runtime-durable-database-operations-with-oracle-microtx-ab9e4a02b718
+  tags:
+    - Oracle MicroTx Workflows
+    - SQL
+    - Database Operations
+    - Durable Execution
+
 - title: Transaction-Aware Durable Execution with Oracle MicroTx Workflows
   description: Learn how Oracle MicroTx Workflows combines durable workflow orchestration with XA transaction coordination so critical business updates commit or roll back together.
   date: 2026-09-01 00:00:00 +0000
