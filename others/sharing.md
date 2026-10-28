@@ -1,6 +1,6 @@
 ## PAR URL
 
-[HOL-Resource](https://objectstorage.us-ashburn-1.oraclecloud.com/p/aPLJo5Zzd8KKE1SHr8CSXrmkcqoRuvLk3NgD4n0Kc-_B9nVl-9DQJJsEFwQeU-Vb/n/oabcs1/b/MicroTx-Share/o/HOL-2025-ResourceAI-World.txt)
+[AI-World-2026-HOL-Resource](https://objectstorage.us-ashburn-1.oraclecloud.com/p/FPr4ZUR9MUwd-_ttlsCINprmV-6N9U39nD_--Z1j2nUwLo3VBABqREzN-IeeKwK2/n/oabcs1/b/MicroTx-Share/o/HOL-2026-ResourceAI-World.txt)
 
 
 ## Troubleshooting: UI Server is unresponsive
